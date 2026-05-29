@@ -1,0 +1,28 @@
+package platform.booking.service.application.command.booking;
+
+import lombok.Builder;
+import platform.core.common.service.common.RequestContext;
+
+import java.time.OffsetDateTime;
+
+@Builder
+public record CreateBookingCommand(
+        RequestContext context,
+        String merchantId,
+        String tripId,
+        String holdBy,
+        String holdToken,
+        OffsetDateTime heldAt,
+        OffsetDateTime holdUntil,
+        String customerId,
+        String customerName,
+        String customerPhone,
+        String customerEmail,
+        String pickupType,
+        String pickupStopId,
+        String pickupAddress,
+        String dropoffType,
+        String dropoffStopId,
+        String dropoffAddress
+) {
+}

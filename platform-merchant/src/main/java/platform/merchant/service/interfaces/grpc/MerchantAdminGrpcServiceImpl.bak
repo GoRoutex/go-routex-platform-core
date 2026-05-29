@@ -1,0 +1,331 @@
+package platform.merchant.service.interfaces.grpc;
+
+import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
+import net.devh.boot.grpc.server.service.GrpcService;
+import vn.com.go.routex.identity.security.log.SystemLog;
+import vn.com.routex.hub.grpc.AdminPagination;
+import vn.com.routex.hub.grpc.AdminRequestContext;
+import vn.com.routex.hub.grpc.FetchApplicationFormDetailRequest;
+import vn.com.routex.hub.grpc.FetchApplicationFormDetailResponse;
+import vn.com.routex.hub.grpc.FetchApplicationFormsRequest;
+import vn.com.routex.hub.grpc.FetchApplicationFormsResponse;
+import vn.com.routex.hub.grpc.FetchMerchantsByIdsRequest;
+import vn.com.routex.hub.grpc.FetchMerchantsByIdsResponse;
+import vn.com.routex.hub.grpc.FetchMerchantsRequest;
+import vn.com.routex.hub.grpc.FetchMerchantsResponse;
+import vn.com.routex.hub.grpc.MerchantAdminGrpcServiceGrpc;
+import vn.com.routex.hub.grpc.MerchantAdminInfo;
+import vn.com.routex.hub.grpc.MerchantApplicationFormInfo;
+import vn.com.routex.hub.grpc.MerchantDetailRequest;
+import vn.com.routex.hub.grpc.MerchantDetailResponse;
+import vn.com.routex.hub.grpc.SearchMerchantIdsRequest;
+import vn.com.routex.hub.grpc.SearchMerchantIdsResponse;
+import vn.com.routex.hub.grpc.UpdateMerchantRequest;
+import vn.com.routex.hub.grpc.UpdateMerchantResponse;
+import platform.core.common.service.common.RequestContext;
+import platform.merchant.service.application.service.InternalMerchantAdminService;
+import platform.merchant.service.domain.common.PagedResult;
+import platform.merchant.service.domain.merchant.ApplicationFormStatus;
+import platform.merchant.service.domain.merchant.MerchantStatus;
+import platform.merchant.service.domain.merchant.model.Merchant;
+import platform.merchant.service.domain.merchant.model.MerchantApplicationForm;
+import platform.merchant.service.interfaces.model.internal.merchant.InternalUpdateMerchantRequest;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+
+@GrpcService
+@RequiredArgsConstructor
+public class MerchantAdminGrpcServiceImpl extends MerchantAdminGrpcServiceGrpc.MerchantAdminGrpcServiceImplBase {
+
+    private final InternalMerchantAdminService internalMerchantAdminService;
+    private final SystemLog sLog = SystemLog.getLogger(this.getClass());
+
+    @Override
+    public void fetchMerchantDetail(MerchantDetailRequest request, StreamObserver<MerchantDetailResponse> responseObserver) {
+        sLog.info("[GRPC] Received fetchMerchantDetail request for merchant: {}", request.getMerchantId());
+        try {
+            RequestContext context = mapRequestContext(request.getContext());
+            Merchant merchant = internalMerchantAdminService.fetchMerchantDetail(request.getMerchantId(), context);
+
+            MerchantDetailResponse response = MerchantDetailResponse.newBuilder()
+                    .setMerchant(toMerchantAdminInfo(merchant))
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error fetching merchant detail: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void fetchMerchants(FetchMerchantsRequest request, StreamObserver<FetchMerchantsResponse> responseObserver) {
+        sLog.info("[GRPC] Received fetchMerchants request name: {}, page: {}, size: {}",
+                request.getMerchantName(), request.getPageNumber(), request.getPageSize());
+        try {
+            RequestContext context = mapRequestContext(request.getContext());
+            String merchantName = request.getMerchantName().isEmpty() ? null : request.getMerchantName();
+            PagedResult<Merchant> page = internalMerchantAdminService.fetchMerchants(
+                    context, merchantName, request.getPageNumber(), request.getPageSize());
+
+            List<MerchantAdminInfo> items = page.getItems().stream()
+                    .map(this::toMerchantAdminInfo)
+                    .toList();
+
+            FetchMerchantsResponse response = FetchMerchantsResponse.newBuilder()
+                    .addAllItems(items)
+                    .setPagination(AdminPagination.newBuilder()
+                            .setPageNumber(page.getPageNumber() + 1)
+                            .setPageSize(page.getPageSize())
+                            .setTotalElements(page.getTotalElements())
+                            .setTotalPages(page.getTotalPages())
+                            .build())
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error fetching merchants: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void fetchMerchantsByIds(FetchMerchantsByIdsRequest request, StreamObserver<FetchMerchantsByIdsResponse> responseObserver) {
+        sLog.info("[GRPC] Received fetchMerchantsByIds request for ids: {}", request.getMerchantIdsList());
+        try {
+            RequestContext context = mapRequestContext(request.getContext());
+            List<Merchant> merchants = internalMerchantAdminService.fetchMerchantsByIds(request.getMerchantIdsList(), context);
+
+            FetchMerchantsByIdsResponse response = FetchMerchantsByIdsResponse.newBuilder()
+                    .addAllMerchants(merchants.stream().map(this::toMerchantAdminInfo).toList())
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error fetching merchants by ids: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void searchMerchantIds(SearchMerchantIdsRequest request, StreamObserver<SearchMerchantIdsResponse> responseObserver) {
+        sLog.info("[GRPC] Received searchMerchantIds request name: {}", request.getMerchantName());
+        try {
+            RequestContext context = mapRequestContext(request.getContext());
+            List<String> merchantIds = internalMerchantAdminService.findMerchantIdsByName(request.getMerchantName(), context);
+
+            SearchMerchantIdsResponse response = SearchMerchantIdsResponse.newBuilder()
+                    .addAllMerchantIds(merchantIds)
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error searching merchant ids: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void updateMerchant(UpdateMerchantRequest request, StreamObserver<UpdateMerchantResponse> responseObserver) {
+        sLog.info("[GRPC] Received updateMerchant request for merchant: {}", request.getMerchantId());
+        try {
+            RequestContext context = mapRequestContext(request.getContext());
+            InternalUpdateMerchantRequest updateReq = new InternalUpdateMerchantRequest();
+            updateReq.setMerchantId(request.getMerchantId());
+            updateReq.setCode(request.getCode());
+            updateReq.setSlug(request.getSlug());
+            updateReq.setDisplayName(request.getDisplayName());
+            updateReq.setLegalName(request.getLegalName());
+            updateReq.setTaxCode(request.getTaxCode());
+            updateReq.setBusinessLicenseNumber(request.getBusinessLicenseNumber());
+            updateReq.setBusinessLicenseUrl(request.getBusinessLicenseUrl());
+            updateReq.setPhone(request.getPhone());
+            updateReq.setEmail(request.getEmail());
+            updateReq.setLogoUrl(request.getLogoUrl());
+            updateReq.setDescription(request.getDescription());
+            updateReq.setAddress(request.getAddress());
+            updateReq.setWard(request.getWard());
+            updateReq.setProvince(request.getProvince());
+            updateReq.setCountry(request.getCountry());
+            updateReq.setPostalCode(request.getPostalCode());
+            updateReq.setRepresentativeName(request.getRepresentativeName());
+            updateReq.setContactName(request.getContactName());
+            updateReq.setContactPhone(request.getContactPhone());
+            updateReq.setContactEmail(request.getContactEmail());
+            updateReq.setOwnerFullName(request.getOwnerFullName());
+            updateReq.setOwnerPhone(request.getOwnerPhone());
+            updateReq.setOwnerEmail(request.getOwnerEmail());
+            updateReq.setBankAccountName(request.getBankAccountName());
+            updateReq.setBankAccountNumber(request.getBankAccountNumber());
+            updateReq.setBankName(request.getBankName());
+            updateReq.setBankBranch(request.getBankBranch());
+            updateReq.setCommissionRate(request.getCommissionRate().isEmpty() ? null : new BigDecimal(request.getCommissionRate()));
+            updateReq.setStatus(request.getStatus().isEmpty() ? null : MerchantStatus.valueOf(request.getStatus()));
+            updateReq.setApprovedAt(request.getApprovedAt().isEmpty() ? null : OffsetDateTime.parse(request.getApprovedAt()));
+            updateReq.setApprovedBy(request.getApprovedBy());
+            updateReq.setUpdatedBy(request.getUpdatedBy());
+
+            Merchant merchant = internalMerchantAdminService.updateMerchant(updateReq, context);
+
+            UpdateMerchantResponse response = UpdateMerchantResponse.newBuilder()
+                    .setMerchant(toMerchantAdminInfo(merchant))
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error updating merchant: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void fetchApplicationForms(FetchApplicationFormsRequest request, StreamObserver<FetchApplicationFormsResponse> responseObserver) {
+        sLog.info("[GRPC] Received fetchApplicationForms request status: {}, page: {}, size: {}",
+                request.getStatus(), request.getPageNumber(), request.getPageSize());
+        try {
+            RequestContext context = mapRequestContext(request.getContext());
+            ApplicationFormStatus status = request.getStatus().isEmpty() ? null : ApplicationFormStatus.valueOf(request.getStatus());
+            PagedResult<MerchantApplicationForm> page = internalMerchantAdminService.fetchApplicationForms(
+                    context, status, request.getPageNumber(), request.getPageSize());
+
+            List<MerchantApplicationFormInfo> items = page.getItems().stream()
+                    .map(this::toApplicationFormInfo)
+                    .toList();
+
+            FetchApplicationFormsResponse response = FetchApplicationFormsResponse.newBuilder()
+                    .addAllItems(items)
+                    .setPagination(AdminPagination.newBuilder()
+                            .setPageNumber(page.getPageNumber() + 1)
+                            .setPageSize(page.getPageSize())
+                            .setTotalElements(page.getTotalElements())
+                            .setTotalPages(page.getTotalPages())
+                            .build())
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error fetching application forms: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void fetchApplicationFormDetail(FetchApplicationFormDetailRequest request, StreamObserver<FetchApplicationFormDetailResponse> responseObserver) {
+        sLog.info("[GRPC] Received fetchApplicationFormDetail request for form: {}", request.getApplicationFormId());
+        try {
+            RequestContext context = mapRequestContext(request.getContext());
+            MerchantApplicationForm form = internalMerchantAdminService.fetchApplicationFormDetail(request.getApplicationFormId(), context);
+
+            FetchApplicationFormDetailResponse response = FetchApplicationFormDetailResponse.newBuilder()
+                    .setForm(toApplicationFormInfo(form))
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error fetching application form detail: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    private RequestContext mapRequestContext(AdminRequestContext protoContext) {
+        if (protoContext == null) {
+            return RequestContext.builder().build();
+        }
+        return RequestContext.builder()
+                .requestId(protoContext.getRequestId() != null ? protoContext.getRequestId() : "")
+                .requestDateTime(protoContext.getRequestDateTime() != null ? protoContext.getRequestDateTime() : "")
+                .channel(protoContext.getChannel() != null ? protoContext.getChannel() : "")
+                .build();
+    }
+
+    private MerchantAdminInfo toMerchantAdminInfo(Merchant merchant) {
+        if (merchant == null) {
+            return MerchantAdminInfo.newBuilder().build();
+        }
+        return MerchantAdminInfo.newBuilder()
+                .setId(merchant.getId() != null ? merchant.getId() : "")
+                .setCode(merchant.getCode() != null ? merchant.getCode() : "")
+                .setSlug(merchant.getSlug() != null ? merchant.getSlug() : "")
+                .setDisplayName(merchant.getDisplayName() != null ? merchant.getDisplayName() : "")
+                .setLegalName(merchant.getLegalName() != null ? merchant.getLegalName() : "")
+                .setTaxCode(merchant.getTaxCode() != null ? merchant.getTaxCode() : "")
+                .setBusinessLicenseNumber(merchant.getBusinessLicenseNumber() != null ? merchant.getBusinessLicenseNumber() : "")
+                .setBusinessLicenseUrl(merchant.getBusinessLicenseUrl() != null ? merchant.getBusinessLicenseUrl() : "")
+                .setPhone(merchant.getPhone() != null ? merchant.getPhone() : "")
+                .setEmail(merchant.getEmail() != null ? merchant.getEmail() : "")
+                .setLogoUrl(merchant.getLogoUrl() != null ? merchant.getLogoUrl() : "")
+                .setDescription(merchant.getDescription() != null ? merchant.getDescription() : "")
+                .setAddress(merchant.getAddress() != null ? merchant.getAddress() : "")
+                .setWard(merchant.getWard() != null ? merchant.getWard() : "")
+                .setProvince(merchant.getProvince() != null ? merchant.getProvince() : "")
+                .setCountry(merchant.getCountry() != null ? merchant.getCountry() : "")
+                .setPostalCode(merchant.getPostalCode() != null ? merchant.getPostalCode() : "")
+                .setRepresentativeName(merchant.getRepresentativeName() != null ? merchant.getRepresentativeName() : "")
+                .setContactName(merchant.getContactName() != null ? merchant.getContactName() : "")
+                .setContactPhone(merchant.getContactPhone() != null ? merchant.getContactPhone() : "")
+                .setContactEmail(merchant.getContactEmail() != null ? merchant.getContactEmail() : "")
+                .setOwnerFullName(merchant.getOwnerFullName() != null ? merchant.getOwnerFullName() : "")
+                .setOwnerPhone(merchant.getOwnerPhone() != null ? merchant.getOwnerPhone() : "")
+                .setOwnerEmail(merchant.getOwnerEmail() != null ? merchant.getOwnerEmail() : "")
+                .setBankAccountName(merchant.getBankAccountName() != null ? merchant.getBankAccountName() : "")
+                .setBankAccountNumber(merchant.getBankAccountNumber() != null ? merchant.getBankAccountNumber() : "")
+                .setBankName(merchant.getBankName() != null ? merchant.getBankName() : "")
+                .setBankBranch(merchant.getBankBranch() != null ? merchant.getBankBranch() : "")
+                .setCommissionRate(merchant.getCommissionRate() != null ? merchant.getCommissionRate().toString() : "0")
+                .setStatus(merchant.getStatus() != null ? merchant.getStatus().name() : "")
+                .setApprovedAt(merchant.getApprovedAt() != null ? merchant.getApprovedAt().toString() : "")
+                .setApprovedBy(merchant.getApprovedBy() != null ? merchant.getApprovedBy() : "")
+                .build();
+    }
+
+    private MerchantApplicationFormInfo toApplicationFormInfo(MerchantApplicationForm form) {
+        if (form == null) {
+            return MerchantApplicationFormInfo.newBuilder().build();
+        }
+        return MerchantApplicationFormInfo.newBuilder()
+                .setId(form.getId() != null ? form.getId() : "")
+                .setFormCode(form.getFormCode() != null ? form.getFormCode() : "")
+                .setDisplayName(form.getDisplayName() != null ? form.getDisplayName() : "")
+                .setLegalName(form.getLegalName() != null ? form.getLegalName() : "")
+                .setTaxCode(form.getTaxCode() != null ? form.getTaxCode() : "")
+                .setBusinessLicense(form.getBusinessLicense() != null ? form.getBusinessLicense() : "")
+                .setBusinessLicenseUrl(form.getBusinessLicenseUrl() != null ? form.getBusinessLicenseUrl() : "")
+                .setLogoUrl(form.getLogoUrl() != null ? form.getLogoUrl() : "")
+                .setDescription(form.getDescription() != null ? form.getDescription() : "")
+                .setSlug(form.getSlug() != null ? form.getSlug() : "")
+                .setSubmittedBy(form.getSubmittedBy() != null ? form.getSubmittedBy() : "")
+                .setSubmittedAt(form.getSubmittedAt() != null ? form.getSubmittedAt().toString() : "")
+                .setApprovedBy(form.getApprovedBy() != null ? form.getApprovedBy() : "")
+                .setApprovedAt(form.getApprovedAt() != null ? form.getApprovedAt().toString() : "")
+                .setRejectedBy(form.getRejectedBy() != null ? form.getRejectedBy() : "")
+                .setRejectionReason(form.getRejectionReason() != null ? form.getRejectionReason() : "")
+                .setCountry(form.getCountry() != null ? form.getCountry() : "")
+                .setProvince(form.getProvince() != null ? form.getProvince() : "")
+                .setWard(form.getWard() != null ? form.getWard() : "")
+                .setAddress(form.getAddress() != null ? form.getAddress() : "")
+                .setPostalCode(form.getPostalCode() != null ? form.getPostalCode() : "")
+                .setContactName(form.getContact() != null && form.getContact().getContactName() != null ? form.getContact().getContactName() : "")
+                .setContactPhone(form.getContact() != null && form.getContact().getContactPhone() != null ? form.getContact().getContactPhone() : "")
+                .setContactEmail(form.getContact() != null && form.getContact().getContactEmail() != null ? form.getContact().getContactEmail() : "")
+                .setOwnerName(form.getOwnerInfo() != null && form.getOwnerInfo().getOwnerName() != null ? form.getOwnerInfo().getOwnerName() : "")
+                .setOwnerFullName(form.getOwnerInfo() != null && form.getOwnerInfo().getOwnerFullName() != null ? form.getOwnerInfo().getOwnerFullName() : "")
+                .setOwnerPhone(form.getOwnerInfo() != null && form.getOwnerInfo().getOwnerPhone() != null ? form.getOwnerInfo().getOwnerPhone() : "")
+                .setOwnerEmail(form.getOwnerInfo() != null && form.getOwnerInfo().getOwnerEmail() != null ? form.getOwnerInfo().getOwnerEmail() : "")
+                .setBankAccountName(form.getBankInfo() != null && form.getBankInfo().getBankAccountName() != null ? form.getBankInfo().getBankAccountName() : "")
+                .setBankAccountNumber(form.getBankInfo() != null && form.getBankInfo().getBankAccountNumber() != null ? form.getBankInfo().getBankAccountNumber() : "")
+                .setBankName(form.getBankInfo() != null && form.getBankInfo().getBankName() != null ? form.getBankInfo().getBankName() : "")
+                .setBankBranch(form.getBankInfo() != null && form.getBankInfo().getBankBranch() != null ? form.getBankInfo().getBankBranch() : "")
+                .setStatus(form.getStatus() != null ? form.getStatus().name() : "")
+                .build();
+    }
+}

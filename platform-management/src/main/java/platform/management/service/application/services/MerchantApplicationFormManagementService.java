@@ -1,0 +1,12 @@
+package platform.management.service.application.services;
+
+import platform.management.service.application.command.merchant.FetchMerchantApplicationFormDetailQuery;
+import platform.management.service.application.command.merchant.FetchMerchantApplicationFormDetailResult;
+import platform.management.service.application.command.merchant.FetchPendingMerchantApplicationFormsQuery;
+import platform.management.service.application.command.merchant.FetchPendingMerchantApplicationFormsResult;
+
+public interface MerchantApplicationFormManagementService {
+    FetchPendingMerchantApplicationFormsResult fetchPendingApplicationForms(FetchPendingMerchantApplicationFormsQuery query);
+
+    FetchMerchantApplicationFormDetailResult fetchApplicationFormDetail(FetchMerchantApplicationFormDetailQuery query);
+}

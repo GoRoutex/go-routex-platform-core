@@ -1,0 +1,106 @@
+package platform.merchant.service.infrastructure.persistence.jpa.ticket.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import platform.core.common.service.domain.ticket.TicketStatus;
+import platform.core.common.service.persistence.AbstractAuditingEntity;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
+@Entity
+@Table(name = "TICKET")
+public class TicketEntity extends AbstractAuditingEntity {
+
+    @Id
+    private String id;
+
+    @Column(name = "TICKET_CODE")
+    private String ticketCode;
+
+    @Column(name = "BOOKING_ID")
+    private String bookingId;
+
+    @Column(name = "BOOKING_SEAT_ID")
+    private String bookingSeatId;
+
+    @Column(name = "MERCHANT_ID")
+    private String merchantId;
+
+    @Column(name = "TRIP_ID")
+    private String tripId;
+
+    @Column(name = "VEHICLE_ID")
+    private String vehicleId;
+
+    @Column(name = "SEAT_NUMBER")
+    private String seatNumber;
+
+    @Column(name = "CUSTOMER_NAME")
+    private String customerName;
+
+    @Column(name = "CUSTOMER_PHONE")
+    private String customerPhone;
+
+    @Column(name = "CUSTOMER_EMAIL")
+    private String customerEmail;
+
+    @Column(name = "PRICE")
+    private BigDecimal price;
+
+    @Column(name = "STATUS")
+    @Enumerated(EnumType.STRING)
+    private TicketStatus status;
+
+    @Column(name = "ISSUED_AT")
+    private OffsetDateTime issuedAt;
+
+    @Column(name = "CHECKED_IN_AT")
+    private OffsetDateTime checkedInAt;
+
+    private OffsetDateTime boardedAt;
+
+    @Column(name = "CANCELLED_AT")
+    private OffsetDateTime cancelledAt;
+
+    @Column(name = "CHECKED_IN_BY")
+    private String checkedInBy;
+
+    @Column(name = "BOARDED_BY")
+    private String boardedBy;
+
+    @Column(name = "CANCELLED_BY")
+    private String cancelledBy;
+
+    @Column(name = "PICKUP_TYPE")
+    private String pickupType;
+
+    @Column(name = "PICKUP_STOP_ID")
+    private String pickupStopId;
+
+    @Column(name = "PICKUP_ADDRESS")
+    private String pickupAddress;
+
+    @Column(name = "DROPOFF_TYPE")
+    private String dropoffType;
+
+    @Column(name = "DROPOFF_STOP_ID")
+    private String dropoffStopId;
+
+    @Column(name = "DROPOFF_ADDRESS")
+    private String dropoffAddress;
+}

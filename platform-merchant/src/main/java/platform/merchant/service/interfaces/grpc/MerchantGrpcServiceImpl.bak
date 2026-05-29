@@ -1,0 +1,372 @@
+package platform.merchant.service.interfaces.grpc;
+
+import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
+import net.devh.boot.grpc.server.service.GrpcService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import vn.com.go.routex.identity.security.log.SystemLog;
+import vn.com.routex.hub.grpc.MerchantGrpcServiceGrpc;
+import vn.com.routex.hub.grpc.RecentTripInfo;
+import vn.com.routex.hub.grpc.RecentTripsRequest;
+import vn.com.routex.hub.grpc.RecentTripsResponse;
+import vn.com.routex.hub.grpc.RouteNamesRequest;
+import vn.com.routex.hub.grpc.RouteNamesResponse;
+import vn.com.routex.hub.grpc.SeatBlueprintItem;
+import vn.com.routex.hub.grpc.TripBookingContextRequest;
+import vn.com.routex.hub.grpc.TripBookingContextResponse;
+import vn.com.routex.hub.grpc.TripDetailsRequest;
+import vn.com.routex.hub.grpc.TripDetailsResponse;
+import vn.com.routex.hub.grpc.VehicleSeatBlueprintRequest;
+import vn.com.routex.hub.grpc.VehicleSeatBlueprintResponse;
+import platform.core.common.service.common.RequestContext;
+import platform.merchant.service.application.service.InternalBookingContextService;
+import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
+import platform.merchant.service.domain.ticket.model.Ticket;
+import platform.merchant.service.domain.ticket.port.TicketRepositoryPort;
+import platform.merchant.service.domain.trip.model.TripAggregate;
+import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
+import platform.merchant.service.interfaces.model.internal.booking.InternalBookingContextResponses;
+import platform.merchant.service.application.service.TicketService;
+import platform.merchant.service.application.command.ticket.CreateTicketCommand;
+import platform.merchant.service.application.command.ticket.CreateTicketResult;
+import vn.com.routex.hub.grpc.CreateTicketsRequest;
+import vn.com.routex.hub.grpc.CreateTicketsResponse;
+import vn.com.routex.hub.grpc.CreateTicketResultData;
+import vn.com.routex.hub.grpc.GetTicketByIdRequest;
+import vn.com.routex.hub.grpc.GetTicketByIdResponse;
+import vn.com.routex.hub.grpc.GetTicketByCustomerRequest;
+import vn.com.routex.hub.grpc.GetTicketByCustomerResponse;
+import vn.com.routex.hub.grpc.TicketData;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+
+@GrpcService
+@RequiredArgsConstructor
+public class MerchantGrpcServiceImpl extends MerchantGrpcServiceGrpc.MerchantGrpcServiceImplBase {
+
+    private final RouteAggregateRepositoryPort routeRepositoryPort;
+    private final TicketRepositoryPort ticketRepositoryPort;
+    private final TripAggregateRepositoryPort tripRepositoryPort;
+    private final InternalBookingContextService internalBookingContextService;
+    private final TicketService ticketService;
+    private final SystemLog sLog = SystemLog.getLogger(this.getClass());
+
+    @Override
+    public void getRouteNames(RouteNamesRequest request, StreamObserver<RouteNamesResponse> responseObserver) {
+        sLog.info("[GRPC] Received getRouteNames request for {} routes", request.getRouteIdsCount());
+        Map<String, String> namesMap = new HashMap<>();
+        try {
+            for (String routeId : request.getRouteIdsList()) {
+                routeRepositoryPort.findById(routeId).ifPresent(route -> {
+                    namesMap.put(routeId, route.getOriginName() + " - " + route.getDestinationName());
+                });
+            }
+            RouteNamesResponse response = RouteNamesResponse.newBuilder()
+                    .putAllRouteNames(namesMap)
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error getting route names: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void getRecentTrips(RecentTripsRequest request, StreamObserver<RecentTripsResponse> responseObserver) {
+        sLog.info("[GRPC] Received getRecentTrips request for merchant: {} with limit: {}", request.getMerchantId(), request.getLimit());
+        try {
+            Page<Ticket> ticketsPage = ticketRepositoryPort.findAllByMerchantId(
+                    request.getMerchantId(),
+                    PageRequest.of(0, request.getLimit(), Sort.by("createdAt").descending())
+            );
+
+            RecentTripsResponse.Builder responseBuilder = RecentTripsResponse.newBuilder();
+            Map<String, String> routeNameCache = new HashMap<>();
+
+            for (Ticket t : ticketsPage.getContent()) {
+                String routeName = routeNameCache.get(t.getTripId());
+                String routeId = "";
+                if (routeName == null) {
+                    TripAggregate trip = tripRepositoryPort.findById(t.getTripId()).orElse(null);
+                    if (trip != null) {
+                        routeId = trip.getRouteId();
+                        routeName = routeRepositoryPort.findById(trip.getRouteId())
+                                .map(r -> r.getOriginName() + " - " + r.getDestinationName())
+                                .orElse("Tuyến xe");
+                        routeNameCache.put(t.getTripId(), routeName);
+                    } else {
+                        routeName = "Tuyến xe";
+                    }
+                }
+
+                RecentTripInfo info = RecentTripInfo.newBuilder()
+                        .setTripId(t.getTripId() != null ? t.getTripId() : "")
+                        .setRouteId(routeId)
+                        .setRouteName(routeName)
+                        .setVehiclePlate(t.getVehicleId() != null ? t.getVehicleId() : "")
+                        .setDepartureTime(t.getIssuedAt() != null ? t.getIssuedAt().toString() : "")
+                        .setStatus(t.getStatus() != null ? t.getStatus().name() : "UNKNOWN")
+                        .setBookedSeats(1)
+                        .build();
+                responseBuilder.addTrips(info);
+            }
+
+            responseObserver.onNext(responseBuilder.build());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error getting recent trips: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void getTripDetails(TripDetailsRequest request, StreamObserver<TripDetailsResponse> responseObserver) {
+        sLog.info("[GRPC] Received getTripDetails request for trip: {}", request.getTripId());
+        try {
+            tripRepositoryPort.findById(request.getTripId())
+                    .map(trip -> TripDetailsResponse.newBuilder()
+                            .setTripId(trip.getId() != null ? trip.getId() : "")
+                            .setMerchantId(trip.getMerchantId() != null ? trip.getMerchantId() : "")
+                            .setRouteId(trip.getRouteId() != null ? trip.getRouteId() : "")
+                            .setDepartureTime(trip.getDepartureTime() != null ? trip.getDepartureTime().toString() : "")
+                            .setCapacity(45) // Default standard capacity
+                            .build())
+                    .ifPresentOrElse(
+                            response -> {
+                                responseObserver.onNext(response);
+                                responseObserver.onCompleted();
+                            },
+                            () -> responseObserver.onError(new IllegalArgumentException("Trip not found: " + request.getTripId()))
+                    );
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error getting trip details: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void getTripBookingContext(TripBookingContextRequest request, StreamObserver<TripBookingContextResponse> responseObserver) {
+        sLog.info("[GRPC] Received getTripBookingContext request for trip: {}", request.getTripId());
+        try {
+            RequestContext context = RequestContext.builder()
+                    .requestId(request.getContext().getRequestId())
+                    .requestDateTime(request.getContext().getRequestDateTime())
+                    .channel(request.getContext().getChannel())
+                    .build();
+            InternalBookingContextResponses.TripBookingContextData data =
+                    internalBookingContextService.fetchTripBookingContext(request.getTripId(), context);
+
+            TripBookingContextResponse response = TripBookingContextResponse.newBuilder()
+                    .setTripId(data.getTripId() != null ? data.getTripId() : "")
+                    .setRouteId(data.getRouteId() != null ? data.getRouteId() : "")
+                    .setMerchantId(data.getMerchantId() != null ? data.getMerchantId() : "")
+                    .setVehicleId(data.getVehicleId() != null ? data.getVehicleId() : "")
+                    .setTicketPrice(data.getTicketPrice() != null ? data.getTicketPrice().toString() : "0")
+                    .setOriginName(data.getOriginName() != null ? data.getOriginName() : "")
+                    .setDestinationName(data.getDestinationName() != null ? data.getDestinationName() : "")
+                    .setRouteStatus(data.getRouteStatus() != null ? data.getRouteStatus() : "")
+                    .setTripStatus(data.getTripStatus() != null ? data.getTripStatus() : "")
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error getting trip booking context: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void getVehicleSeatBlueprint(VehicleSeatBlueprintRequest request, StreamObserver<VehicleSeatBlueprintResponse> responseObserver) {
+        sLog.info("[GRPC] Received getVehicleSeatBlueprint request for vehicle: {}", request.getVehicleId());
+        try {
+            RequestContext context = RequestContext.builder()
+                    .requestId(request.getContext().getRequestId())
+                    .requestDateTime(request.getContext().getRequestDateTime())
+                    .channel(request.getContext().getChannel())
+                    .build();
+            InternalBookingContextResponses.VehicleSeatBlueprintData data =
+                    internalBookingContextService.fetchVehicleSeatBlueprint(request.getVehicleId(), context);
+
+            VehicleSeatBlueprintResponse.Builder responseBuilder = VehicleSeatBlueprintResponse.newBuilder()
+                    .setVehicleId(data.getVehicleId() != null ? data.getVehicleId() : "")
+                    .setMerchantId(data.getMerchantId() != null ? data.getMerchantId() : "")
+                    .setTemplateId(data.getTemplateId() != null ? data.getTemplateId() : "")
+                    .setSeatCapacity(data.getSeatCapacity() != null ? data.getSeatCapacity() : 0L)
+                    .setHasFloor(data.isHasFloor())
+                    .setVehicleStatus(data.getVehicleStatus() != null ? data.getVehicleStatus().name() : "");
+
+            if (data.getSeats() != null) {
+                for (InternalBookingContextResponses.SeatBlueprintItem item : data.getSeats()) {
+                    SeatBlueprintItem seatItem = SeatBlueprintItem.newBuilder()
+                            .setId(item.getId() != null ? item.getId() : "")
+                            .setSeatCode(item.getSeatCode() != null ? item.getSeatCode() : "")
+                            .setFloor(item.getFloor() != null ? item.getFloor().name() : "")
+                            .setRowNo(item.getRowNo())
+                            .setColumnNo(item.getColumnNo())
+                            .build();
+                    responseBuilder.addSeats(seatItem);
+                }
+            }
+
+            responseObserver.onNext(responseBuilder.build());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error getting vehicle seat blueprint: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void createTickets(CreateTicketsRequest request, StreamObserver<CreateTicketsResponse> responseObserver) {
+        sLog.info("[GRPC] Received createTickets request for {} seats", request.getDataCount());
+        try {
+            RequestContext context = RequestContext.builder()
+                    .requestId(request.getContext().getRequestId())
+                    .requestDateTime(request.getContext().getRequestDateTime())
+                    .channel(request.getContext().getChannel())
+                    .build();
+
+            List<CreateTicketCommand> commands = request.getDataList().stream()
+                    .map(item -> CreateTicketCommand.builder()
+                            .context(context)
+                            .bookingId(item.getBookingId())
+                            .bookingSeatId(item.getBookingSeatId())
+                            .merchantId(item.getMerchantId())
+                            .tripId(item.getTripId())
+                            .vehicleId(item.getVehicleId())
+                            .seatNumber(item.getSeatNumber())
+                            .customerName(item.getCustomerName())
+                            .customerPhone(item.getCustomerPhone())
+                            .customerEmail(item.getCustomerEmail())
+                            .price(item.getPrice().isEmpty() ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(item.getPrice()))
+                            .issuedAt(item.getIssuedAt().isEmpty() ? null : java.time.OffsetDateTime.parse(item.getIssuedAt()))
+                            .creator(item.getCreator())
+                            .pickupType(item.getPickupType())
+                            .pickupStopId(item.getPickupStopId())
+                            .pickupAddress(item.getPickupAddress())
+                            .dropoffType(item.getDropoffType())
+                            .dropoffStopId(item.getDropoffStopId())
+                            .dropoffAddress(item.getDropoffAddress())
+                            .build())
+                    .toList();
+
+            List<CreateTicketResult> results = ticketService.createTickets(commands);
+
+            CreateTicketsResponse response = CreateTicketsResponse.newBuilder()
+                    .addAllData(results.stream()
+                            .map(r -> CreateTicketResultData.newBuilder()
+                                    .setTicketId(r.ticketId())
+                                    .setTicketCode(r.ticketCode())
+                                    .setBookingSeatId(r.bookingSeatId())
+                                    .setStatus(r.status() != null ? r.status().name() : "")
+                                    .build())
+                            .toList())
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error creating tickets: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void getTicketById(GetTicketByIdRequest request, StreamObserver<GetTicketByIdResponse> responseObserver) {
+        sLog.info("[GRPC] Received getTicketById request for ticket: {}", request.getTicketId());
+        try {
+            ticketRepositoryPort.findById(request.getTicketId())
+                    .map(ticket -> GetTicketByIdResponse.newBuilder()
+                            .setTicket(mapToTicketData(ticket))
+                            .build())
+                    .ifPresentOrElse(
+                            response -> {
+                                responseObserver.onNext(response);
+                                responseObserver.onCompleted();
+                            },
+                            () -> responseObserver.onError(new IllegalArgumentException("Ticket not found: " + request.getTicketId()))
+                    );
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error getting ticket by ID: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void getTicketByCustomer(GetTicketByCustomerRequest request, StreamObserver<GetTicketByCustomerResponse> responseObserver) {
+        sLog.info("[GRPC] Received getTicketByCustomer request for email: {}, phone: {}, code: {}", 
+                request.getEmail(), request.getPhone(), request.getTicketCode());
+        try {
+            org.springframework.data.domain.Page<Ticket> page = ticketRepositoryPort.findByCustomer(
+                    request.getEmail().isEmpty() ? null : request.getEmail(),
+                    request.getPhone().isEmpty() ? null : request.getPhone(),
+                    request.getTicketCode().isEmpty() ? null : request.getTicketCode(),
+                    null,
+                    null,
+                    org.springframework.data.domain.PageRequest.of(
+                            request.getPage() > 0 ? request.getPage() - 1 : 0, 
+                            request.getSize() > 0 ? request.getSize() : 10
+                    )
+            );
+
+            List<TicketData> items = page.getContent().stream()
+                    .map(this::mapToTicketData)
+                    .toList();
+
+            GetTicketByCustomerResponse response = GetTicketByCustomerResponse.newBuilder()
+                    .addAllTickets(items)
+                    .setPage(page.getNumber() + 1)
+                    .setSize(page.getSize())
+                    .setTotalElements(page.getTotalElements())
+                    .setTotalPages(page.getTotalPages())
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            sLog.error("[GRPC] Error getting tickets by customer: {}", e.getMessage(), e);
+            responseObserver.onError(e);
+        }
+    }
+
+    private TicketData mapToTicketData(Ticket t) {
+        if (t == null) {
+            return TicketData.getDefaultInstance();
+        }
+        return TicketData.newBuilder()
+                .setId(t.getId() != null ? t.getId() : "")
+                .setTicketCode(t.getTicketCode() != null ? t.getTicketCode() : "")
+                .setBookingId(t.getBookingId() != null ? t.getBookingId() : "")
+                .setBookingSeatId(t.getBookingSeatId() != null ? t.getBookingSeatId() : "")
+                .setMerchantId(t.getMerchantId() != null ? t.getMerchantId() : "")
+                .setTripId(t.getTripId() != null ? t.getTripId() : "")
+                .setVehicleId(t.getVehicleId() != null ? t.getVehicleId() : "")
+                .setSeatNumber(t.getSeatNumber() != null ? t.getSeatNumber() : "")
+                .setCustomerName(t.getCustomerName() != null ? t.getCustomerName() : "")
+                .setCustomerPhone(t.getCustomerPhone() != null ? t.getCustomerPhone() : "")
+                .setCustomerEmail(t.getCustomerEmail() != null ? t.getCustomerEmail() : "")
+                .setPrice(t.getPrice() != null ? t.getPrice().toString() : "0")
+                .setStatus(t.getStatus() != null ? t.getStatus().name() : "UNKNOWN")
+                .setIssuedAt(t.getIssuedAt() != null ? t.getIssuedAt().toString() : "")
+                .setCheckedInAt(t.getCheckedInAt() != null ? t.getCheckedInAt().toString() : "")
+                .setBoardedAt(t.getBoardedAt() != null ? t.getBoardedAt().toString() : "")
+                .setCancelledAt(t.getCancelledAt() != null ? t.getCancelledAt().toString() : "")
+                .setCheckedInBy(t.getCheckedInBy() != null ? t.getCheckedInBy() : "")
+                .setBoardedBy(t.getBoardedBy() != null ? t.getBoardedBy() : "")
+                .setCancelledBy(t.getCancelledBy() != null ? t.getCancelledBy() : "")
+                .setPickupType(t.getPickupType() != null ? t.getPickupType() : "")
+                .setPickupStopId(t.getPickupStopId() != null ? t.getPickupStopId() : "")
+                .setPickupAddress(t.getPickupAddress() != null ? t.getPickupAddress() : "")
+                .setDropoffType(t.getDropoffType() != null ? t.getDropoffType() : "")
+                .setDropoffStopId(t.getDropoffStopId() != null ? t.getDropoffStopId() : "")
+                .setDropoffAddress(t.getDropoffAddress() != null ? t.getDropoffAddress() : "")
+                .build();
+    }
+}
+

@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package vn.com.routex.hub.grpc;
+
+option java_multiple_files = true;
+option java_package = "platform.core.common.service";
+option java_outer_classname = "UserAdminServiceProto";
+
+service UserAdminGrpcService {
+    rpc fetchCustomerByUserId (FetchCustomerByUserIdRequest) returns (FetchCustomerByUserIdResponse);
+    rpc fetchCustomersByUserIds (FetchCustomersByUserIdsRequest) returns (FetchCustomersByUserIdsResponse);
+    rpc fetchUserAccountById (FetchUserAccountByIdRequest) returns (FetchUserAccountResponse);
+    rpc fetchUserAccountByEmail (FetchUserAccountByEmailRequest) returns (FetchUserAccountResponse);
+}
+
+message UserAdminRequestContext {
+    string requestId = 1;
+    string requestDateTime = 2;
+    string channel = 3;
+}
+
+message FetchCustomerByUserIdRequest {
+    string userId = 1;
+    UserAdminRequestContext context = 2;
+}
+
+message CustomerAdminInfo {
+    string id = 1;
+    string userId = 2;
+    string fullName = 3;
+    string status = 4;
+    int32 totalTrips = 5;
+    string tripPoints = 6;
+    string totalSpent = 7;
+    string lastBookingAt = 8;
+    string lastTripAt = 9;
+}
+
+message FetchCustomerByUserIdResponse {
+    CustomerAdminInfo customer = 1;
+}
+
+message FetchCustomersByUserIdsRequest {
+    repeated string userIds = 1;
+    UserAdminRequestContext context = 2;
+}
+
+message FetchCustomersByUserIdsResponse {
+    repeated CustomerAdminInfo customers = 1;
+}
+
+message FetchUserAccountByIdRequest {
+    string userId = 1;
+    UserAdminRequestContext context = 2;
+}
+
+message FetchUserAccountByEmailRequest {
+    string email = 1;
+    UserAdminRequestContext context = 2;
+}
+
+message UserAccountInfo {
+    string id = 1;
+    string email = 2;
+    string phoneNumber = 3;
+    string status = 4;
+}
+
+message FetchUserAccountResponse {
+    UserAccountInfo user = 1;
+}

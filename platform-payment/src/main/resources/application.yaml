@@ -1,0 +1,118 @@
+spring:
+  application:
+    name: go-routex-payment-service
+
+  threads:
+    virtual:
+      enabled: true
+
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+        compression.type: gzip
+        linger.ms: 10
+
+    consumer:
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "vn.com.*"
+        spring.json.use.type.headers: false
+        session.timeout.ms: 30000
+        max.poll.records: 500
+
+    events:
+      payment-succeeded: "routex.payment.succeeded"
+      payment-failed: "routex.payment.failed"
+
+    topics:
+      routes: "route.management.event"
+      booking: "route.bookings.event"
+      payments: "route.payments.event"
+      notifications: "notification.event.management"
+      dead-letter: "bus-dead-letter-queue"
+
+    group-id:
+      bookings: booking-service
+
+    listener:
+      ack-mode: manual
+
+  retry:
+    max-attempts: 3
+    backoff-ms: 1000
+    backoff-multiplier: 2
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  jackson:
+    mapper:
+      sort-properties-alphabetically: false
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+jms:
+  thread:
+    receive:
+      timeout-seconds: ${JMS_THREAD_RECEIVE_TIMEOUT_SECONDS:30}
+    send:
+      timeout-seconds: ${JMS_THREAD_SEND_TIMEOUT_SECONDS:5}
+  receive:
+    timeout: ${JMS_RECEIVE_TIMEOUT:30000}
+  caching:
+    session-cache-size: ${JMS_CACHING_SESSION_CACHE_SIZE:256}
+  time-to-live-milliseconds: ${JMS_TIME_TO_LIVE_MILLISECONDS:20000}
+  recovery-interval: ${JMS_RECOVERY_INTERVAL:5000}
+  max-message: ${JMS_MAX_MESSAGE:1}
+
+server:
+  port: ${SERVER_PORT:8086}
+
+identity:
+  jwt:
+    secret: ${JWT_SECRET:CZZRadv0Xe8z3stWFWYdtiJ2E86gUgJvFEfbCYFgJhQ}
+    issuer: ${JWT_ISSUER:user-service}
+    audience: ${JWT_AUDIENCE:management-service}
+    authority-claim-name: ${JWT_CLAIM_NAME:roles}
+    authority-prefix: ${JWT_AUTH_PREFIX:ROLE_}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.kafka: INFO
+    org.apache.kafka: WARN
+
+app:
+  payment:
+    checkout-url: http://localhost:8080/api/v1/payment-service/checkout
+
+grpc:
+  server:
+    port: ${GRPC_SERVER_PORT:9096}
+  client:
+    bookingService:
+      address: ${BOOKING_SERVICE_GRPC_ADDRESS:static://localhost:9094}
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
