@@ -1,13 +1,11 @@
 package platform.core.common.service.infrastructure.redis.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import platform.core.common.service.domain.seat.SeatStatus;
-import platform.core.common.service.domain.seat.SeatFloor;
-
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import platform.core.common.service.domain.seat.SeatFloor;
+import platform.core.common.service.domain.seat.SeatStatus;
 
 @Data
 @Builder(toBuilder = true)

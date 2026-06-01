@@ -8,31 +8,31 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.api.BaseRequest;
 import platform.management.service.application.command.seat.SearchSeatCommand;
 import platform.management.service.application.command.seat.SearchSeatResult;
-import platform.management.service.application.services.RouteSeatService;
+import platform.management.service.application.services.TripSeatService;
 import platform.management.service.infrastructure.persistence.utils.ApiRequestUtils;
 import platform.management.service.infrastructure.persistence.utils.HttpUtils;
 import platform.management.service.interfaces.factory.ApiResultFactory;
 import platform.management.service.interfaces.models.seat.SearchSeatResponse;
-import platform.core.common.service.api.BaseRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static vn.com.routex.platform.common.constant.ApiConstant.API_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.API_VERSION;
-import static vn.com.routex.platform.common.constant.ApiConstant.MANAGEMENT_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.SEARCH_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.SEAT_DIAGRAM;
+import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;
+import static platform.core.common.service.persistence.constant.ApiConstant.MANAGEMENT_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.SEARCH_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.SEAT_DIAGRAM;
 
 
 @RestController
-@RequestMapping( API_PATH + API_VERSION + MANAGEMENT_PATH + SEAT_DIAGRAM)
+@RequestMapping( API_PATH + API_VERSION + MANAGEMENT_PATH+ SEAT_DIAGRAM)
 @RequiredArgsConstructor
 public class TripSeatServiceController {
 
-    private final RouteSeatService routeSeatService;
+    private final TripSeatService tripSeatService;
     private final ApiResultFactory apiResultFactory;
 
     @GetMapping(SEARCH_PATH)
@@ -42,7 +42,7 @@ public class TripSeatServiceController {
                                                          HttpServletRequest servletRequest) {
         BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
 
-        SearchSeatResult result = routeSeatService.searchSeat(SearchSeatCommand.builder()
+        SearchSeatResult result = tripSeatService.searchSeat(SearchSeatCommand.builder()
                 .context(HttpUtils.toContext(baseRequest))
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)

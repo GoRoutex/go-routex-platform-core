@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.management.service.application.command.authorities.AddPermissionCommand;
 import platform.management.service.application.command.authorities.AddPermissionResult;
 import platform.management.service.application.command.authorities.AddRoleCommand;
@@ -30,15 +29,16 @@ import platform.management.service.interfaces.models.authorities.SetPermissionRe
 import platform.management.service.interfaces.models.authorities.SetPermissionResponse;
 import platform.management.service.interfaces.models.authorities.SetRoleRequest;
 import platform.management.service.interfaces.models.authorities.SetRoleResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
-import static vn.com.routex.platform.common.constant.ApiConstant.ADD_PERMISSIONS;
-import static vn.com.routex.platform.common.constant.ApiConstant.ADD_ROLES;
-import static vn.com.routex.platform.common.constant.ApiConstant.API_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.API_VERSION;
-import static vn.com.routex.platform.common.constant.ApiConstant.AUTHORITIES_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.MANAGEMENT_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.SET_PERMISSIONS;
-import static vn.com.routex.platform.common.constant.ApiConstant.SET_ROLE;
+import static platform.core.common.service.persistence.constant.ApiConstant.ADD_PERMISSIONS;
+import static platform.core.common.service.persistence.constant.ApiConstant.ADD_ROLES;
+import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;
+import static platform.core.common.service.persistence.constant.ApiConstant.AUTHORITIES_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.MANAGEMENT_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.SET_PERMISSIONS;
+import static platform.core.common.service.persistence.constant.ApiConstant.SET_ROLE;
 
 @RestController
 @RequestMapping(API_PATH + API_VERSION + MANAGEMENT_PATH)

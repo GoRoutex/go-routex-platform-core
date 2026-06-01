@@ -64,7 +64,6 @@ public class DriverProfileApiResponseMapper {
                         .userId(profile.userId())
                         .driverCode(profile.driverCode())
                         .employeeCode(profile.employeeCode())
-                        .currentRouteId(profile.currentRouteId())
                         .emergencyContactName(profile.emergencyContactName())
                         .emergencyContactPhone(profile.emergencyContactPhone())
                         .status(profile.status() != null ? profile.status().name() : null)

@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
 import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
-import platform.core.common.service.domain.vehicle.VehicleTemplateType;
+import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 import platform.merchant.service.infrastructure.persistence.jpa.vehicle.entity.VehicleTemplateEntity;
 
 import java.util.Optional;

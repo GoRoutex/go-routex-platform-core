@@ -1,4 +1,4 @@
-package platform.core.common.service.domain.ticket.model;
+package platform.merchant.service.domain.ticket.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

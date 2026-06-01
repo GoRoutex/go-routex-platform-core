@@ -43,6 +43,10 @@ public class ErrorConstant {
     public static final String INVALID_DATA_ERROR_MESSAGE = "Invalid data error";
     public static final String INVALID_EVENT_MESSAGE = "Invalid %s event";
     public static final String INVALID_INPUT_ERROR = "0310";
+    public static final String INVALID_FILE_MESSAGE = "Invalid file";
+    public static final String FILE_UPLOAD_ERROR_MESSAGE = "File upload failed";
+    public static final String FILE_UPLOAD_ERROR = "9310";
+    public static final String CLOUDINARY_CONFIG_MESSAGE = "Cloudinary is not configured";
     public static final String SEAT_NOT_AVAILABLE = "Seat %s is not available";
     public static final String INVALID_INPUT_MESSAGE = "Invalid Input";
     public static final String INVALID_REQUEST_TIMESTAMP = "5186";

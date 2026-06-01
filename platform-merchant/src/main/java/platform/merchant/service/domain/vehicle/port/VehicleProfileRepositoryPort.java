@@ -1,4 +1,4 @@
-package platform.core.common.service.domain.vehicle.port;
+package platform.merchant.service.domain.vehicle.port;
 
 
 import platform.core.common.service.application.command.common.PagedResult;

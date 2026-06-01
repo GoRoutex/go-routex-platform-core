@@ -20,7 +20,6 @@ public class CreateProfileResponse extends BaseResponse<CreateProfileResponse.Cr
         private String userId;
         private String driverCode;
         private String employeeCode;
-        private String currentRouteId;
         private String emergencyContactName;
         private String emergencyContactPhone;
         private String status;

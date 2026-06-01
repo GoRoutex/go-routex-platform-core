@@ -43,7 +43,7 @@ public class TripForSaleConsumer {
     @KafkaListener(
             topics = "${spring.kafka.topics.trips}",
             containerFactory = "kafkaListenerContainerFactory",
-            groupId = "${spring.kafka.group-id.trips}")
+            groupId = "${spring.kafka.group-id.booking-trips}")
     public void consume(String payload, Acknowledgment acknowledgment) {
         sLog.info("[TRIP-FOR-SALE] Raw Payload: {}",  payload);
 

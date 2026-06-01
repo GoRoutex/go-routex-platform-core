@@ -4,7 +4,7 @@ package platform.management.service.domain.trip.port;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import platform.management.service.domain.common.PagedResult;
+import platform.core.common.service.application.command.common.PagedResult;
 import platform.management.service.domain.trip.model.TripAggregate;
 
 import java.util.Optional;

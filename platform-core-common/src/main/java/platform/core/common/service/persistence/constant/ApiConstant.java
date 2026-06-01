@@ -37,6 +37,9 @@ public class ApiConstant {
     public static final String TRIP_MANIFEST = "/trip-manifest";
     public static final String TRIP_PASSENGERS = "/trip-passengers";
     public static final String CHECKIN_PATH = "/check-in";
+    public static final String BOARDING_PATH = "/board";
+    public static final String START_TRIP_PATH = "/start-trip";
+    public static final String COMPLETE_TRIP_PATH = "/complete-trip";
     public static final String INTERNAL_PATH = "/internal";
     public static final String MERCHANT_PATH = "/merchant";
     public static final String HOLIDAY_PATH = "/holidays";

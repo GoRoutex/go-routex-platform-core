@@ -3,6 +3,12 @@ package platform.merchant.service.application.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
+import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.command.vehicletemplate.CreateVehicleTemplateCommand;
 import platform.merchant.service.application.command.vehicletemplate.CreateVehicleTemplateResult;
 import platform.merchant.service.application.command.vehicletemplate.DeleteVehicleTemplateCommand;
@@ -14,13 +20,7 @@ import platform.merchant.service.application.command.vehicletemplate.FetchVehicl
 import platform.merchant.service.application.command.vehicletemplate.UpdateVehicleTemplateCommand;
 import platform.merchant.service.application.command.vehicletemplate.UpdateVehicleTemplateResult;
 import platform.merchant.service.application.service.VehicleTemplateManagementService;
-import platform.core.common.service.application.command.common.PagedResult;
-import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
-import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
-import platform.core.common.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
-import platform.core.common.service.persistence.exception.BusinessException;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
-import platform.core.common.service.persistence.utils.ExceptionUtils;
+import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

@@ -13,8 +13,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import platform.core.common.service.persistence.AbstractAuditingEntity;
 import platform.management.service.infrastructure.persistence.jpa.authorities.entity.AuthoritiesEntity;
-import vn.com.routex.platform.common.persistence.AbstractAuditingEntity;
 
 import java.util.HashSet;
 import java.util.Set;

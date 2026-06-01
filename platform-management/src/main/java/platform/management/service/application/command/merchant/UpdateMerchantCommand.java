@@ -1,8 +1,8 @@
 package platform.management.service.application.command.merchant;
 
 import lombok.Builder;
-import platform.management.service.application.command.common.RequestContext;
-import platform.management.service.domain.merchant.MerchantStatus;
+import platform.core.common.service.common.RequestContext;
+import platform.merchant.service.domain.merchant.MerchantStatus;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

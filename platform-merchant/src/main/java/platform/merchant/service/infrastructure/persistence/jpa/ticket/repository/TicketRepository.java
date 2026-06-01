@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import platform.merchant.service.infrastructure.persistence.jpa.ticket.entity.TicketEntity;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface TicketRepository extends JpaRepository<TicketEntity, String> {
@@ -31,6 +32,8 @@ public interface TicketRepository extends JpaRepository<TicketEntity, String> {
 
     Optional<TicketEntity> findByIdAndCreatedBy(String id, String createdBy);
 
+    List<TicketEntity> findAllByTripId(String tripId);
+
     @Query("SELECT t FROM TicketEntity t WHERE " +
             "(:email IS NULL OR t.customerEmail = :email) AND " +
             "(:phone IS NULL OR t.customerPhone = :phone) AND " +
@@ -44,4 +47,3 @@ public interface TicketRepository extends JpaRepository<TicketEntity, String> {
                                      @Param("toDate") java.time.OffsetDateTime toDate,
                                      Pageable pageable);
 }
-

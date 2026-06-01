@@ -9,7 +9,6 @@ public record CreateDriverProfileResult(
         String userId,
         String driverCode,
         String employeeCode,
-        String currentRouteId,
         String emergencyContactName,
         String emergencyContactPhone,
         DriverStatus status,

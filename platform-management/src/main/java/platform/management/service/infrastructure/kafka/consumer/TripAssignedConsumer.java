@@ -34,7 +34,7 @@ public class TripAssignedConsumer {
     @KafkaListener(
             topics = "${spring.kafka.topics.trips}",
             containerFactory = "kafkaListenerContainerFactory",
-            groupId = "${spring.kafka.group-id.trips}"
+            groupId = "${spring.kafka.group-id.management-trips}"
     )
     public void routeAssignedConsumer(String payload, Acknowledgment acknowledgment) {
         sLog.info("[TRIP-ASSIGNED] Raw Payload: {}", payload);

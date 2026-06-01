@@ -1,4 +1,4 @@
-package platform.core.common.service.domain.vehicle;
+package platform.merchant.service.domain.vehicle;
 
 public enum VehicleTemplateType {
     SEAT,

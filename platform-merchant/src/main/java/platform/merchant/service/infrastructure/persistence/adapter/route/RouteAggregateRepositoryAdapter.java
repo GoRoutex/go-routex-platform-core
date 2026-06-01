@@ -13,9 +13,13 @@ import platform.merchant.service.domain.route.port.RouteStopRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.jpa.route.entity.RouteEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.route.repository.RouteEntityRepository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -52,6 +56,18 @@ public class RouteAggregateRepositoryAdapter implements RouteAggregateRepository
     public PagedResult<RouteAggregate> fetch(String merchantId, RouteStatus status, int pageNumber, int pageSize) {
         Page<RouteEntity> page = routeEntityRepository.findByMerchantIdAndStatus(merchantId, status, PageRequest.of(pageNumber, pageSize));
         return toPagedResult(page);
+    }
+
+    @Override
+    public Map<String, RouteAggregate> findAllByIdIn(List<String> routeIds) {
+        List<RouteEntity> routes = routeEntityRepository.findAllByIdIn(routeIds);
+        return routes.stream()
+                .map(routePersistenceMapper::toAggregate)
+                .collect(Collectors.toMap(
+                        RouteAggregate::getId,
+                        Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(RouteAggregate::getCreatedAt))
+                ));
     }
 
     @Override

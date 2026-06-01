@@ -6,9 +6,9 @@ import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.StringCodec;
 import org.springframework.stereotype.Service;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.core.common.service.infrastructure.redis.models.TripCacheSeat;
 import platform.core.common.service.infrastructure.redis.service.TripSeatCacheService;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.Duration;
 import java.util.Collection;

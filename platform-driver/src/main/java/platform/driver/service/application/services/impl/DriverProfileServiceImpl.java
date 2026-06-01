@@ -25,8 +25,11 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import static platform.core.common.service.persistence.constant.ErrorConstant.DRIVER_NOT_FOUND_MESSAGE;
 import static platform.core.common.service.persistence.constant.ErrorConstant.DUPLICATE_ERROR;
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_EXISTS;
+import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;
+import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND_MESSAGE;
 
 
 @Service
@@ -152,7 +155,6 @@ public class DriverProfileServiceImpl implements DriverProfileService {
                 .userId(profile.getUserId())
                 .driverCode(profile.getId())
                 .employeeCode(profile.getEmployeeCode())
-                .currentRouteId(profile.getCurrentRouteId())
                 .emergencyContactName(profile.getEmergencyContactName())
                 .emergencyContactPhone(profile.getEmergencyContactPhone())
                 .status(profile.getStatus())

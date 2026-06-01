@@ -5,7 +5,7 @@ import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.domain.vehicle.FuelType;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
 import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
-import platform.core.common.service.domain.vehicle.VehicleTemplateType;
+import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 
 import java.math.BigDecimal;
 

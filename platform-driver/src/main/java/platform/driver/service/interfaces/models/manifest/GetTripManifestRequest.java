@@ -27,6 +27,7 @@ public class GetTripManifestRequest extends BaseRequest {
     @NoArgsConstructor
     @SuperBuilder
     public static class GetTripManifestRequestData {
+        private String tripId;
         private String routeId;
     }
 }

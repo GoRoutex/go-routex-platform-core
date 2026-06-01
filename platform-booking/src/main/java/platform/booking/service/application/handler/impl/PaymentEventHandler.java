@@ -30,6 +30,8 @@ import platform.core.common.service.infrastructure.kafka.record.BookingAggregate
 import platform.core.common.service.infrastructure.redis.models.TripCacheSeat;
 import platform.core.common.service.infrastructure.redis.service.TripSeatCacheService;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
+import platform.merchant.service.domain.trip.model.TripAggregate;
+import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
@@ -48,6 +50,7 @@ public class PaymentEventHandler implements PaymentEvent {
     private final BookingSeatRepositoryPort bookingSeatRepositoryPort;
     private final MerchantTicketGrpcAdapter merchantTicketGrpcAdapter;
     private final PaymentRepositoryPort paymentRepositoryPort;
+    private final TripAggregateRepositoryPort tripAggregateRepositoryPort;
     private final TripSeatCacheService tripSeatCacheService;
     private final platform.core.common.service.application.service.OutBoxService outBoxService;
     private final TripCacheMapper tripCacheMapper;
@@ -244,6 +247,7 @@ public class PaymentEventHandler implements PaymentEvent {
                                           BookingAggregate aggregate,
                                           List<Ticket> issuedTickets,
                                           OffsetDateTime paidAt) {
+        TripAggregate trip = tripAggregateRepositoryPort.findById(aggregate.booking().getTripId()).orElse(null);
         TicketIssuedEvent payload = TicketIssuedEvent.builder()
                 .bookingId(aggregate.booking().getId())
                 .bookingCode(aggregate.booking().getBookingCode())
@@ -251,7 +255,9 @@ public class PaymentEventHandler implements PaymentEvent {
                 .customerName(aggregate.booking().getCustomerName())
                 .customerPhone(aggregate.booking().getCustomerPhone())
                 .customerEmail(aggregate.booking().getCustomerEmail())
+                .merchantId(aggregate.booking().getMerchantId())
                 .tripId(aggregate.booking().getTripId())
+                .departureTime(trip != null ? trip.getDepartureTime() : null)
                 .totalAmount(aggregate.booking().getTotalAmount())
                 .currency(aggregate.booking().getCurrency())
                 .paidAt(paidAt)

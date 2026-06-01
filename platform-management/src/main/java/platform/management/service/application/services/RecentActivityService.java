@@ -1,6 +1,7 @@
 package platform.management.service.application.services;
 
 import org.springframework.data.domain.Page;
+import platform.core.common.service.infrastructure.event.DomainEvent;
 import platform.management.service.domain.activity.model.RecentActivity;
 
 import java.time.OffsetDateTime;

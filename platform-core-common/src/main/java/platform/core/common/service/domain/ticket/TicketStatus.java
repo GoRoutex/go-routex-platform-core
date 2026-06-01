@@ -4,6 +4,7 @@ public enum TicketStatus {
     ISSUED,
     CHECKED_IN,
     BOARDED,
+    COMPLETED,
     CANCELLED,
     EXPIRED
 }

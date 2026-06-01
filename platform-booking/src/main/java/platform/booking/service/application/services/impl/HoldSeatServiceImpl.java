@@ -5,27 +5,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import vn.com.go.routex.identity.security.jwt.JwtAuthenticatedUser;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.booking.service.application.command.booking.CreateBookingCommand;
 import platform.booking.service.application.command.seat.HoldSeatCommand;
 import platform.booking.service.application.command.seat.HoldSeatResult;
 import platform.booking.service.application.services.BookingService;
 import platform.booking.service.application.services.HoldSeatService;
+import platform.booking.service.domain.tripcontext.model.TripBookingContext;
+import platform.booking.service.domain.tripcontext.port.TripBookingContextQueryPort;
+import platform.booking.service.infrastructure.integration.userservice.client.UserServiceInternalContextClient;
+import platform.booking.service.infrastructure.integration.userservice.dto.FetchCustomerByUserIdClientResponse;
 import platform.core.common.service.domain.booking.model.Booking;
 import platform.core.common.service.domain.seat.SeatStatus;
 import platform.core.common.service.domain.seat.model.TripSeat;
 import platform.core.common.service.domain.seat.port.TripSeatRepositoryPort;
-import platform.booking.service.domain.tripcontext.model.TripBookingContext;
-import platform.booking.service.domain.tripcontext.port.TripBookingContextQueryPort;
 import platform.core.common.service.infrastructure.redis.models.TripCacheSeat;
 import platform.core.common.service.infrastructure.redis.service.TripSeatCacheService;
 import platform.core.common.service.infrastructure.redisson.RedisDistributedLocker;
 import platform.core.common.service.infrastructure.redisson.RedisDistributedService;
-import platform.booking.service.infrastructure.integration.userservice.client.UserServiceInternalContextClient;
-import platform.booking.service.infrastructure.integration.userservice.dto.FetchCustomerByUserIdClientResponse;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
+import vn.com.go.routex.identity.security.jwt.JwtAuthenticatedUser;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
 import java.util.Comparator;
@@ -150,9 +150,9 @@ public class HoldSeatServiceImpl implements HoldSeatService {
                 .pickupType(command.pickupType())
                 .pickupStopId(command.pickupStopId())
                 .pickupAddress(command.pickupAddress())
-                .dropoffType(command.dropoffType())
-                .dropoffStopId(command.dropoffStopId())
-                .dropoffAddress(command.dropoffAddress())
+                .dropOffType(command.dropOffType())
+                .dropOffStopId(command.dropOffStopId())
+                .dropOffAddress(command.dropOffAddress())
                 .build(), tripContext, tripSeats);
     }
 

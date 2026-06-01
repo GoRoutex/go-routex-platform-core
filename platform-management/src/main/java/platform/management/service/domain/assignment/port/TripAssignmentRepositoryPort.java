@@ -1,7 +1,8 @@
 package platform.management.service.domain.assignment.port;
 
-import platform.management.service.domain.assignment.TripAssignmentStatus;
-import platform.management.service.domain.assignment.model.TripAssignmentRecord;
+
+import platform.merchant.service.domain.assignment.TripAssignmentStatus;
+import platform.merchant.service.domain.assignment.model.TripAssignmentRecord;
 
 import java.util.List;
 import java.util.Map;

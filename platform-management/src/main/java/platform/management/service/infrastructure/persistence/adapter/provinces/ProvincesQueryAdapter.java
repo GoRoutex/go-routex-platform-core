@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import platform.management.service.domain.common.PagedResult;
+import platform.core.common.service.application.command.common.PagedResult;
 import platform.management.service.domain.provinces.port.ProvincesQueryPort;
 import platform.management.service.domain.provinces.readmodel.ProvincesFetchView;
 import platform.management.service.domain.provinces.readmodel.ProvincesSearchItem;

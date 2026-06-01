@@ -59,4 +59,6 @@ public interface TripAssignmentEntityRepository extends JpaRepository<TripAssign
     List<TripAssignmentEntity> findByDriverIdAndStatusAndUnAssignedAtIsNull(String driverId, TripAssignmentStatus status);
 
     List<TripAssignmentEntity> findByVehicleIdAndStatusAndUnAssignedAtIsNull(String vehicleId, TripAssignmentStatus status);
+
+    Optional<TripAssignmentEntity> findByTripIdAndStatus(String tripId, TripAssignmentStatus tripAssignmentStatus);
 }

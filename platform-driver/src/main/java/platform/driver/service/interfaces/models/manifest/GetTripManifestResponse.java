@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import platform.core.common.service.api.BaseResponse;
+import platform.core.common.service.domain.ticket.TicketStatus;
 import platform.merchant.service.domain.route.RouteStatus;
 
 import java.time.OffsetDateTime;
@@ -73,6 +74,11 @@ public class GetTripManifestResponse extends BaseResponse<GetTripManifestRespons
         private String pickupPointName;
         private String dropOffPointId;
         private String dropOffPointName;
+        private TicketStatus status;
+        private OffsetDateTime checkedInAt;
+        private String checkedInBy;
+        private OffsetDateTime boardedAt;
+        private String boardedBy;
     }
 
     @Getter

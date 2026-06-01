@@ -5,7 +5,7 @@ import platform.merchant.service.domain.maintenance.MaintenancePlanStatus;
 import platform.merchant.service.domain.maintenance.MaintenancePlanType;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
-import platform.core.common.service.domain.vehicle.VehicleTemplateType;
+import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

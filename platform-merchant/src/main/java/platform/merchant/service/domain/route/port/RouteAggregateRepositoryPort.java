@@ -6,6 +6,7 @@ import platform.merchant.service.domain.route.RouteStatus;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface RouteAggregateRepositoryPort {
@@ -20,6 +21,8 @@ public interface RouteAggregateRepositoryPort {
     PagedResult<RouteAggregate> fetch(String merchantId, int pageNumber, int pageSize);
 
     PagedResult<RouteAggregate> fetch(String merchantId, RouteStatus status, int pageNumber, int pageSize);
+
+    Map<String, RouteAggregate> findAllByIdIn(List<String> routeIds);
 
     List<RouteAggregate> findByIdIn(List<String> routeIds);
 }

@@ -1,11 +1,13 @@
 package platform.core.common.service.persistence.utils;
 
 import lombok.experimental.UtilityClass;
+import org.springframework.format.annotation.DateTimeFormat;
 import platform.core.common.service.persistence.exception.BusinessException;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
 
@@ -13,7 +15,7 @@ import static platform.core.common.service.persistence.constant.ErrorConstant.IN
 @UtilityClass
 public class DateTimeUtils {
 
-    public static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public int parseIntOrThrow(String v, String field, String requestId, String requestDateTime, String channel) {
         if (v == null || v.isBlank()) {
@@ -27,26 +29,15 @@ public class DateTimeUtils {
         return Integer.parseInt(v.trim());
     }
 
-    public LocalDate parseDateOrThrow(String v, String field, String requestId, String requestDateTime, String channel) {
-        try {
-            return LocalDate.parse(v.trim()); // yyyy-MM-dd
-        } catch (Exception e) {
-            throw new BusinessException(requestId, requestDateTime, channel,
-                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, field + " must be yyyy-MM-dd"));
+    public LocalDate toLocalDate(String v) {
+        if(v == null || v.isBlank()) {
+            throw new BusinessException(ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "LocalDate String is Null or blank"));
         }
-    }
 
-    public LocalTime parseTimeNullable(String v, String field, String requestId, String requestDateTime, String channel) {
-        if (v == null || v.isBlank()) return null;
         try {
-            return LocalTime.parse(v.trim(), TIME_FMT); // HH:mm
-        } catch (Exception e) {
-            throw new BusinessException(requestId, requestDateTime, channel,
-                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, field + " must be HH:mm"));
+            return LocalDate.parse(v, FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new BusinessException(ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "LocalDate String is invalid"));
         }
-    }
-
-    public int safeStopOrder(String v) {
-        try { return Integer.parseInt(v); } catch (Exception e) { return Integer.MAX_VALUE; }
     }
 }

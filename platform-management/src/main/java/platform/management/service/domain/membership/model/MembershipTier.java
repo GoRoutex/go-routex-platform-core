@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import vn.com.routex.platform.common.domain.AbstractAuditingEntity;
+import platform.core.common.service.persistence.AbstractAuditingEntity;
 
 import java.math.BigDecimal;
 

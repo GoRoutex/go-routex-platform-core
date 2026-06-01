@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 import platform.core.common.service.api.BaseResponse;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
-import platform.core.common.service.domain.vehicle.VehicleTemplateType;
+import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 
 @Getter
 @Setter

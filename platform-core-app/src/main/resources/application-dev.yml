@@ -1,0 +1,56 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:kafka:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:platform-core}
+    group-id:
+      booking-trips: ${KAFKA_GROUP_BOOKING_TRIPS:booking-service-trips}
+      management-trips: ${KAFKA_GROUP_MANAGEMENT_TRIPS:management-service-trips}
+      bookings: ${KAFKA_GROUP_BOOKINGS:booking-service}
+      payments: ${KAFKA_GROUP_PAYMENTS:booking-service-payments}
+      payment-succeeded: ${KAFKA_GROUP_PAYMENT_SUCCEEDED:booking-service-payment-succeeded}
+      payment-failed: ${KAFKA_GROUP_PAYMENT_FAILED:booking-service-payment-failed}
+      routes: ${KAFKA_GROUP_ROUTES:booking-service-routes}
+
+  data:
+    redis:
+      host: ${APP_REDIS_HOST:redis}
+      port: ${APP_REDIS_PORT:6379}
+      password: ${APP_REDIS_PASSWORD:}
+
+  datasource:
+    url: ${DB_URL:${SPRING_DATASOURCE_URL:jdbc:postgresql://postgresql.postgresql.svc.cluster.local:5432/routex}}
+    username: ${DB_USERNAME:${SPRING_DATASOURCE_USERNAME:routex}}
+    password: ${DB_PASSWORD:${SPRING_DATASOURCE_PASSWORD}}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+grpc:
+  server:
+    port: ${GRPC_SERVER_PORT:9090}
+  client:
+    merchantService:
+      address: ${MERCHANT_SERVICE_GRPC_ADDRESS:static://localhost:9090}
+    bookingService:
+      address: ${BOOKING_SERVICE_GRPC_ADDRESS:static://localhost:9090}
+    paymentService:
+      address: ${PAYMENT_SERVICE_GRPC_ADDRESS:static://localhost:9090}
+    userService:
+      address: ${USER_SERVICE_GRPC_ADDRESS:static://localhost:9091}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: INFO
+    org.springframework.kafka: INFO
+    org.apache.kafka: WARN

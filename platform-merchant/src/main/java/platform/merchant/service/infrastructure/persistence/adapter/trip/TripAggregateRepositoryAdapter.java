@@ -1,8 +1,11 @@
 package platform.merchant.service.infrastructure.persistence.adapter.trip;
 
+import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.trip.TripStatus;
@@ -74,6 +77,12 @@ public class TripAggregateRepositoryAdapter implements TripAggregateRepositoryPo
                 .stream()
                 .map(tripAggregatePersistenceMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Page<TripAggregate> findAll(Specification<TripAggregate> specification, Pageable pageable) {
+        Specification<TripEntity> entitySpec = (root, query, cb) -> specification.toPredicate((Root) root, query, cb);
+        return tripEntityRepository.findAll(entitySpec, pageable).map(tripAggregatePersistenceMapper::toDomain);
     }
 
     private PagedResult<TripAggregate> toPagedResult(Page<TripEntity> page) {

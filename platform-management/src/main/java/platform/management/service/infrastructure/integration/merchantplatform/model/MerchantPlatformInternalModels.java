@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import platform.merchant.service.domain.merchant.ApplicationFormStatus;
-import platform.management.service.domain.merchant.MerchantStatus;
+import platform.merchant.service.domain.merchant.MerchantStatus;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

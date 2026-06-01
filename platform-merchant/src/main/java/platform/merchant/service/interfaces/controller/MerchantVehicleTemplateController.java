@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.merchant.service.application.command.vehicletemplate.CreateVehicleTemplateCommand;
 import platform.merchant.service.application.command.vehicletemplate.CreateVehicleTemplateResult;
@@ -27,7 +28,6 @@ import platform.merchant.service.application.command.vehicletemplate.UpdateVehic
 import platform.merchant.service.application.service.VehicleTemplateManagementService;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
 import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
-import platform.core.common.service.domain.vehicle.VehicleTemplateType;
 import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;

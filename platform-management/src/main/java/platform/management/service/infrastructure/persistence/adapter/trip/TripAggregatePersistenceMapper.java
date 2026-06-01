@@ -3,7 +3,7 @@ package platform.management.service.infrastructure.persistence.adapter.trip;
 
 import org.springframework.stereotype.Component;
 import platform.management.service.domain.trip.model.TripAggregate;
-import platform.management.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
+import platform.merchant.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
 
 @Component
 public class TripAggregatePersistenceMapper {

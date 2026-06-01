@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.booking.service.application.command.seat.HoldSeatCommand;
 import platform.booking.service.application.command.seat.HoldSeatResult;
 import platform.booking.service.application.services.HoldSeatService;
-import platform.core.common.service.persistence.utils.HttpUtils;
 import platform.booking.service.interfaces.models.seat.HoldSeatRequest;
 import platform.booking.service.interfaces.models.seat.HoldSeatResponse;
 import platform.core.common.service.api.ApiResult;
+import platform.core.common.service.persistence.utils.HttpUtils;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,9 +58,9 @@ public class TripSeatManagementController {
                 .pickupType(request.getData().getPickupType())
                 .pickupStopId(request.getData().getPickupStopId())
                 .pickupAddress(request.getData().getPickupAddress())
-                .dropoffType(request.getData().getDropoffType())
-                .dropoffStopId(request.getData().getDropoffStopId())
-                .dropoffAddress(request.getData().getDropoffAddress())
+                .dropOffType(request.getData().getDropOffType())
+                .dropOffStopId(request.getData().getDropOffStopId())
+                .dropOffAddress(request.getData().getDropOffAddress())
                 .build());
 
         List<HoldSeatResponse.HoldSeatResponseData> responseData = result.seats().stream()

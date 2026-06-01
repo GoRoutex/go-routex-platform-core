@@ -3,7 +3,6 @@ package vn.com.routex.platform.core;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -13,12 +12,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
-@EnableFeignClients(basePackages = {
-        "platform.booking.service",
-        "platform.management.service"
-})
 @EnableJpaAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
 @EntityScan(basePackages = {
+        "platform.core.common.service",
         "platform.merchant",
         "platform.booking.service",
         "platform.driver.service",
@@ -28,6 +24,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaRepositories(
         nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class,
         basePackages = {
+                "platform.core.common.service",
                 "platform.merchant",
                 "platform.booking.service",
                 "platform.driver.service",
@@ -37,6 +34,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 )
 @ConfigurationPropertiesScan(basePackages = {
         "vn.com.routex.platform",
+        "platform.core.common.service",
         "platform.merchant",
         "platform.booking.service",
         "platform.driver.service",
@@ -48,6 +46,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class,
         basePackages = {
                 "vn.com.routex.platform",
+                "platform.core.common.service",
                 "platform.merchant",
                 "platform.booking.service",
                 "platform.driver.service",
@@ -57,10 +56,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         excludeFilters = {
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.(MerchantPlatformApplication|BookingServiceApplication|RoutexDriverServiceApplication|ManagementServiceApplication|PaymentApplication)"),
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.infrastructure\\.persistence\\.security\\.(SecurityConfig|ApiFilter)"),
+                @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.persistence\\.security\\.(SecurityConfig|ApiFilter)"),
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.infrastructure\\.kafka\\.config\\.(KafkaConfig|KafkaErrorHandlerConfig)"),
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.infrastructure\\.cache\\.config\\.RedisConfig"),
+                @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.infrastructure\\.redis\\.config\\.RedisConfig"),
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.infrastructure\\.cache\\.redisson\\.config\\.RedissonConfig"),
+                @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.infrastructure\\.redisson\\.config\\.RedissonConfig"),
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.infrastructure\\.persistence\\.config\\.(ApplicationConfig|OpenApiConfig|JpaAuditingConfig)"),
+                @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.persistence\\.config\\.(ApplicationConfig|OpenApiConfig|JpaAuditingConfig)"),
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.infrastructure\\.persistence\\.exception[s]?\\.ExceptionHandlerAdvice")
         }
 )

@@ -6,10 +6,13 @@ import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.ticket.model.Ticket;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface TicketRepositoryPort {
     Ticket save(Ticket ticket);
+
+    List<Ticket> saveAll(List<Ticket> tickets);
 
     Optional<Ticket> findById(String id);
 
@@ -37,4 +40,6 @@ public interface TicketRepositoryPort {
     PagedResult<Ticket> fetchByCustomerId(String customerId, int pageNumber, int pageSize);
 
     Optional<Ticket> findByIdAndCustomerId(String id, String customerId);
+
+    List<Ticket> findAllByTripId(String tripId);
 }

@@ -2,7 +2,7 @@ package platform.management.service.infrastructure.integration.merchantplatform.
 
 import lombok.Getter;
 import lombok.Setter;
-import platform.management.service.domain.merchant.MerchantStatus;
+import platform.merchant.service.domain.merchant.MerchantStatus;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.AUTHORIZATION_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.ROLE_NOT_FOUND;
 
 
 @RequiredArgsConstructor
@@ -42,7 +43,8 @@ public class UserAuthorizationService {
     }
 
     public Optional<String> getMerchantId(String userId) {
-        return merchantUserEntityRepository.findByUserIdAndStatus(userId, MerchantUserStatus.ACTIVE)
+        return merchantUserEntityRepository.findByUserId(userId)
+                .filter(merchantUser -> merchantUser.getStatus() == MerchantUserStatus.ACTIVE)
                 .stream()
                 .map(merchantUser -> merchantUser != null ? merchantUser.getMerchantId() : null)
                 .filter(Objects::nonNull)
@@ -53,10 +55,11 @@ public class UserAuthorizationService {
     private Set<RoleAggregate> getUserRoles(String userId) {
         Stream<RoleAggregate> defaultRoles = userRoleRepositoryPort.findByUserId(userId)
                 .stream()
-                .map(userRole -> roleRepositoryPort.findById(userRole.getId().getRoleId())
+                        .map(userRole -> roleRepositoryPort.findById(userRole.getId().getRoleId())
                         .orElseThrow(() -> missingRoleById(userRole.getId().getRoleId())));
 
-        Stream<RoleAggregate> merchantRoles = merchantUserEntityRepository.findByUserIdAndStatus(userId, MerchantUserStatus.ACTIVE)
+        Stream<RoleAggregate> merchantRoles = merchantUserEntityRepository.findByUserId(userId)
+                .filter(merchantUser -> merchantUser.getStatus() == MerchantUserStatus.ACTIVE)
                 .stream()
                 .map(merchantUser -> roleRepositoryPort.findByCode(merchantUser.getRoleCode())
                         .orElseThrow(() -> missingRoleByCode(merchantUser.getRoleCode())));
@@ -68,14 +71,14 @@ public class UserAuthorizationService {
     private BusinessException missingRoleById(String roleId) {
         return new BusinessException(ExceptionUtils.buildResultResponse(
                 AUTHORIZATION_ERROR,
-                String.format(ROLE_NOT_FOUND_ERROR, roleId)
+                ROLE_NOT_FOUND + ": " + roleId
         ));
     }
 
     private BusinessException missingRoleByCode(String roleCode) {
         return new BusinessException(ExceptionUtils.buildResultResponse(
                 AUTHORIZATION_ERROR,
-                String.format(ROLE_NOT_FOUND_ERROR, roleCode)
+                ROLE_NOT_FOUND + ": " + roleCode
         ));
     }
 }

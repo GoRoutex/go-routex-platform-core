@@ -1,6 +1,9 @@
 package platform.merchant.service.domain.trip.port;
 
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.trip.TripStatus;
 import platform.merchant.service.domain.trip.model.TripAggregate;
@@ -28,4 +31,5 @@ public interface TripAggregateRepositoryPort {
 
     List<TripAggregate> findByIds(List<String> tripIds, String merchantId);
 
+    Page<TripAggregate> findAll(Specification<TripAggregate> specification, Pageable pageable);
 }

@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.management.service.application.services.RecentActivityService;
 import platform.management.service.domain.activity.model.RecentActivity;
-import platform.management.service.infrastructure.persistence.exception.BusinessException;
 import platform.management.service.infrastructure.persistence.utils.ApiRequestUtils;
-import platform.management.service.infrastructure.persistence.utils.ExceptionUtils;
 import platform.management.service.infrastructure.persistence.utils.HttpUtils;
 import platform.management.service.interfaces.factory.ApiResultFactory;
 import platform.management.service.interfaces.models.activity.RecentActivitiesFetchData;
@@ -25,9 +25,10 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_PAGE_NUMBER;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_PAGE_SIZE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_PAGE_NUMBER;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_PAGE_SIZE;
+
 
 @RestController
 @RequiredArgsConstructor

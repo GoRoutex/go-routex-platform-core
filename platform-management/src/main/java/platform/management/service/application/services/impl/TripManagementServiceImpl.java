@@ -5,13 +5,17 @@ import org.springframework.stereotype.Service;
 import platform.core.common.service.application.command.common.PageContext;
 import platform.core.common.service.application.command.common.PageInfo;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.common.RequestContext;
+import platform.core.common.service.domain.seat.port.TripSeatAvailabilityPort;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.domain.assignment.model.TripAssignmentRecord;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.model.RouteStopPlan;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
+import platform.merchant.service.domain.route.port.RouteStopRepositoryPort;
 import platform.merchant.service.domain.trip.port.TripQueryPort;
+import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.management.service.application.command.route.FetchTripQuery;
 import platform.management.service.application.command.route.FetchTripResult;
@@ -27,8 +31,7 @@ import platform.merchant.service.domain.department.model.Department;
 import platform.merchant.service.domain.department.port.DepartmentRepositoryPort;
 import platform.management.service.domain.trip.model.TripAggregate;
 import platform.management.service.domain.trip.port.TripAggregateRepositoryPort;
-import platform.management.service.domain.trip.readmodel.TripFetchView;
-import platform.management.service.domain.trip.readmodel.TripSearchView;
+import platform.merchant.service.domain.trip.readmodel.TripFetchView;
 import platform.core.common.service.domain.vehicle.model.VehicleProfile;
 import platform.management.service.infrastructure.integration.common.support.InternalApiExecutor;
 import platform.management.service.infrastructure.integration.merchantplatform.client.MerchantPlatformInternalClient;
@@ -43,6 +46,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_PAGE_NUMBER;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_PAGE_SIZE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;
+import static platform.core.common.service.persistence.constant.ErrorConstant.ROUTE_NOT_FOUND;
+import static platform.core.common.service.persistence.constant.ErrorConstant.TRIP_NOT_FOUND;
 import static platform.management.service.infrastructure.persistence.constant.ApplicationConstant.DEFAULT_PAGE_NUMBER;
 import static platform.management.service.infrastructure.persistence.constant.ApplicationConstant.DEFAULT_PAGE_SIZE;
 
@@ -50,11 +59,11 @@ import static platform.management.service.infrastructure.persistence.constant.Ap
 @RequiredArgsConstructor
 public class TripManagementServiceImpl implements TripManagementService {
 
-    private final RoutePointRepositoryPort routePointRepositoryPort;
+    private final RouteStopRepositoryPort routePointRepositoryPort;
     private final TripAssignmentRepositoryPort tripAssignmentRepositoryPort;
     private final RouteAggregateRepositoryPort routeAggregateRepositoryPort;
-    private final RouteVehicleRepositoryPort routeVehicleRepositoryPort;
-    private final platform.core.common.service.domain.seat.port.TripSeatAvailabilityPort tripSeatAvailabilityPort;
+    private final VehicleProfileRepositoryPort routeVehicleRepositoryPort;
+    private final TripSeatAvailabilityPort tripSeatAvailabilityPort;
     private final TripQueryPort tripQueryPort;
     private final MerchantPlatformInternalClient merchantPlatformInternalClient;
     private final TripAggregateRepositoryPort tripAggregateRepositoryPort;
@@ -65,7 +74,7 @@ public class TripManagementServiceImpl implements TripManagementService {
     public SearchTripResult searchTrip(SearchTripQuery query) {
         PageInfo pageInfo = validatePageContext(query.context(), query.pageContext());
 
-        List<TripSearchView> searchedRoutes = tripQueryPort.searchAssignedTrips(
+        List<platform.core.common.service.application.readmodel.TripSearchView> searchedRoutes = tripQueryPort.searchAssignedTrips(
                 null,
                 query.originName(),
                 query.destinationName(),
@@ -74,8 +83,8 @@ public class TripManagementServiceImpl implements TripManagementService {
         );
 
         TripEnrichment enrichment = enrichRoutes(
-                searchedRoutes.stream().map(TripSearchView::getId).toList(),
-                searchedRoutes.stream().map(TripSearchView::getRouteId).toList(),
+                searchedRoutes.stream().map(platform.core.common.service.application.readmodel.TripSearchView::getId).toList(),
+                searchedRoutes.stream().map(platform.core.common.service.application.readmodel.TripSearchView::getRouteId).toList(),
                 searchedRoutes.stream().flatMap(route -> Stream.of(
                         route.getOriginDepartmentId(),
                         route.getDestinationDepartmentId()
@@ -87,7 +96,7 @@ public class TripManagementServiceImpl implements TripManagementService {
         sLog.info("Enrichment: {}", enrichment);
 
         Map<String, String> merchantNames = fetchMerchantNames(
-                searchedRoutes.stream().map(TripSearchView::getMerchantId).distinct().toList(),
+                searchedRoutes.stream().map(platform.core.common.service.application.readmodel.TripSearchView::getMerchantId).distinct().toList(),
                 query.context()
         );
 
@@ -204,7 +213,7 @@ public class TripManagementServiceImpl implements TripManagementService {
     }
 
     private SearchTripItemResult toSearchRouteItem(
-            TripSearchView trip,
+            platform.core.common.service.application.readmodel.TripSearchView trip,
             TripEnrichment enrichment,
             Map<String, String> merchantNames
     ) {

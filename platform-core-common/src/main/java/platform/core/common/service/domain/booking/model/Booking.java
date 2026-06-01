@@ -39,7 +39,7 @@ public class Booking extends AbstractAuditingEntity {
     private String pickupType;
     private String pickupStopId;
     private String pickupAddress;
-    private String dropoffType;
-    private String dropoffStopId;
-    private String dropoffAddress;
+    private String dropOffType;
+    private String dropOffStopId;
+    private String dropOffAddress;
 }

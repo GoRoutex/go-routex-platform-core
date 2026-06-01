@@ -14,15 +14,18 @@ import platform.core.common.service.application.command.common.PagedResult;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
 import platform.core.common.service.domain.trip.TripStatus;
+import platform.merchant.service.domain.trip.model.TripAggregate;
+import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
 import platform.merchant.service.domain.trip.port.TripQueryPort;
 import platform.merchant.service.domain.trip.readmodel.TripFetchView;
-import platform.merchant.service.domain.trip.readmodel.TripSearchView;
+import platform.core.common.service.application.readmodel.TripSearchView;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.merchant.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.trip.repository.TripEntityRepository;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;
@@ -33,7 +36,7 @@ import static platform.core.common.service.persistence.constant.ErrorConstant.TR
 @RequiredArgsConstructor
 public class TripQueryAdapter implements TripQueryPort {
 
-    private final TripEntityRepository tripEntityRepository;
+    private final TripAggregateRepositoryPort tripAggregateRepositoryPort;
     private final TripAssignmentRepositoryPort tripAssignmentRepositoryPort;
     private final RouteAggregateRepositoryPort routeAggregateRepositoryPort;
 
@@ -45,14 +48,14 @@ public class TripQueryAdapter implements TripQueryPort {
             int pageNumber,
             int pageSize
     ) {
-        Specification<TripEntity> specification = Specification.where(TripSpecification.hasMerchantId(merchantId))
+        Specification<TripAggregate> specification = Specification.where(TripSpecification.hasMerchantId(merchantId))
                 .and(TripSpecification.originNameContainsIgnoreCase(originName))
                 .and(TripSpecification.destinationNameContainsIgnoreCase(destinationName))
                 .and(TripSpecification.assignedStatus(TripStatus.ASSIGNED));
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "departureDate"));
 
-        return tripEntityRepository.findAll(specification, pageable)
+        return tripAggregateRepositoryPort.findAll(specification, pageable)
                 .getContent()
                 .stream()
                 .map(trip -> {
@@ -83,17 +86,22 @@ public class TripQueryAdapter implements TripQueryPort {
     }
 
     @Override
-    public PagedResult<TripFetchView> fetchTrips(String merchantId, String merchantName, int pageNumber, int pageSize) {
+    public PagedResult<TripFetchView> fetchTrips(String merchantId, List<String> merchantIds, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "departureDate"));
-        Specification<TripEntity> specification = Specification.where(TripSpecification.hasMerchantId(merchantId))
-                .and(TripSpecification.hasMerchantName(merchantName));
-        Page<TripEntity> page = tripEntityRepository.findAll(specification, pageable);
+        Specification<TripAggregate> specification = Specification.where(TripSpecification.hasMerchantId(merchantId))
+                .and(TripSpecification.hasMerchantIds(merchantIds));
+        Page<TripAggregate> page = tripAggregateRepositoryPort.findAll(specification, pageable);
+        List<TripAggregate> tripList = page.getContent();
+
+        List<String> routeIds = tripList.stream()
+                .map(TripAggregate::getRouteId)
+                .toList();
+
+        Map<String, RouteAggregate> routeAggregateMap = routeAggregateRepositoryPort.findAllByIdIn(routeIds);
 
         List<TripFetchView> items = page.getContent().stream()
                 .map(trip -> {
-                    RouteAggregate routeAggregate = routeAggregateRepositoryPort.findById(trip.getRouteId())
-                            .orElseThrow(() -> new BusinessException(ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(ROUTE_NOT_FOUND, trip.getRouteId()))));
-
+                    RouteAggregate routeAggregate = routeAggregateMap.get(trip.getRouteId());
                     return TripFetchView.builder()
                             .id(trip.getId())
                             .tripCode(trip.getTripCode())
@@ -103,9 +111,14 @@ public class TripQueryAdapter implements TripQueryPort {
                             .originName(routeAggregate.getOriginName())
                             .destinationCode(routeAggregate.getDestinationCode())
                             .destinationName(routeAggregate.getDestinationName())
+                            .originProvinceId(routeAggregate.getOriginProvinceId())
+                            .destinationProvinceId(routeAggregate.getDestinationProvinceId())
+                            .originDepartmentId(routeAggregate.getOriginDepartmentId())
+                            .destinationDepartmentId(routeAggregate.getDestinationDepartmentId())
                             .departureTime(trip.getDepartureTime())
                             .rawDepartureDate(trip.getRawDepartureDate())
                             .rawDepartureTime(trip.getRawDepartureTime())
+                            .durationMinutes(routeAggregate.getDuration())
                             .status(trip.getStatus())
                             .build();
                 })

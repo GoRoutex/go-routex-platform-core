@@ -1,6 +1,6 @@
 package platform.management.service.domain.provinces.port;
 
-import platform.management.service.domain.common.PagedResult;
+import platform.core.common.service.application.command.common.PagedResult;
 import platform.management.service.domain.provinces.readmodel.ProvincesFetchView;
 import platform.management.service.domain.provinces.readmodel.ProvincesSearchItem;
 

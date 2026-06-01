@@ -41,10 +41,11 @@ public class TripManifestController {
 
     @PostMapping(TRIP_MANIFEST)
     public ResponseEntity<GetTripManifestResponse> getTripManifest(@Valid @RequestBody GetTripManifestRequest request) {
+        String tripId = request.getData().getTripId() != null ? request.getData().getTripId() : request.getData().getRouteId();
         TripManifestView view = tripManifestService.getTripManifest(GetTripManifestQuery
                 .builder()
                 .context(toContext(request))
-                .routeId(request.getData().getRouteId())
+                .routeId(tripId)
                 .build());
 
         GetTripManifestResponse response = tripManifestMapper.toGetTripManifestResponse(view);

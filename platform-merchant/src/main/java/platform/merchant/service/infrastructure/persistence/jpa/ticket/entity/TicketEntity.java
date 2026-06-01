@@ -95,12 +95,12 @@ public class TicketEntity extends AbstractAuditingEntity {
     @Column(name = "PICKUP_ADDRESS")
     private String pickupAddress;
 
-    @Column(name = "DROPOFF_TYPE")
-    private String dropoffType;
+    @Column(name = "DROP_OFF_TYPE")
+    private String dropOffType;
 
-    @Column(name = "DROPOFF_STOP_ID")
-    private String dropoffStopId;
+    @Column(name = "DROP_OFF_STOP_ID")
+    private String dropOffStopId;
 
-    @Column(name = "DROPOFF_ADDRESS")
-    private String dropoffAddress;
+    @Column(name = "DROP_OFF_ADDRESS")
+    private String dropOffAddress;
 }

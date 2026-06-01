@@ -33,9 +33,9 @@ public class BookingPersistenceMapper {
                 .pickupType(entity.getPickupType())
                 .pickupStopId(entity.getPickupStopId())
                 .pickupAddress(entity.getPickupAddress())
-                .dropoffType(entity.getDropoffType())
-                .dropoffStopId(entity.getDropoffStopId())
-                .dropoffAddress(entity.getDropoffAddress())
+                .dropOffType(entity.getDropOffType())
+                .dropOffStopId(entity.getDropOffStopId())
+                .dropOffAddress(entity.getDropOffAddress())
                 .build();
     }
 
@@ -63,9 +63,9 @@ public class BookingPersistenceMapper {
                 .pickupType(booking.getPickupType())
                 .pickupStopId(booking.getPickupStopId())
                 .pickupAddress(booking.getPickupAddress())
-                .dropoffType(booking.getDropoffType())
-                .dropoffStopId(booking.getDropoffStopId())
-                .dropoffAddress(booking.getDropoffAddress())
+                .dropOffType(booking.getDropOffType())
+                .dropOffStopId(booking.getDropOffStopId())
+                .dropOffAddress(booking.getDropOffAddress())
                 .build();
     }
 

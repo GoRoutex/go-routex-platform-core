@@ -3,9 +3,9 @@ package platform.booking.service.application.services.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.booking.service.application.command.booking.CreateBookingCommand;
 import platform.booking.service.application.services.BookingService;
+import platform.booking.service.domain.tripcontext.model.TripBookingContext;
 import platform.core.common.service.domain.booking.BookingSeatStatus;
 import platform.core.common.service.domain.booking.BookingStatus;
 import platform.core.common.service.domain.booking.model.Booking;
@@ -13,9 +13,9 @@ import platform.core.common.service.domain.booking.model.BookingSeat;
 import platform.core.common.service.domain.booking.port.BookingRepositoryPort;
 import platform.core.common.service.domain.booking.port.BookingSeatRepositoryPort;
 import platform.core.common.service.domain.seat.model.TripSeat;
-import platform.booking.service.domain.tripcontext.model.TripBookingContext;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -70,9 +70,9 @@ public class BookingServiceImpl implements BookingService {
                 .pickupType(command.pickupType())
                 .pickupStopId(command.pickupStopId())
                 .pickupAddress(command.pickupAddress())
-                .dropoffType(command.dropoffType())
-                .dropoffStopId(command.dropoffStopId())
-                .dropoffAddress(command.dropoffAddress())
+                .dropOffType(command.dropOffType())
+                .dropOffStopId(command.dropOffStopId())
+                .dropOffAddress(command.dropOffAddress())
                 .build();
 
         List<BookingSeat> bookingSeats = tripSeats.stream()

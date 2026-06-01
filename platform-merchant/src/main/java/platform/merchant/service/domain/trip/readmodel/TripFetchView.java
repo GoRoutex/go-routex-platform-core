@@ -20,8 +20,13 @@ public class TripFetchView {
     private String originName;
     private String destinationCode;
     private String destinationName;
+    private String originProvinceId;
+    private String destinationProvinceId;
+    private String originDepartmentId;
+    private String destinationDepartmentId;
     private OffsetDateTime departureTime;
     private String rawDepartureTime;
     private String rawDepartureDate;
+    private Long durationMinutes;
     private TripStatus status;
 }

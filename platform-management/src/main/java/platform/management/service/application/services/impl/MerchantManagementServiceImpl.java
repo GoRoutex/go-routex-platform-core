@@ -2,6 +2,8 @@ package platform.management.service.application.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.management.service.application.command.merchant.FetchMerchantDetailQuery;
 import platform.management.service.application.command.merchant.FetchMerchantDetailResult;
 import platform.management.service.application.command.merchant.FetchMerchantsQuery;
@@ -9,22 +11,21 @@ import platform.management.service.application.command.merchant.FetchMerchantsRe
 import platform.management.service.application.command.merchant.UpdateMerchantCommand;
 import platform.management.service.application.command.merchant.UpdateMerchantResult;
 import platform.management.service.application.services.MerchantManagementService;
-import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 import platform.management.service.infrastructure.integration.common.support.InternalApiExecutor;
 import platform.management.service.infrastructure.integration.merchantplatform.client.MerchantPlatformInternalClient;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformInternalModels;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformUpdateMerchantRequest;
-import platform.management.service.infrastructure.persistence.exception.BusinessException;
 import platform.management.service.infrastructure.persistence.utils.ApiRequestUtils;
-import platform.management.service.infrastructure.persistence.utils.ExceptionUtils;
+import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_COMMISSION_RATE;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_PAGE_NUMBER;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_PAGE_SIZE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_COMMISSION_RATE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_PAGE_NUMBER;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_PAGE_SIZE;
+
 
 @Service
 @RequiredArgsConstructor

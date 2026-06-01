@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import platform.core.common.service.api.BaseRequest;
+import platform.merchant.service.domain.driver.DriverStatus;
 
 import static platform.driver.service.interfaces.models.constant.ApplicationConstant.DATE_MONTH_YEAR_REGEX;
 import static platform.driver.service.interfaces.models.constant.ApplicationConstant.ONLY_CHARACTER_REGEX;
@@ -65,7 +66,7 @@ public class CreateProfileRequest extends BaseRequest {
 
         @NotNull
         @NotBlank
-        private String status;
+        private DriverStatus status;
 
         @Builder.Default
         private double rating = 0.0;

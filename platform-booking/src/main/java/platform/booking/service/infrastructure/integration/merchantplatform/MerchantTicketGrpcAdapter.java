@@ -47,9 +47,9 @@ public class MerchantTicketGrpcAdapter {
                         .pickupType(aggregate.booking().getPickupType())
                         .pickupStopId(aggregate.booking().getPickupStopId())
                         .pickupAddress(aggregate.booking().getPickupAddress())
-                        .dropoffType(aggregate.booking().getDropoffType())
-                        .dropoffStopId(aggregate.booking().getDropoffStopId())
-                        .dropoffAddress(aggregate.booking().getDropoffAddress())
+                        .dropOffType(aggregate.booking().getDropOffType())
+                        .dropOffStopId(aggregate.booking().getDropOffStopId())
+                        .dropOffAddress(aggregate.booking().getDropOffAddress())
                         .build())
                 .collect(Collectors.toList());
 

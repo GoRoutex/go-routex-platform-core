@@ -25,7 +25,7 @@ public record CreateTicketCommand(
         String pickupType,
         String pickupStopId,
         String pickupAddress,
-        String dropoffType,
-        String dropoffStopId,
-        String dropoffAddress
+        String dropOffType,
+        String dropOffStopId,
+        String dropOffAddress
 ) {}

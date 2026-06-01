@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import vn.com.go.routex.identity.security.log.SystemLog;
+import platform.core.common.service.domain.outbox.model.OutBoxEvent;
+import platform.core.common.service.domain.outbox.port.OutBoxEventRepositoryPort;
+import platform.core.common.service.infrastructure.kafka.config.KafkaEventPublisher;
 import platform.management.service.application.services.OutBoxRelayService;
-import platform.management.service.domain.outbox.model.OutBoxEvent;
-import platform.management.service.domain.outbox.port.OutBoxEventRepositoryPort;
-import platform.management.service.infrastructure.kafka.config.KafkaEventPublisher;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;

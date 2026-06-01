@@ -1,7 +1,7 @@
 package platform.management.service.application.command.seat;
 
 import lombok.Builder;
-import platform.management.service.application.command.common.RequestContext;
+import platform.core.common.service.common.RequestContext;
 
 
 @Builder

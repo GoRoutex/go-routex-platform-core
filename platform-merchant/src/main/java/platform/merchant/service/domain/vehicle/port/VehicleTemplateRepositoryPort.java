@@ -1,11 +1,11 @@
-package platform.core.common.service.domain.vehicle.port;
+package platform.merchant.service.domain.vehicle.port;
 
 
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
 import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
-import platform.core.common.service.domain.vehicle.VehicleTemplateType;
 import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
+import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 
 import java.util.List;
 import java.util.Map;

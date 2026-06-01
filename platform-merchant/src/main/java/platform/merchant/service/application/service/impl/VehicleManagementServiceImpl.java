@@ -3,6 +3,10 @@ package platform.merchant.service.application.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.domain.vehicle.VehicleStatus;
+import platform.core.common.service.domain.vehicle.model.VehicleProfile;
+import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
@@ -17,12 +21,8 @@ import platform.merchant.service.application.command.vehicle.FetchVehiclesResult
 import platform.merchant.service.application.command.vehicle.UpdateVehicleCommand;
 import platform.merchant.service.application.command.vehicle.UpdateVehicleResult;
 import platform.merchant.service.application.service.VehicleManagementService;
-import platform.core.common.service.application.command.common.PagedResult;
-import platform.core.common.service.domain.vehicle.VehicleStatus;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
-import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
-import platform.core.common.service.domain.vehicle.port.VehicleProfileRepositoryPort;
-import platform.core.common.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
+import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
+import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static platform.core.common.service.persistence.constant.ApplicationConstant.DEFAULT_PAGE_NUMBER;
+import static platform.core.common.service.persistence.constant.ApplicationConstant.DEFAULT_PAGE_SIZE;
 import static platform.core.common.service.persistence.constant.ErrorConstant.DUPLICATE_ERROR;
 import static platform.core.common.service.persistence.constant.ErrorConstant.DUPLICATE_VEHICLE;
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
@@ -38,8 +40,6 @@ import static platform.core.common.service.persistence.constant.ErrorConstant.IN
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;
 import static platform.core.common.service.persistence.constant.ErrorConstant.VEHICLE_NOT_FOUND_BY_ID;
 import static platform.core.common.service.persistence.constant.ErrorConstant.VEHICLE_TEMPLATE_NOT_FOUND_BY_ID;
-import static platform.core.common.service.persistence.constant.ApplicationConstant.DEFAULT_PAGE_NUMBER;
-import static platform.core.common.service.persistence.constant.ApplicationConstant.DEFAULT_PAGE_SIZE;
 
 
 @Service

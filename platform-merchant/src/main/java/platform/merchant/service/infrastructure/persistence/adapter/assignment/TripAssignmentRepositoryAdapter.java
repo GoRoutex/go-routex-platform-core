@@ -129,4 +129,10 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
                 .map(routePersistenceMapper::toAssignmentRecord)
                 .toList();
     }
+
+    @Override
+    public Optional<TripAssignmentRecord> findByTripId(String id) {
+        return tripAssignmentEntityRepository.findById(id)
+                .map(routePersistenceMapper::toAssignmentRecord);
+    }
 }

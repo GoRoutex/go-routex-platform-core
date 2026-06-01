@@ -32,4 +32,6 @@ public interface TripAssignmentRepositoryPort {
     List<TripAssignmentRecord> findActiveByDriver(String driverId);
 
     List<TripAssignmentRecord> findActiveByVehicle(String vehicleId);
+
+    Optional<TripAssignmentRecord> findByTripId(String id);
 }

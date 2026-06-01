@@ -2,6 +2,7 @@ package platform.driver.service.interfaces.mapper;
 
 
 import org.springframework.stereotype.Component;
+import platform.core.common.service.api.ApiResult;
 import platform.driver.service.application.dto.manifest.GetTripManifestBookingView;
 import platform.driver.service.application.dto.manifest.GetTripManifestDriverView;
 import platform.driver.service.application.dto.manifest.GetTripManifestSummaryView;
@@ -22,6 +23,7 @@ public class TripManifestMapper {
                 .requestId(view.requestContext().requestId())
                 .requestDateTime(view.requestContext().requestDateTime())
                 .channel(view.requestContext().channel())
+                .result(ApiResult.buildSuccess())
                 .bookingInfo(toBookingData(view.bookingInfo()))
                 .driverInfo(toDriverData(view.driverInfo()))
                 .vehicleInfo(toVehicleData(view.vehicleInfo()))
@@ -42,6 +44,11 @@ public class TripManifestMapper {
                         .pickupPointName(view.pickupPointName())
                         .dropOffPointId(view.dropOffPointId())
                         .dropOffPointName(view.dropOffPointName())
+                        .status(view.status())
+                        .checkedInAt(view.checkedInAt())
+                        .checkedInBy(view.checkedInBy())
+                        .boardedAt(view.boardedAt())
+                        .boardedBy(view.boardedBy())
                         .build())
                 .collect(Collectors.toList());
     }

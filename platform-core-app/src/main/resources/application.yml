@@ -1,42 +1,141 @@
 spring:
   application:
     name: go-routex-platform-core
+
   main:
     allow-bean-definition-overriding: false
     lazy-initialization: true
+
+  threads:
+    virtual:
+      enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:${SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE:10MB}}
+      max-request-size: ${MAX_REQUEST_SIZE:${SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE:12MB}}
+
+  datasource:
+    url: ${DB_URL:${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/routexhub}}
+    username: ${DB_USERNAME:${SPRING_DATASOURCE_USERNAME:routex}}
+    password: ${DB_PASSWORD:${SPRING_DATASOURCE_PASSWORD:routex@2026}}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:${SPRING_JPA_HIBERNATE_DDL_AUTO:none}}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: ${APP_REDIS_HOST:${REDIS_HOST:localhost}}
+      port: ${APP_REDIS_PORT:${REDIS_PORT:6379}}
+      password: ${APP_REDIS_PASSWORD:${REDIS_PASSWORD:}}
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+      connect-timeout: 30000
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: ${SPRING_CACHE_REDIS_TTL:600000}
+
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+        compression.type: gzip
+        linger.ms: 10
     consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:platform-core}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-  data:
-    redis:
-      host: ${APP_REDIS_HOST:localhost}
-      port: ${APP_REDIS_PORT:6379}
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/goroutex_platform_core}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:none}
-    open-in-view: false
-    properties:
-      hibernate:
-        format_sql: true
-  servlet:
-    multipart:
-      max-file-size: ${MAX_FILE_SIZE:10MB}
-      max-request-size: ${MAX_REQUEST_SIZE:10MB}
+        spring.json.use.type.headers: false
+        session.timeout.ms: 30000
+        max.poll.records: 500
+    listener:
+      ack-mode: manual
+    events:
+      trip-ready-for-sale: ${KAFKA_EVENT_TRIP_READY_FOR_SALE:routex.trip.ready-for-sale}
+      trip-assigned: ${KAFKA_EVENT_TRIP_ASSIGNED:routex.trip.assigned}
+      booking-created: ${KAFKA_EVENT_BOOKING_CREATED:routex.booking.created}
+      booking-confirmed: ${KAFKA_EVENT_BOOKING_CONFIRMED:routex.booking.confirmed}
+      booking-cancelled: ${KAFKA_EVENT_BOOKING_CANCELLED:routex.booking.cancelled}
+      booking-failed: ${KAFKA_EVENT_BOOKING_FAILED:routex.booking.failed}
+      ticket-issued: ${KAFKA_EVENT_TICKET_ISSUED:routex.ticket.issued}
+      payment-succeeded: ${KAFKA_EVENT_PAYMENT_SUCCEEDED:routex.payment.succeeded}
+      payment-failed: ${KAFKA_EVENT_PAYMENT_FAILED:routex.payment.failed}
+      payment-refunded: ${KAFKA_EVENT_PAYMENT_REFUNDED:routex.payment.refunded}
+      seat-reserved: ${KAFKA_EVENT_SEAT_RESERVED:routex.seat.reserved}
+      seat-released: ${KAFKA_EVENT_SEAT_RELEASED:routex.seat.released}
+      seat-locked: ${KAFKA_EVENT_SEAT_LOCKED:routex.seat.locked}
+      notification-email: ${KAFKA_EVENT_NOTIFICATION_EMAIL:routex.notification.email}
+      notification-sms: ${KAFKA_EVENT_NOTIFICATION_SMS:routex.notification.sms}
+      notification-activities: ${KAFKA_EVENT_NOTIFICATION_ACTIVITIES:routex.notification.activities}
+    topics:
+      trips: ${KAFKA_TOPIC_TRIPS:trip.management.event}
+      routes: ${KAFKA_TOPIC_ROUTES:route.management.event}
+      booking: ${KAFKA_TOPIC_BOOKING:route.bookings.event}
+      bookings: ${KAFKA_TOPIC_BOOKINGS:route.bookings.event}
+      payments: ${KAFKA_TOPIC_PAYMENTS:route.payments.event}
+      seats: ${KAFKA_TOPIC_SEATS:seat.event.management}
+      notifications: ${KAFKA_TOPIC_NOTIFICATIONS:notification.event.management}
+      dead-letter: ${KAFKA_TOPIC_DEAD_LETTER:bus-dead-letter-queue}
+    group-id:
+      booking-trips: ${KAFKA_GROUP_BOOKING_TRIPS:booking-service-trips}
+      management-trips: ${KAFKA_GROUP_MANAGEMENT_TRIPS:management-service-trips}
+      bookings: ${KAFKA_GROUP_BOOKINGS:booking-service}
+      payments: ${KAFKA_GROUP_PAYMENTS:booking-service-payments}
+      payment-succeeded: ${KAFKA_GROUP_PAYMENT_SUCCEEDED:booking-service-payment-succeeded}
+      payment-failed: ${KAFKA_GROUP_PAYMENT_FAILED:booking-service-payment-failed}
+      routes: ${KAFKA_GROUP_ROUTES:booking-service-routes}
+
+  retry:
+    max-attempts: ${SPRING_RETRY_MAX_ATTEMPTS:3}
+    backoff-ms: ${SPRING_RETRY_BACKOFF_MS:1000}
+    backoff-multiplier: ${SPRING_RETRY_BACKOFF_MULTIPLIER:2}
+
+  jackson:
+    mapper:
+      sort-properties-alphabetically: false
+
+  security:
+    user:
+      name: ${SPRING_SECURITY_USER_NAME:admin}
+      password: ${SPRING_SECURITY_USER_PASSWORD:admin}
 
 server:
   port: ${SERVER_PORT:8080}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 
 grpc:
   server:
@@ -44,15 +143,23 @@ grpc:
   client:
     merchantService:
       address: ${MERCHANT_SERVICE_GRPC_ADDRESS:static://localhost:9090}
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
       negotiationType: plaintext
     bookingService:
       address: ${BOOKING_SERVICE_GRPC_ADDRESS:static://localhost:9090}
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
       negotiationType: plaintext
     paymentService:
       address: ${PAYMENT_SERVICE_GRPC_ADDRESS:static://localhost:9090}
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
       negotiationType: plaintext
     userService:
       address: ${USER_SERVICE_GRPC_ADDRESS:static://localhost:9091}
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
       negotiationType: plaintext
 
 kafka:
@@ -61,18 +168,79 @@ kafka:
     back-off-multiplier: ${KAFKA_RETRY_BACK_OFF_MULTIPLIER:2.0}
     max-attempts: ${KAFKA_RETRY_MAX_ATTEMPTS:3}
     max-interval: ${KAFKA_RETRY_MAX_INTERVAL:10000}
+  events:
+    trip-ready-for-sale: ${KAFKA_EVENT_TRIP_READY_FOR_SALE:routex.trip.ready-for-sale}
+    trip-assigned: ${KAFKA_EVENT_TRIP_ASSIGNED:routex.trip.assigned}
+    booking-created: ${KAFKA_EVENT_BOOKING_CREATED:routex.booking.created}
+    booking-confirmed: ${KAFKA_EVENT_BOOKING_CONFIRMED:routex.booking.confirmed}
+    booking-cancelled: ${KAFKA_EVENT_BOOKING_CANCELLED:routex.booking.cancelled}
+    booking-failed: ${KAFKA_EVENT_BOOKING_FAILED:routex.booking.failed}
+    ticket-issued: ${KAFKA_EVENT_TICKET_ISSUED:routex.ticket.issued}
+    payment-succeeded: ${KAFKA_EVENT_PAYMENT_SUCCEEDED:routex.payment.succeeded}
+    payment-failed: ${KAFKA_EVENT_PAYMENT_FAILED:routex.payment.failed}
+    payment-refunded: ${KAFKA_EVENT_PAYMENT_REFUNDED:routex.payment.refunded}
+    seat-reserved: ${KAFKA_EVENT_SEAT_RESERVED:routex.seat.reserved}
+    seat-released: ${KAFKA_EVENT_SEAT_RELEASED:routex.seat.released}
+    seat-locked: ${KAFKA_EVENT_SEAT_LOCKED:routex.seat.locked}
+    notification-email: ${KAFKA_EVENT_NOTIFICATION_EMAIL:routex.notification.email}
+    notification-sms: ${KAFKA_EVENT_NOTIFICATION_SMS:routex.notification.sms}
+    notification-activities: ${KAFKA_EVENT_NOTIFICATION_ACTIVITIES:routex.notification.activities}
+  topics:
+    trips: ${KAFKA_TOPIC_TRIPS:trip.management.event}
+    routes: ${KAFKA_TOPIC_ROUTES:route.management.event}
+    booking: ${KAFKA_TOPIC_BOOKING:route.bookings.event}
+    bookings: ${KAFKA_TOPIC_BOOKINGS:route.bookings.event}
+    payments: ${KAFKA_TOPIC_PAYMENTS:route.payments.event}
+    seats: ${KAFKA_TOPIC_SEATS:seat.event.management}
+    notifications: ${KAFKA_TOPIC_NOTIFICATIONS:notification.event.management}
+    dead-letter: ${KAFKA_TOPIC_DEAD_LETTER:bus-dead-letter-queue}
+
+identity:
+  jwt:
+    secret: ${JWT_SECRET:CZZRadv0Xe8z3stWFWYdtiJ2E86gUgJvFEfbCYFgJhQ}
+    issuer: ${JWT_ISSUER:user-service}
+    audience: ${JWT_AUDIENCE:platform-core}
+    authority-claim-name: ${JWT_CLAIM_NAME:roles}
+    authority-prefix: ${JWT_AUTH_PREFIX:ROLE_}
 
 media:
   cloudinary:
     cloud-name: ${CLOUDINARY_CLOUD_NAME:}
     api-key: ${CLOUDINARY_API_KEY:}
     api-secret: ${CLOUDINARY_API_SECRET:}
+    default-folder: ${CLOUDINARY_DEFAULT_FOLDER:goroutex/}
+    secure: ${CLOUDINARY_SECURE:true}
 
 booking:
   hold-expiration:
     fixed-delay-ms: ${BOOKING_HOLD_EXPIRATION_FIXED_DELAY_MS:15000}
     initial-delay-ms: ${BOOKING_HOLD_EXPIRATION_INITIAL_DELAY_MS:15000}
     batch-size: ${BOOKING_HOLD_EXPIRATION_BATCH_SIZE:100}
+
+locking:
+  batch: ${LOCKING_BATCH:100}
+
+scheduled:
+  polling:
+    time: ${SCHEDULED_POLLING_TIME:500}
+
+jms:
+  thread:
+    receive:
+      timeout-seconds: ${JMS_THREAD_RECEIVE_TIMEOUT_SECONDS:30}
+    send:
+      timeout-seconds: ${JMS_THREAD_SEND_TIMEOUT_SECONDS:5}
+  receive:
+    timeout: ${JMS_RECEIVE_TIMEOUT:30000}
+  caching:
+    session-cache-size: ${JMS_CACHING_SESSION_CACHE_SIZE:256}
+  time-to-live-milliseconds: ${JMS_TIME_TO_LIVE_MILLISECONDS:20000}
+  recovery-interval: ${JMS_RECOVERY_INTERVAL:5000}
+  max-message: ${JMS_MAX_MESSAGE:1}
+
+app:
+  payment:
+    checkout-url: ${PAYMENT_CHECKOUT_URL:http://localhost:8080/api/v1/payment-service/checkout}
 
 clients:
   merchant-platform:
@@ -85,5 +253,7 @@ clients:
 logging:
   level:
     root: INFO
+    org.springframework: WARN
+    org.springframework.security: INFO
     org.springframework.kafka: INFO
     org.apache.kafka: WARN

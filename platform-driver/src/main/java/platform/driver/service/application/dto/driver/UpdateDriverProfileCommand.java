@@ -1,10 +1,12 @@
 package platform.driver.service.application.dto.driver;
 
 
+import lombok.Builder;
 import platform.merchant.service.domain.driver.DriverStatus;
 
 import java.time.LocalDate;
 
+@Builder
 public record UpdateDriverProfileCommand(
         String driverId,
         String employeeCode,

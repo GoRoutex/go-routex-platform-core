@@ -6,23 +6,23 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import platform.core.common.service.common.RequestContext;
+import platform.core.common.service.persistence.config.CloudinaryProperties;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 import vn.com.go.routex.identity.security.log.SystemLog;
-import platform.management.service.application.command.common.RequestContext;
 import platform.management.service.application.command.media.UploadMediaCommand;
 import platform.management.service.application.command.media.UploadMediaResult;
 import platform.management.service.application.services.MediaService;
-import platform.management.service.infrastructure.persistence.config.CloudinaryProperties;
-import platform.management.service.infrastructure.persistence.exception.BusinessException;
-import platform.management.service.infrastructure.persistence.utils.ExceptionUtils;
 
 import java.io.IOException;
 import java.util.Map;
 
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.CLOUDINARY_CONFIG_MESSAGE;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.FILE_UPLOAD_ERROR;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.FILE_UPLOAD_ERROR_MESSAGE;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_FILE_MESSAGE;
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.CLOUDINARY_CONFIG_MESSAGE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.FILE_UPLOAD_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.FILE_UPLOAD_ERROR_MESSAGE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_FILE_MESSAGE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
 
 
 @RequiredArgsConstructor

@@ -1,13 +1,15 @@
 package platform.management.service.infrastructure.persistence.utils;
 
 import lombok.experimental.UtilityClass;
-import platform.management.service.infrastructure.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-import static platform.management.service.infrastructure.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
+
 
 @UtilityClass
 public class DateTimeUtils {

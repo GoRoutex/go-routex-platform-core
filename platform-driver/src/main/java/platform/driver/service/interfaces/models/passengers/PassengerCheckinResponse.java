@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import platform.core.common.service.domain.booking.BookingSeatStatus;
 import platform.core.common.service.api.BaseResponse;
+import platform.core.common.service.domain.ticket.TicketStatus;
 
 import java.time.OffsetDateTime;
 
@@ -26,9 +26,10 @@ public class PassengerCheckinResponse extends BaseResponse<PassengerCheckinRespo
         private String ticketCode;
         private String customerName;
         private String seatNumber;
-        private String routeCode;
-        private BookingSeatStatus status;
+        private String tripId;
+        private TicketStatus status;
         private OffsetDateTime checkedInAt;
+        private OffsetDateTime boardedAt;
     }
 
 }

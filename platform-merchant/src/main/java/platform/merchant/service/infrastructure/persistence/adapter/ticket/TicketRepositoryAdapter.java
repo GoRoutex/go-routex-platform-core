@@ -11,6 +11,7 @@ import platform.core.common.service.domain.ticket.port.TicketRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.jpa.ticket.repository.TicketRepository;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -25,6 +26,16 @@ public class TicketRepositoryAdapter implements TicketRepositoryPort {
         return ticketPersistenceMapper.toDomain(
                 ticketRepository.save(ticketPersistenceMapper.toEntity(ticket))
         );
+    }
+
+    @Override
+    public List<Ticket> saveAll(List<Ticket> tickets) {
+        return ticketRepository.saveAll(tickets.stream()
+                        .map(ticketPersistenceMapper::toEntity)
+                        .toList())
+                .stream()
+                .map(ticketPersistenceMapper::toDomain)
+                .toList();
     }
 
     @Override
@@ -89,5 +100,13 @@ public class TicketRepositoryAdapter implements TicketRepositoryPort {
     public Optional<Ticket> findByIdAndCustomerId(String id, String customerId) {
         return ticketRepository.findByIdAndCreatedBy(id, customerId)
                 .map(ticketPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public List<Ticket> findAllByTripId(String tripId) {
+        return ticketRepository.findAllByTripId(tripId)
+                .stream()
+                .map(ticketPersistenceMapper::toDomain)
+                .toList();
     }
 }

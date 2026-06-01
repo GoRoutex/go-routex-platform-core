@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.api.BaseRequest;
 import platform.management.service.application.command.merchant.FetchMerchantApplicationFormDetailQuery;
 import platform.management.service.application.command.merchant.FetchMerchantApplicationFormDetailResult;
 import platform.management.service.application.command.merchant.FetchPendingMerchantApplicationFormsQuery;
@@ -17,17 +18,15 @@ import platform.management.service.infrastructure.persistence.utils.HttpUtils;
 import platform.management.service.interfaces.factory.ApiResultFactory;
 import platform.management.service.interfaces.models.merchant.FetchMerchantApplicationFormDetailResponse;
 import platform.management.service.interfaces.models.merchant.FetchPendingMerchantApplicationFormsResponse;
-import platform.core.common.service.api.BaseRequest;
 
 import java.util.stream.Collectors;
 
-import static vn.com.routex.platform.common.constant.ApiConstant.API_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.API_VERSION;
-import static vn.com.routex.platform.common.constant.ApiConstant.APPLICATION_FORM;
-import static vn.com.routex.platform.common.constant.ApiConstant.DETAIL_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.FETCH_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.MANAGEMENT_PATH;
-
+import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;
+import static platform.core.common.service.persistence.constant.ApiConstant.APPLICATION_FORM;
+import static platform.core.common.service.persistence.constant.ApiConstant.DETAIL_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.FETCH_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.MANAGEMENT_PATH;
 
 @RestController
 @RequiredArgsConstructor

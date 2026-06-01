@@ -28,13 +28,13 @@ import platform.core.common.service.api.BaseRequest;
 
 import java.util.stream.Collectors;
 
-import static vn.com.routex.platform.common.constant.ApiConstant.API_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.API_VERSION;
-import static vn.com.routex.platform.common.constant.ApiConstant.DETAIL_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.FETCH_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.MANAGEMENT_PATH;
-import static vn.com.routex.platform.common.constant.ApiConstant.MERCHANT_SERVICE;
-import static vn.com.routex.platform.common.constant.ApiConstant.UPDATE_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;
+import static platform.core.common.service.persistence.constant.ApiConstant.DETAIL_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.FETCH_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.MANAGEMENT_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.MERCHANT_SERVICE;
+import static platform.core.common.service.persistence.constant.ApiConstant.UPDATE_PATH;
 
 
 @RestController

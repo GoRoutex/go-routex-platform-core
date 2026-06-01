@@ -7,11 +7,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
-import platform.management.service.domain.common.PagedResult;
+import platform.core.common.service.application.command.common.PagedResult;
 import platform.management.service.domain.trip.model.TripAggregate;
 import platform.management.service.domain.trip.port.TripAggregateRepositoryPort;
-import platform.management.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
-import platform.management.service.infrastructure.persistence.jpa.trip.repository.TripEntityRepository;
+import platform.merchant.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
+import platform.merchant.service.infrastructure.persistence.jpa.trip.repository.TripEntityRepository;
 
 import java.util.Optional;
 import java.util.stream.Collectors;

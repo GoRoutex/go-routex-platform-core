@@ -6,6 +6,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import platform.core.common.service.domain.ticket.TicketStatus;
+import platform.core.common.service.domain.ticket.model.Ticket;
+import platform.core.common.service.domain.ticket.port.TicketRepositoryPort;
+import platform.core.common.service.domain.vehicle.model.VehicleProfile;
+import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.command.email.TicketEmailCommand;
@@ -32,15 +37,10 @@ import platform.merchant.service.domain.merchant.model.Merchant;
 import platform.merchant.service.domain.merchant.port.MerchantRepositoryPort;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
-import platform.core.common.service.domain.ticket.TicketStatus;
-import platform.core.common.service.domain.ticket.model.Ticket;
-import platform.core.common.service.domain.ticket.port.TicketRepositoryPort;
 import platform.merchant.service.domain.trip.model.TripAggregate;
 import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
-import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
-import platform.core.common.service.domain.vehicle.port.VehicleProfileRepositoryPort;
-import platform.core.common.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
+import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
+import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -132,9 +132,9 @@ public class TicketServiceImpl implements TicketService {
                 .pickupType(command.pickupType())
                 .pickupStopId(command.pickupStopId())
                 .pickupAddress(command.pickupAddress())
-                .dropoffType(command.dropoffType())
-                .dropoffStopId(command.dropoffStopId())
-                .dropoffAddress(command.dropoffAddress())
+                .dropOffType(command.dropOffType())
+                .dropOffStopId(command.dropOffStopId())
+                .dropOffAddress(command.dropOffAddress())
                 .build();
     }
 

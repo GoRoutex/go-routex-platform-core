@@ -13,8 +13,8 @@ import lombok.experimental.SuperBuilder;
 import platform.core.common.service.domain.vehicle.FuelType;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
 import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
-import platform.core.common.service.domain.vehicle.VehicleTemplateType;
 import platform.core.common.service.api.BaseRequest;
+import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 
 import java.math.BigDecimal;
 

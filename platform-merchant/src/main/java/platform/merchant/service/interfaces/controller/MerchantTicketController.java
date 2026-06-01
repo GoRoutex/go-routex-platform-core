@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.domain.ticket.TicketStatus;
+import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.ticket.FetchTicketDetailQuery;
 import platform.merchant.service.application.command.ticket.FetchTicketDetailResult;
@@ -22,8 +24,6 @@ import platform.merchant.service.application.command.ticket.FetchTicketListResul
 import platform.merchant.service.application.command.ticket.UpdateTicketCommand;
 import platform.merchant.service.application.command.ticket.UpdateTicketResult;
 import platform.merchant.service.application.service.TicketService;
-import platform.core.common.service.domain.ticket.TicketStatus;
-import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
 import platform.merchant.service.interfaces.model.ticket.request.UpdateTicketRequest;
@@ -128,9 +128,9 @@ public class MerchantTicketController {
                         .pickupType(t.getPickupType())
                         .pickupStopId(t.getPickupStopId())
                         .pickupAddress(t.getPickupAddress())
-                        .dropoffType(t.getDropoffType())
-                        .dropoffStopId(t.getDropoffStopId())
-                        .dropoffAddress(t.getDropoffAddress())
+                        .dropOffType(t.getDropOffType())
+                        .dropOffStopId(t.getDropOffStopId())
+                        .dropOffAddress(t.getDropOffAddress())
                         .build())
                 .build();
 
@@ -200,9 +200,9 @@ public class MerchantTicketController {
                 .pickupType(ticket.getPickupType())
                 .pickupStopId(ticket.getPickupStopId())
                 .pickupAddress(ticket.getPickupAddress())
-                .dropoffType(ticket.getDropoffType())
-                .dropoffStopId(ticket.getDropoffStopId())
-                .dropoffAddress(ticket.getDropoffAddress())
+                .dropOffType(ticket.getDropOffType())
+                .dropOffStopId(ticket.getDropOffStopId())
+                .dropOffAddress(ticket.getDropOffAddress())
                 .build();
     }
 }
