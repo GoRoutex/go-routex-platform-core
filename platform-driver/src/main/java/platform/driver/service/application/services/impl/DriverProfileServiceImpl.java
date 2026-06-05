@@ -2,6 +2,7 @@ package platform.driver.service.application.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import platform.driver.service.application.common.UseCaseException;
 import platform.driver.service.application.dto.driver.CreateDriverProfileCommand;
 import platform.driver.service.application.dto.driver.CreateDriverProfileResult;
 import platform.driver.service.application.dto.driver.DeleteDriverProfileCommand;
@@ -13,7 +14,6 @@ import platform.driver.service.application.dto.driver.UpdateDriverProfileResult;
 import platform.driver.service.application.dto.driver.UpdateDriverStatusCommand;
 import platform.driver.service.application.dto.driver.UpdateDriverStatusResult;
 import platform.driver.service.application.services.DriverProfileService;
-import platform.driver.service.application.common.UseCaseException;
 import platform.driver.service.domain.user.model.User;
 import platform.driver.service.domain.user.port.UserRepositoryPort;
 import platform.merchant.service.domain.driver.DriverStatus;

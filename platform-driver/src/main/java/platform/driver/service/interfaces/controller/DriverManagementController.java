@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.driver.service.application.services.DriverProfileService;
 import platform.driver.service.interfaces.mapper.DriverProfileApiMapper;
 import platform.driver.service.interfaces.mapper.DriverProfileApiResponseMapper;
@@ -25,6 +24,7 @@ import platform.driver.service.interfaces.models.driver.response.DeleteProfileRe
 import platform.driver.service.interfaces.models.driver.response.DriverProfileResponse;
 import platform.driver.service.interfaces.models.driver.response.UpdateDriverStatusResponse;
 import platform.driver.service.interfaces.models.driver.response.UpdateProfileResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;

@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import platform.core.common.service.application.command.common.PagedResult;
 import platform.merchant.service.domain.campaign.model.Campaign;
 import platform.merchant.service.domain.campaign.port.CampaignRepositoryPort;
-import platform.core.common.service.application.command.common.PagedResult;
 import platform.merchant.service.infrastructure.persistence.jpa.campaign.entity.CampaignEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.campaign.repository.CampaignJpaRepository;
 

@@ -4,8 +4,8 @@ package platform.merchant.service.domain.vehicle.port;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
 import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
-import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
 import platform.merchant.service.domain.vehicle.VehicleTemplateType;
+import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
 
 import java.util.List;
 import java.util.Map;

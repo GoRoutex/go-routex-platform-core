@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import platform.core.common.service.api.ApiResult;
 import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.vehicle.AddVehicleCommand;
 import platform.merchant.service.application.command.vehicle.AddVehicleResult;
@@ -28,7 +29,6 @@ import platform.merchant.service.application.command.vehicle.FetchVehiclesResult
 import platform.merchant.service.application.command.vehicle.UpdateVehicleCommand;
 import platform.merchant.service.application.command.vehicle.UpdateVehicleResult;
 import platform.merchant.service.application.service.VehicleManagementService;
-import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
 import platform.merchant.service.interfaces.model.vehicle.AddVehicleRequest;

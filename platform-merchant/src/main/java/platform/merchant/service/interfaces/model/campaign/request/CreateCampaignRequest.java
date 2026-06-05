@@ -7,8 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import platform.merchant.service.domain.campaign.DiscountType;
 import platform.core.common.service.api.BaseRequest;
+import platform.merchant.service.domain.campaign.DiscountType;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

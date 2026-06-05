@@ -2,18 +2,18 @@ package platform.booking.service.infrastructure.integration.merchantplatform;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import platform.core.common.service.common.RequestContext;
-import platform.core.common.service.domain.seat.SeatFloor;
 import platform.booking.service.domain.tripcontext.model.TripBookingContext;
 import platform.booking.service.domain.tripcontext.port.TripBookingContextQueryPort;
-import platform.core.common.service.domain.vehicle.model.VehicleSeatBlueprint;
 import platform.booking.service.domain.vehicle.port.VehicleSeatBlueprintQueryPort;
 import platform.core.common.service.api.InternalBookingContextService;
+import platform.core.common.service.api.TripBookingContextResponse;
+import platform.core.common.service.api.VehicleSeatBlueprintResponse;
+import platform.core.common.service.common.RequestContext;
+import platform.core.common.service.domain.seat.SeatFloor;
+import platform.core.common.service.domain.vehicle.model.VehicleSeatBlueprint;
 import platform.core.common.service.persistence.constant.ErrorConstant;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
-import platform.core.common.service.api.TripBookingContextResponse;
-import platform.core.common.service.api.VehicleSeatBlueprintResponse;
 
 import java.math.BigDecimal;
 

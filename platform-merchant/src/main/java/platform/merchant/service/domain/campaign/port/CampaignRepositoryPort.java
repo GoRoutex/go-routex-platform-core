@@ -1,7 +1,7 @@
 package platform.merchant.service.domain.campaign.port;
 
-import platform.merchant.service.domain.campaign.model.Campaign;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.merchant.service.domain.campaign.model.Campaign;
 
 import java.util.Optional;
 

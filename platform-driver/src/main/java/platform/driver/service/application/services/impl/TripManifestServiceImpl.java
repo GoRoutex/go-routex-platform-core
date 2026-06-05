@@ -6,7 +6,6 @@ import platform.core.common.service.domain.ticket.TicketStatus;
 import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.core.common.service.domain.ticket.port.TicketRepositoryPort;
 import platform.core.common.service.domain.vehicle.model.VehicleProfile;
-import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.driver.service.application.dto.manifest.GetTripManifestBookingView;
@@ -21,8 +20,9 @@ import platform.merchant.service.domain.assignment.port.TripAssignmentRepository
 import platform.merchant.service.domain.driver.model.DriverProfile;
 import platform.merchant.service.domain.driver.port.DriverProfileRepositoryPort;
 import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
-import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
+import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
+import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 
 import java.util.List;
 

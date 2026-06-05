@@ -1,8 +1,8 @@
 package platform.booking.service.infrastructure.persistence.utils;
-import platform.core.common.service.persistence.utils.ExceptionUtils;
 
 import lombok.experimental.UtilityClass;
 import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

@@ -3,6 +3,7 @@ package platform.merchant.service.application.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.command.campaign.ApplyPromotionCommand;
@@ -17,7 +18,6 @@ import platform.merchant.service.application.service.CampaignService;
 import platform.merchant.service.domain.campaign.CampaignStatus;
 import platform.merchant.service.domain.campaign.model.Campaign;
 import platform.merchant.service.domain.campaign.port.CampaignRepositoryPort;
-import platform.core.common.service.application.command.common.PagedResult;
 
 import java.math.BigDecimal;
 import java.util.UUID;

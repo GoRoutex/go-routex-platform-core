@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.api.BaseRequest;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.management.service.application.services.RecentActivityService;
@@ -19,7 +20,6 @@ import platform.management.service.interfaces.factory.ApiResultFactory;
 import platform.management.service.interfaces.models.activity.RecentActivitiesFetchData;
 import platform.management.service.interfaces.models.activity.RecentActivitiesFetchResponse;
 import platform.management.service.interfaces.models.activity.RecentActivityItem;
-import platform.core.common.service.api.BaseRequest;
 
 import java.time.OffsetDateTime;
 import java.util.List;

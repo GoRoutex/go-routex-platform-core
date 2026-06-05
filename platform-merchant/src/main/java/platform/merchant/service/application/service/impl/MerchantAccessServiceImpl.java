@@ -2,13 +2,13 @@ package platform.merchant.service.application.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.command.merchant.GetMyMerchantCommand;
 import platform.merchant.service.application.command.merchant.GetMyMerchantResult;
 import platform.merchant.service.application.service.MerchantAccessService;
 import platform.merchant.service.domain.merchant.model.Merchant;
 import platform.merchant.service.domain.merchant.port.MerchantRepositoryPort;
-import platform.core.common.service.persistence.exception.BusinessException;
-import platform.core.common.service.persistence.utils.ExceptionUtils;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.MERCHANT_NOT_FOUND_BY_ID;
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;

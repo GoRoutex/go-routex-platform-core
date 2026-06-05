@@ -9,11 +9,11 @@ import platform.management.service.application.command.merchant.FetchMerchantApp
 import platform.management.service.application.command.merchant.FetchPendingMerchantApplicationFormsQuery;
 import platform.management.service.application.command.merchant.FetchPendingMerchantApplicationFormsResult;
 import platform.management.service.application.services.MerchantApplicationFormManagementService;
-import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 import platform.management.service.infrastructure.integration.common.support.InternalApiExecutor;
 import platform.management.service.infrastructure.integration.merchantplatform.client.MerchantPlatformInternalClient;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformInternalModels;
 import platform.management.service.infrastructure.persistence.utils.ApiRequestUtils;
+import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 
 import java.util.List;
 

@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import platform.core.common.service.api.BaseResponse;
 import platform.merchant.service.domain.department.DepartmentStatus;
 import platform.merchant.service.domain.department.DepartmentType;
-import platform.core.common.service.api.BaseResponse;
 
 import java.util.List;
 

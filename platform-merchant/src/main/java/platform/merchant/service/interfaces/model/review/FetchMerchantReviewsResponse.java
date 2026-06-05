@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import platform.merchant.service.domain.review.ReviewType;
 import platform.core.common.service.api.BaseResponse;
+import platform.merchant.service.domain.review.ReviewType;
 
 import java.util.List;
 

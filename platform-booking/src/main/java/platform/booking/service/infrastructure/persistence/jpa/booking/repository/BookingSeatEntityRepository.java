@@ -1,8 +1,8 @@
 package platform.booking.service.infrastructure.persistence.jpa.booking.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import platform.core.common.service.domain.booking.BookingSeatStatus;
 import platform.booking.service.infrastructure.persistence.jpa.booking.entity.BookingSeatEntity;
+import platform.core.common.service.domain.booking.BookingSeatStatus;
 
 import java.util.List;
 import java.util.Optional;

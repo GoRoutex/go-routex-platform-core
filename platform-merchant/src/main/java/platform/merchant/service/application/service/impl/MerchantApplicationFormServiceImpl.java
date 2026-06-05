@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import platform.core.common.service.common.RequestContext;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.command.merchant.AcceptMerchantApplicationCommand;
 import platform.merchant.service.application.command.merchant.AcceptMerchantApplicationResult;
 import platform.merchant.service.application.command.merchant.RejectMerchantApplicationCommand;
@@ -25,8 +27,6 @@ import platform.merchant.service.domain.merchant.model.MerchantUser;
 import platform.merchant.service.domain.merchant.port.MerchantApplicationFormRepositoryPort;
 import platform.merchant.service.domain.merchant.port.MerchantRepositoryPort;
 import platform.merchant.service.domain.merchant.port.MerchantUserRepositoryPort;
-import platform.core.common.service.persistence.exception.BusinessException;
-import platform.core.common.service.persistence.utils.ExceptionUtils;
 
 import java.time.OffsetDateTime;
 import java.util.Locale;

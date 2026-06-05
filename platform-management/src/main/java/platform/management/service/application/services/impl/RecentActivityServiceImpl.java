@@ -10,10 +10,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import platform.core.common.service.infrastructure.event.DomainEvent;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.management.service.application.services.RecentActivityService;
 import platform.management.service.domain.activity.model.RecentActivity;
 import platform.management.service.domain.activity.port.RecentActivityRepositoryPort;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;

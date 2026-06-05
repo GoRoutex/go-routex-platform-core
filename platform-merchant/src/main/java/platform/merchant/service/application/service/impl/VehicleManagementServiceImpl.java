@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.core.common.service.domain.vehicle.model.VehicleProfile;
-import platform.core.common.service.domain.vehicle.model.VehicleTemplate;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
@@ -21,6 +20,7 @@ import platform.merchant.service.application.command.vehicle.FetchVehiclesResult
 import platform.merchant.service.application.command.vehicle.UpdateVehicleCommand;
 import platform.merchant.service.application.command.vehicle.UpdateVehicleResult;
 import platform.merchant.service.application.service.VehicleManagementService;
+import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 

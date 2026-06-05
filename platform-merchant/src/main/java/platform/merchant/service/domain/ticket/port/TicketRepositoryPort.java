@@ -1,4 +1,4 @@
-package platform.core.common.service.domain.ticket.port;
+package platform.merchant.service.domain.ticket.port;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

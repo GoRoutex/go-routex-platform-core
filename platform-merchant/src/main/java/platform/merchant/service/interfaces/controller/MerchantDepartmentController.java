@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import vn.com.go.routex.identity.security.log.SystemLog;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.department.CreateDepartmentCommand;
 import platform.merchant.service.application.command.department.CreateDepartmentResult;
 import platform.merchant.service.application.command.department.DeleteDepartmentCommand;
@@ -26,10 +27,8 @@ import platform.merchant.service.application.command.department.GetDepartmentDet
 import platform.merchant.service.application.command.department.UpdateDepartmentCommand;
 import platform.merchant.service.application.command.department.UpdateDepartmentResult;
 import platform.merchant.service.application.service.DepartmentManagementService;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
-import platform.core.common.service.api.BaseRequest;
 import platform.merchant.service.interfaces.model.department.CreateDepartmentRequest;
 import platform.merchant.service.interfaces.model.department.CreateDepartmentResponse;
 import platform.merchant.service.interfaces.model.department.DeleteDepartmentRequest;
@@ -38,6 +37,7 @@ import platform.merchant.service.interfaces.model.department.FetchDepartmentResp
 import platform.merchant.service.interfaces.model.department.GetDepartmentDetailResponse;
 import platform.merchant.service.interfaces.model.department.UpdateDepartmentRequest;
 import platform.merchant.service.interfaces.model.department.UpdateDepartmentResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.List;
 import java.util.stream.Collectors;

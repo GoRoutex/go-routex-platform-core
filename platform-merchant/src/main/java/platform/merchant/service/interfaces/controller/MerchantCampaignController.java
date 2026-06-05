@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.campaign.ApplyPromotionCommand;
 import platform.merchant.service.application.command.campaign.ApplyPromotionResult;
 import platform.merchant.service.application.command.campaign.CreateCampaignCommand;
@@ -23,10 +25,7 @@ import platform.merchant.service.application.query.campaign.FetchCampaignsQuery;
 import platform.merchant.service.application.query.campaign.FetchCampaignsResult;
 import platform.merchant.service.application.service.CampaignService;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
-import vn.com.go.routex.identity.security.log.SystemLog;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
-import platform.core.common.service.api.BaseRequest;
 import platform.merchant.service.interfaces.model.campaign.request.ApplyPromotionRequest;
 import platform.merchant.service.interfaces.model.campaign.request.CreateCampaignRequest;
 import platform.merchant.service.interfaces.model.campaign.request.ValidatePromotionRequest;
@@ -34,6 +33,7 @@ import platform.merchant.service.interfaces.model.campaign.response.ApplyPromoti
 import platform.merchant.service.interfaces.model.campaign.response.CreateCampaignResponse;
 import platform.merchant.service.interfaces.model.campaign.response.FetchCampaignsResponse;
 import platform.merchant.service.interfaces.model.campaign.response.ValidatePromotionResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.stream.Collectors;
 

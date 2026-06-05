@@ -2,8 +2,8 @@ package platform.merchant.service.domain.trip.port;
 
 
 import platform.core.common.service.application.command.common.PagedResult;
-import platform.merchant.service.domain.trip.readmodel.TripFetchView;
 import platform.core.common.service.application.readmodel.TripSearchView;
+import platform.merchant.service.domain.trip.readmodel.TripFetchView;
 
 import java.util.List;
 

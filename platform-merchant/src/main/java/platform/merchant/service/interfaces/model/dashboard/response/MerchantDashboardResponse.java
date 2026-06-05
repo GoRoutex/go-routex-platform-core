@@ -7,11 +7,10 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import platform.core.common.service.api.BaseResponse;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
-
-import java.io.Serializable;
 
 @Getter
 @Setter

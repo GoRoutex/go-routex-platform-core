@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import platform.booking.service.application.handler.TripSeatCacheEvent;
-import platform.core.common.service.infrastructure.redis.service.TripSeatCacheService;
 import platform.core.common.service.infrastructure.kafka.event.TripSeatGeneratedEvent;
+import platform.core.common.service.infrastructure.redis.service.TripSeatCacheService;
 
 
 @Component

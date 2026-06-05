@@ -6,9 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import platform.core.common.service.domain.payment.PaymentMethod;
 import platform.core.common.service.persistence.AbstractAuditingEntity;
 import platform.payment.service.domain.merchant.MerchantSessionStatus;
-import platform.core.common.service.domain.payment.PaymentMethod;
 
 import java.time.OffsetDateTime;
 

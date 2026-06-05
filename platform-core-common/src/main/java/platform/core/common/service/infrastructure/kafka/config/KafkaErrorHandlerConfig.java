@@ -10,8 +10,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.ExponentialBackOff;
-import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.infrastructure.kafka.properties.KafkaEventProperties;
+import platform.core.common.service.persistence.exception.BusinessException;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 @Configuration

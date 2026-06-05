@@ -1,8 +1,8 @@
 package platform.payment.service.application.command.payment;
 
 import lombok.Builder;
-import platform.core.common.service.domain.booking.PaymentStatus;
 import platform.core.common.service.api.ApiResult;
+import platform.core.common.service.domain.booking.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

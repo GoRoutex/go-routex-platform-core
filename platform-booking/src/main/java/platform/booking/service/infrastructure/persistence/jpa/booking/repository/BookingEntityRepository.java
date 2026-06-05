@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import platform.core.common.service.domain.booking.BookingStatus;
 import platform.booking.service.infrastructure.persistence.jpa.booking.entity.BookingEntity;
+import platform.core.common.service.domain.booking.BookingStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;

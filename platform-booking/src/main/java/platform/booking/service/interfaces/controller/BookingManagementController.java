@@ -10,30 +10,30 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import platform.core.common.service.common.RequestContext;
 import platform.booking.service.application.command.ticket.FetchTicketDetailQuery;
 import platform.booking.service.application.command.ticket.FetchTicketDetailResult;
 import platform.booking.service.application.command.ticket.FetchTicketsQuery;
 import platform.booking.service.application.command.ticket.FetchTicketsResult;
 import platform.booking.service.application.services.TicketQueryService;
-import platform.core.common.service.persistence.utils.HttpUtils;
 import platform.booking.service.interfaces.models.ticket.FetchTicketDetailRequest;
 import platform.booking.service.interfaces.models.ticket.FetchTicketDetailResponse;
 import platform.booking.service.interfaces.models.ticket.FetchTicketsRequest;
 import platform.booking.service.interfaces.models.ticket.FetchTicketsResponse;
 import platform.core.common.service.api.ApiResult;
 import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.common.RequestContext;
+import platform.core.common.service.persistence.utils.HttpUtils;
 
 import java.util.List;
 
-import static platform.core.common.service.persistence.constant.ErrorConstant.SUCCESS_CODE;
-import static platform.core.common.service.persistence.constant.ErrorConstant.SUCCESS_MESSAGE;
 import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;
 import static platform.core.common.service.persistence.constant.ApiConstant.BOOKING_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.DETAIL_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.FETCH_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.TICKETS_PATH;
+import static platform.core.common.service.persistence.constant.ErrorConstant.SUCCESS_CODE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.SUCCESS_MESSAGE;
 
 @RestController
 @RequestMapping(API_PATH + API_VERSION + BOOKING_PATH)

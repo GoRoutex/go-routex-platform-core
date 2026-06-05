@@ -9,10 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import platform.core.common.service.domain.trip.TripStatus;
 import platform.merchant.service.domain.trip.model.TripAggregate;
-import platform.merchant.service.infrastructure.persistence.jpa.merchant.entity.MerchantEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.route.entity.RouteEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.routepoint.entity.RouteStopEntity;
-import platform.merchant.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
 
 import java.util.List;
 

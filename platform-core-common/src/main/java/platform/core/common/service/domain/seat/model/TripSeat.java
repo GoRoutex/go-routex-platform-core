@@ -1,12 +1,11 @@
 package platform.core.common.service.domain.seat.model;
 
-import platform.core.common.service.domain.seat.SeatStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import platform.core.common.service.domain.seat.SeatStatus;
 import platform.core.common.service.persistence.AbstractAuditingEntity;
 
 /**

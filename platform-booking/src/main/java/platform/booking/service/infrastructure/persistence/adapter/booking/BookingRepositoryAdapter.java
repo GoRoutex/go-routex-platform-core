@@ -3,10 +3,10 @@ package platform.booking.service.infrastructure.persistence.adapter.booking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import platform.booking.service.infrastructure.persistence.jpa.booking.repository.BookingEntityRepository;
 import platform.core.common.service.domain.booking.BookingStatus;
 import platform.core.common.service.domain.booking.model.Booking;
 import platform.core.common.service.domain.booking.port.BookingRepositoryPort;
-import platform.booking.service.infrastructure.persistence.jpa.booking.repository.BookingEntityRepository;
 
 import java.time.OffsetDateTime;
 import java.util.List;

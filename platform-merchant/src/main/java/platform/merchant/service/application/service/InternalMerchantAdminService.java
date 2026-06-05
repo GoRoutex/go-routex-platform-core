@@ -1,7 +1,7 @@
 package platform.merchant.service.application.service;
 
-import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.common.RequestContext;
 import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 import platform.merchant.service.domain.merchant.model.Merchant;
 import platform.merchant.service.domain.merchant.model.MerchantApplicationForm;

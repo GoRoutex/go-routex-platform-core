@@ -1,21 +1,19 @@
-package platform.core.common.service.domain.vehicle.model;
+package platform.merchant.service.domain.vehicle.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import platform.core.common.service.persistence.AbstractAuditingEntity;
 import platform.core.common.service.domain.vehicle.FuelType;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
 import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
+import platform.core.common.service.persistence.AbstractAuditingEntity;
 import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 
 import java.math.BigDecimal;
 
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

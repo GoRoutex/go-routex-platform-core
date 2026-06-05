@@ -1,8 +1,8 @@
 package platform.payment.service.application.services.merchant.factory;
 
 import org.springframework.stereotype.Service;
-import platform.payment.service.application.services.merchant.PaymentMerchantService;
 import platform.core.common.service.domain.payment.PaymentMethod;
+import platform.payment.service.application.services.merchant.PaymentMerchantService;
 
 import java.util.List;
 import java.util.Map;

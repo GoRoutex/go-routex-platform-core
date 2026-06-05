@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import platform.merchant.service.domain.vehicle.VehicleTemplateType;
-import vn.com.go.routex.identity.security.log.SystemLog;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
+import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.vehicletemplate.CreateVehicleTemplateCommand;
 import platform.merchant.service.application.command.vehicletemplate.CreateVehicleTemplateResult;
 import platform.merchant.service.application.command.vehicletemplate.DeleteVehicleTemplateCommand;
@@ -26,12 +28,9 @@ import platform.merchant.service.application.command.vehicletemplate.FetchVehicl
 import platform.merchant.service.application.command.vehicletemplate.UpdateVehicleTemplateCommand;
 import platform.merchant.service.application.command.vehicletemplate.UpdateVehicleTemplateResult;
 import platform.merchant.service.application.service.VehicleTemplateManagementService;
-import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
-import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
+import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
-import platform.core.common.service.api.BaseRequest;
 import platform.merchant.service.interfaces.model.vehicletemplate.CreateVehicleTemplateRequest;
 import platform.merchant.service.interfaces.model.vehicletemplate.CreateVehicleTemplateResponse;
 import platform.merchant.service.interfaces.model.vehicletemplate.DeleteVehicleTemplateRequest;
@@ -40,6 +39,7 @@ import platform.merchant.service.interfaces.model.vehicletemplate.FetchVehicleTe
 import platform.merchant.service.interfaces.model.vehicletemplate.FetchVehicleTemplateResponse;
 import platform.merchant.service.interfaces.model.vehicletemplate.UpdateVehicleTemplateRequest;
 import platform.merchant.service.interfaces.model.vehicletemplate.UpdateVehicleTemplateResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.List;
 import java.util.stream.Collectors;

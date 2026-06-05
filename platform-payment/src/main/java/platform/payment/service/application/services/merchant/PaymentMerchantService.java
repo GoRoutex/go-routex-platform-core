@@ -1,8 +1,8 @@
 package platform.payment.service.application.services.merchant;
 
+import platform.core.common.service.domain.payment.PaymentMethod;
 import platform.payment.service.application.command.payment.GetPaymentUrlCommand;
 import platform.payment.service.application.command.payment.GetPaymentUrlResult;
-import platform.core.common.service.domain.payment.PaymentMethod;
 
 public interface PaymentMerchantService {
 

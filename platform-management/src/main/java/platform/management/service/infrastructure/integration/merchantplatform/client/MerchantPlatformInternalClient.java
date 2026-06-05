@@ -1,10 +1,10 @@
 package platform.management.service.infrastructure.integration.merchantplatform.client;
 
-import platform.merchant.service.domain.merchant.ApplicationFormStatus;
+import platform.core.common.service.api.BaseResponse;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformFetchMerchantsRequest;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformInternalModels;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformUpdateMerchantRequest;
-import platform.core.common.service.api.BaseResponse;
+import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 
 import java.util.List;
 

@@ -6,13 +6,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.merchant.service.domain.provinces.port.ProvincesQueryPort;
 import platform.merchant.service.domain.provinces.readmodel.ProvincesFetchView;
 import platform.merchant.service.domain.provinces.readmodel.ProvincesSearchItem;
 import platform.merchant.service.infrastructure.persistence.jpa.provinces.entity.ProvincesEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.provinces.repository.ProvincesEntityRepository;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.List;
 

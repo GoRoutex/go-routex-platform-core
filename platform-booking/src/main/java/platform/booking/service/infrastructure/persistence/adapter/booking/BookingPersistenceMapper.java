@@ -1,10 +1,10 @@
 package platform.booking.service.infrastructure.persistence.adapter.booking;
 
 import org.springframework.stereotype.Component;
-import platform.core.common.service.domain.booking.model.Booking;
-import platform.core.common.service.domain.booking.model.BookingSeat;
 import platform.booking.service.infrastructure.persistence.jpa.booking.entity.BookingEntity;
 import platform.booking.service.infrastructure.persistence.jpa.booking.entity.BookingSeatEntity;
+import platform.core.common.service.domain.booking.model.Booking;
+import platform.core.common.service.domain.booking.model.BookingSeat;
 
 @Component
 public class BookingPersistenceMapper {

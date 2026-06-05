@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import platform.core.common.service.api.BaseRequest;
 import platform.core.common.service.infrastructure.event.DomainEvent;
-import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.infrastructure.kafka.event.TripAssignedEvent;
+import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.management.service.application.handler.TripEventHandler;
 import platform.management.service.infrastructure.persistence.utils.JsonUtils;
-import platform.core.common.service.api.BaseRequest;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_DATA_ERROR_MESSAGE;
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_EVENT_MESSAGE;

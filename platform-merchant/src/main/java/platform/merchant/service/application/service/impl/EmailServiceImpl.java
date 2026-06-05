@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import platform.merchant.service.application.command.email.TicketEmailCommand;
-import platform.merchant.service.application.service.EmailService;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.core.common.service.infrastructure.kafka.event.EmailNotificationEvent;
 import platform.core.common.service.infrastructure.kafka.model.KafkaEventMessage;
+import platform.merchant.service.application.command.email.TicketEmailCommand;
+import platform.merchant.service.application.service.EmailService;
 import platform.merchant.service.infrastructure.persistence.utils.JsonUtils;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;

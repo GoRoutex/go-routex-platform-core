@@ -2,20 +2,20 @@ package platform.merchant.service.application.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.command.provinces.FetchProvincesQuery;
 import platform.merchant.service.application.command.provinces.FetchProvincesResult;
 import platform.merchant.service.application.command.provinces.SearchProvincesQuery;
 import platform.merchant.service.application.command.provinces.SearchProvincesResult;
 import platform.merchant.service.application.service.ProvincesManagementService;
-import platform.core.common.service.application.command.common.PagedResult;
 import platform.merchant.service.domain.department.model.Department;
 import platform.merchant.service.domain.department.port.DepartmentRepositoryPort;
 import platform.merchant.service.domain.provinces.port.ProvincesQueryPort;
 import platform.merchant.service.domain.provinces.readmodel.ProvincesFetchView;
 import platform.merchant.service.domain.route.port.RouteStopRepositoryPort;
-import platform.core.common.service.persistence.exception.BusinessException;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
-import platform.core.common.service.persistence.utils.ExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

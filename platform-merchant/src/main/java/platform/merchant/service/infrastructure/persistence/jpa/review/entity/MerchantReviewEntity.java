@@ -11,8 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import platform.merchant.service.domain.review.ReviewType;
 import platform.core.common.service.persistence.AbstractAuditingEntity;
+import platform.merchant.service.domain.review.ReviewType;
 
 import java.time.OffsetDateTime;
 

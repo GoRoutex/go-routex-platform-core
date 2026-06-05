@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.merchant.GetMyMerchantCommand;
 import platform.merchant.service.application.command.merchant.GetMyMerchantResult;
 import platform.merchant.service.application.service.MerchantAccessService;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
-import platform.core.common.service.api.BaseRequest;
 import platform.merchant.service.interfaces.model.merchant.GetMyMerchantResponse;
 
 import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;

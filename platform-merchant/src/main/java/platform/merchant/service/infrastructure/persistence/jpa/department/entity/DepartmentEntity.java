@@ -12,9 +12,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import platform.core.common.service.persistence.AbstractAuditingEntity;
 import platform.merchant.service.domain.department.DepartmentStatus;
 import platform.merchant.service.domain.department.DepartmentType;
-import platform.core.common.service.persistence.AbstractAuditingEntity;
 
 @Getter
 @Setter

@@ -1,11 +1,9 @@
 package platform.core.common.service.persistence.utils;
 
 import lombok.experimental.UtilityClass;
-import org.springframework.format.annotation.DateTimeFormat;
 import platform.core.common.service.persistence.exception.BusinessException;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 

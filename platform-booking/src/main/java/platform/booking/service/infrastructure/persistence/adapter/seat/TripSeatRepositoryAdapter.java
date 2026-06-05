@@ -2,10 +2,10 @@ package platform.booking.service.infrastructure.persistence.adapter.seat;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import platform.core.common.service.domain.seat.model.TripSeat;
 import platform.core.common.service.domain.seat.port.TripSeatRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.jpa.seat.repository.TripSeatEntityRepository;
 import vn.com.go.routex.identity.security.log.SystemLog;
-import platform.core.common.service.domain.seat.model.TripSeat;
 
 import java.util.List;
 import java.util.Optional;

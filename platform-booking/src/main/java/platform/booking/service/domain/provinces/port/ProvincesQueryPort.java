@@ -1,9 +1,9 @@
 package platform.booking.service.domain.provinces.port;
 
 
-import platform.core.common.service.application.command.common.PagedResult;
 import platform.booking.service.domain.provinces.readmodel.ProvincesFetchView;
 import platform.booking.service.domain.provinces.readmodel.ProvincesSearchItem;
+import platform.core.common.service.application.command.common.PagedResult;
 
 import java.util.List;
 

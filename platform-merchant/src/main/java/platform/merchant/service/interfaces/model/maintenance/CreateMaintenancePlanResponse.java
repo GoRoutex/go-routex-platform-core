@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import platform.core.common.service.api.BaseResponse;
 import platform.merchant.service.domain.maintenance.MaintenancePlanStatus;
 import platform.merchant.service.domain.maintenance.MaintenancePlanType;
-import platform.core.common.service.api.BaseResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

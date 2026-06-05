@@ -2,12 +2,12 @@ package platform.merchant.service.application.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import platform.core.common.service.application.command.common.PagedResult;
 import platform.merchant.service.application.command.wards.FetchWardsQuery;
 import platform.merchant.service.application.command.wards.FetchWardsResult;
 import platform.merchant.service.application.command.wards.SearchWardsQuery;
 import platform.merchant.service.application.command.wards.SearchWardsResult;
 import platform.merchant.service.application.service.WardManagementService;
-import platform.core.common.service.application.command.common.PagedResult;
 import platform.merchant.service.domain.provinces.model.Ward;
 import platform.merchant.service.domain.provinces.port.WardRepositoryPort;
 

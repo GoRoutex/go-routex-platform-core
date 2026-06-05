@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.finance.FetchMerchantRevenueQuery;
 import platform.merchant.service.application.command.finance.FetchSystemRevenueQuery;
 import platform.merchant.service.application.service.FinanceService;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
-import platform.core.common.service.api.BaseRequest;
 import platform.merchant.service.interfaces.model.finance.response.MerchantRevenueResponse;
 import platform.merchant.service.interfaces.model.finance.response.SystemRevenueResponse;
 

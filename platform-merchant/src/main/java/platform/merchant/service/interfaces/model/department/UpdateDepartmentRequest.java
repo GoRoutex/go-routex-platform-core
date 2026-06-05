@@ -8,9 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import platform.core.common.service.api.BaseRequest;
 import platform.merchant.service.domain.department.DepartmentStatus;
 import platform.merchant.service.domain.department.DepartmentType;
-import platform.core.common.service.api.BaseRequest;
 
 @Getter
 @Setter

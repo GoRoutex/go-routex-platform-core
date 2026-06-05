@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.api.BaseRequest;
 import platform.core.common.service.application.command.common.PageContext;
-import vn.com.go.routex.identity.security.log.SystemLog;
 import platform.management.service.application.command.route.FetchTripQuery;
 import platform.management.service.application.command.route.FetchTripResult;
 import platform.management.service.application.command.route.FetchTripsQuery;
@@ -24,11 +24,11 @@ import platform.management.service.infrastructure.persistence.utils.ApiRequestUt
 import platform.management.service.infrastructure.persistence.utils.HttpUtils;
 import platform.management.service.interfaces.factory.ApiResultFactory;
 import platform.management.service.interfaces.mapper.TripResponseMapper;
-import platform.core.common.service.api.BaseRequest;
 import platform.management.service.interfaces.models.route.SearchTripRequest;
 import platform.management.service.interfaces.models.route.SearchTripResponse;
 import platform.management.service.interfaces.models.trip.FetchTripDetailResponse;
 import platform.management.service.interfaces.models.trip.FetchTripResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;

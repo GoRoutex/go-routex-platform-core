@@ -1,8 +1,8 @@
 package platform.management.service.infrastructure.integration.common.support;
 
 import lombok.experimental.UtilityClass;
-import platform.core.common.service.api.BaseResponse;
 import platform.core.common.service.api.ApiResult;
+import platform.core.common.service.api.BaseResponse;
 import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.exception.CustomerFeignException;

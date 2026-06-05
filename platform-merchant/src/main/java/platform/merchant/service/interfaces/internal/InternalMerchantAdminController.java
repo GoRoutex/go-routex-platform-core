@@ -9,20 +9,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import vn.com.go.routex.identity.security.log.SystemLog;
-import platform.merchant.service.application.service.InternalMerchantAdminService;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.api.BaseResponse;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
+import platform.merchant.service.application.service.InternalMerchantAdminService;
 import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 import platform.merchant.service.domain.merchant.model.Merchant;
 import platform.merchant.service.domain.merchant.model.MerchantApplicationForm;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
-import platform.core.common.service.api.BaseRequest;
-import platform.core.common.service.api.BaseResponse;
 import platform.merchant.service.interfaces.model.internal.merchant.InternalFetchMerchantsByIdsRequest;
 import platform.merchant.service.interfaces.model.internal.merchant.InternalMerchantResponses;
 import platform.merchant.service.interfaces.model.internal.merchant.InternalUpdateMerchantRequest;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.List;
 

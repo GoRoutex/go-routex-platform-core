@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import vn.com.go.routex.identity.security.log.SystemLog;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.command.merchant.AcceptMerchantApplicationCommand;
 import platform.merchant.service.application.command.merchant.AcceptMerchantApplicationResult;
 import platform.merchant.service.application.command.merchant.RejectMerchantApplicationCommand;
@@ -19,7 +19,6 @@ import platform.merchant.service.application.command.merchant.RejectMerchantAppl
 import platform.merchant.service.application.command.merchant.SubmitMerchantApplicationCommand;
 import platform.merchant.service.application.command.merchant.SubmitMerchantApplicationResult;
 import platform.merchant.service.application.service.MerchantApplicationFormService;
-import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.model.merchant.AcceptMerchantApplicationRequest;
 import platform.merchant.service.interfaces.model.merchant.AcceptMerchantApplicationResponse;
@@ -27,6 +26,7 @@ import platform.merchant.service.interfaces.model.merchant.RejectMerchantApplica
 import platform.merchant.service.interfaces.model.merchant.RejectMerchantApplicationResponse;
 import platform.merchant.service.interfaces.model.merchant.SubmitMerchantApplicationRequest;
 import platform.merchant.service.interfaces.model.merchant.SubmitMerchantApplicationResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.math.BigDecimal;
 

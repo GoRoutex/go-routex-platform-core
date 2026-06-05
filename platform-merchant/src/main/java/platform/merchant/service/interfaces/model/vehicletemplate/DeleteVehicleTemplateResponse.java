@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
 import platform.core.common.service.api.BaseResponse;
+import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
 
 @Getter
 @Setter

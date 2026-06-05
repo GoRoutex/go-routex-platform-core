@@ -1,6 +1,4 @@
 package platform.booking.service.infrastructure.persistence.utils;
-import platform.core.common.service.persistence.utils.ExceptionUtils;
-
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -8,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.experimental.UtilityClass;
 import platform.core.common.service.persistence.config.ApplicationConfig;
 import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ExceptionUtils;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.TIMEOUT_ERROR;
 import static platform.core.common.service.persistence.constant.ErrorConstant.TIMEOUT_ERROR_MESSAGE;

@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import vn.com.go.routex.identity.security.log.SystemLog;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.driver.CreateDriverCommand;
 import platform.merchant.service.application.command.driver.CreateDriverResult;
 import platform.merchant.service.application.command.driver.DeleteDriverCommand;
@@ -25,10 +26,8 @@ import platform.merchant.service.application.command.driver.FetchDriversResult;
 import platform.merchant.service.application.command.driver.UpdateDriverCommand;
 import platform.merchant.service.application.command.driver.UpdateDriverResult;
 import platform.merchant.service.application.service.DriverManagementService;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
-import platform.core.common.service.api.BaseRequest;
 import platform.merchant.service.interfaces.model.driver.CreateDriverRequest;
 import platform.merchant.service.interfaces.model.driver.CreateDriverResponse;
 import platform.merchant.service.interfaces.model.driver.DeleteDriverRequest;
@@ -40,6 +39,7 @@ import platform.merchant.service.interfaces.model.driver.FetchDriverResponse.Fet
 import platform.merchant.service.interfaces.model.driver.FetchDriverResponse.FetchDriverUserInfo;
 import platform.merchant.service.interfaces.model.driver.UpdateDriverRequest;
 import platform.merchant.service.interfaces.model.driver.UpdateDriverResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.List;
 import java.util.stream.Collectors;

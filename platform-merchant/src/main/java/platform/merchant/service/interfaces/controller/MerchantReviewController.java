@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import vn.com.go.routex.identity.security.log.SystemLog;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.application.command.review.CreateMerchantReviewCommand;
 import platform.merchant.service.application.command.review.CreateMerchantReviewResult;
 import platform.merchant.service.application.command.review.FetchMerchantReviewDetailQuery;
@@ -21,14 +22,13 @@ import platform.merchant.service.application.command.review.FetchMerchantReviewD
 import platform.merchant.service.application.command.review.FetchMerchantReviewsQuery;
 import platform.merchant.service.application.command.review.FetchMerchantReviewsResult;
 import platform.merchant.service.application.service.MerchantReviewService;
-import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
-import platform.core.common.service.api.BaseRequest;
 import platform.merchant.service.interfaces.model.review.CreateMerchantReviewRequest;
 import platform.merchant.service.interfaces.model.review.CreateMerchantReviewResponse;
 import platform.merchant.service.interfaces.model.review.FetchMerchantReviewDetailResponse;
 import platform.merchant.service.interfaces.model.review.FetchMerchantReviewsResponse;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import platform.core.common.service.persistence.AbstractAuditingEntity;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
+import platform.core.common.service.persistence.AbstractAuditingEntity;
 
 import java.time.OffsetDateTime;
 

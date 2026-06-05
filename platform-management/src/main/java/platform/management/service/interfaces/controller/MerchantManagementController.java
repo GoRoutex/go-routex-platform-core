@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import platform.core.common.service.api.BaseRequest;
 import platform.management.service.application.command.merchant.FetchMerchantDetailQuery;
 import platform.management.service.application.command.merchant.FetchMerchantDetailResult;
 import platform.management.service.application.command.merchant.FetchMerchantsQuery;
@@ -24,7 +25,6 @@ import platform.management.service.interfaces.models.merchant.FetchMerchantDetai
 import platform.management.service.interfaces.models.merchant.FetchMerchantsResponse;
 import platform.management.service.interfaces.models.merchant.UpdateMerchantRequest;
 import platform.management.service.interfaces.models.merchant.UpdateMerchantResponse;
-import platform.core.common.service.api.BaseRequest;
 
 import java.util.stream.Collectors;
 

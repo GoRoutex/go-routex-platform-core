@@ -8,16 +8,15 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import platform.core.common.service.persistence.AbstractAuditingEntity;
 import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 import platform.merchant.service.domain.merchant.model.ApplicationFormBankInfo;
 import platform.merchant.service.domain.merchant.model.ApplicationFormContact;
 import platform.merchant.service.domain.merchant.model.ApplicationFormOwner;
-import platform.core.common.service.persistence.AbstractAuditingEntity;
 
 import java.time.OffsetDateTime;
 

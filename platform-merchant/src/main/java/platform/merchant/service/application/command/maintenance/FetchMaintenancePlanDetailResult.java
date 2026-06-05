@@ -1,10 +1,10 @@
 package platform.merchant.service.application.command.maintenance;
 
 import lombok.Builder;
-import platform.merchant.service.domain.maintenance.MaintenancePlanStatus;
-import platform.merchant.service.domain.maintenance.MaintenancePlanType;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.core.common.service.domain.vehicle.VehicleTemplateCategory;
+import platform.merchant.service.domain.maintenance.MaintenancePlanStatus;
+import platform.merchant.service.domain.maintenance.MaintenancePlanType;
 import platform.merchant.service.domain.vehicle.VehicleTemplateType;
 
 import java.math.BigDecimal;

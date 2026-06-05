@@ -1,9 +1,6 @@
 package platform.merchant.service.application.command.department;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import platform.merchant.service.domain.department.DepartmentStatus;
 import platform.merchant.service.domain.department.DepartmentType;
 
