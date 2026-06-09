@@ -1,4 +1,4 @@
-package platform.core.common.service.domain.seat.model;
+package platform.merchant.service.domain.seat.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

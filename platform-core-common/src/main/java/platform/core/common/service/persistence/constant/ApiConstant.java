@@ -26,6 +26,9 @@ public class ApiConstant {
     public static final String UPDATE_PATH = "/update";
     public static final String DELETE_PATH = "/delete";
     public static final String SEARCH_PATH = "/search";
+    public static final String RECENT_ACTIVITIES = "/recent-activities";
+    public static final String ADMIN_PATH = "/admin";
+    public static final String MERCHANT_PATH = "/merchant";
     public static final String MERCHANT_SERVICE = "/merchant-service";
     public static final String APPLICATION_FORM = "/application-form";
     public static final String DRIVER_PREFIX = "/driver-service";
@@ -41,7 +44,6 @@ public class ApiConstant {
     public static final String START_TRIP_PATH = "/start-trip";
     public static final String COMPLETE_TRIP_PATH = "/complete-trip";
     public static final String INTERNAL_PATH = "/internal";
-    public static final String MERCHANT_PATH = "/merchant";
     public static final String HOLIDAY_PATH = "/holidays";
     public static final String SYSTEM_PATH = "/system";
     public static final String CLIENT_PATH = "/client";
@@ -58,7 +60,6 @@ public class ApiConstant {
     public static final String MAINTENANCE_PLAN_PATH = "/maintenance-plans";
     public static final String PROVINCES = "/provinces";
     public static final String WARDS = "/wards";
-    public static final String ADMIN_PATH = "/admin";
     public static final String DEPARTMENT = "/department";
     public static final String REVIEWS_PATH = "/reviews";
     public static final String MASTER_PATH = "/master";

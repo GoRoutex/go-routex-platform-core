@@ -19,6 +19,15 @@ public record RecentActivityItem(
         String entityType,
         String entityId,
         String merchantId,
+        String audienceType,
+        String scopeType,
+        String scopeId,
+        String visibility,
+        String severity,
+        String status,
+        String sourceService,
+        String correlationId,
+        String entityDisplayName,
         Map<String, Object> header,
         Map<String, Object> payload
 ) {

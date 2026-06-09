@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import platform.core.common.service.api.BaseRequest;
 import platform.core.common.service.domain.trip.TripStatus;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
 import platform.core.common.service.infrastructure.event.DomainEvent;
 import platform.core.common.service.infrastructure.kafka.event.TripAssignedEvent;
 import platform.core.common.service.persistence.exception.BusinessException;
@@ -21,6 +20,7 @@ import platform.merchant.service.domain.driver.DriverStatus;
 import platform.merchant.service.domain.driver.OperationStatus;
 import platform.merchant.service.domain.driver.model.DriverProfile;
 import platform.merchant.service.domain.driver.port.DriverProfileRepositoryPort;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 

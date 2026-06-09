@@ -2,7 +2,7 @@ package platform.merchant.service.infrastructure.persistence.adapter.vehicle;
 
 
 import org.springframework.stereotype.Component;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.infrastructure.persistence.jpa.vehicle.entity.VehicleEntity;
 
 @Component

@@ -1,10 +1,10 @@
 package platform.merchant.service.infrastructure.persistence.adapter.route;
 
 import org.springframework.stereotype.Component;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.assignment.model.TripAssignmentRecord;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.model.RouteStopPlan;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.infrastructure.persistence.jpa.assignment.entity.TripAssignmentEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.route.entity.RouteEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.routepoint.entity.RouteStopEntity;

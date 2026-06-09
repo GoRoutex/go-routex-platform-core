@@ -61,6 +61,33 @@ public class RecentActivityEntity extends AbstractAuditingEntity {
     @Column(name = "MERCHANT_ID")
     private String merchantId;
 
+    @Column(name = "AUDIENCE_TYPE")
+    private String audienceType;
+
+    @Column(name = "SCOPE_TYPE")
+    private String scopeType;
+
+    @Column(name = "SCOPE_ID")
+    private String scopeId;
+
+    @Column(name = "VISIBILITY")
+    private String visibility;
+
+    @Column(name = "SEVERITY")
+    private String severity;
+
+    @Column(name = "STATUS")
+    private String status;
+
+    @Column(name = "SOURCE_SERVICE")
+    private String sourceService;
+
+    @Column(name = "CORRELATION_ID")
+    private String correlationId;
+
+    @Column(name = "ENTITY_DISPLAY_NAME")
+    private String entityDisplayName;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "HEADER", columnDefinition = "jsonb")
     private Map<String, Object> header;

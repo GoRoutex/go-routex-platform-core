@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.adapter.route.RoutePersistenceMapper;
 import platform.merchant.service.infrastructure.persistence.jpa.vehicle.entity.VehicleEntity;

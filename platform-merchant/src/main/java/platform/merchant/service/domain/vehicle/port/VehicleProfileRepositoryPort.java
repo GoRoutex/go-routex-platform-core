@@ -3,7 +3,7 @@ package platform.merchant.service.domain.vehicle.port;
 
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 
 import java.util.List;
 import java.util.Map;

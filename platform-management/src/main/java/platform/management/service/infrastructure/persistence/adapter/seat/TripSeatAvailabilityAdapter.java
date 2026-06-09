@@ -1,6 +1,7 @@
 package platform.management.service.infrastructure.persistence.adapter.seat;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import platform.core.common.service.domain.seat.SeatStatus;
 import platform.merchant.service.infrastructure.persistence.jpa.seat.projection.TripSeatAvailabilityProjection;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@Primary
 @RequiredArgsConstructor
 public class TripSeatAvailabilityAdapter implements platform.core.common.service.domain.seat.port.TripSeatAvailabilityPort {
 

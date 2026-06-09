@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import platform.core.common.service.application.command.common.PagedResult;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ApiRequestUtils;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
@@ -22,6 +21,7 @@ import platform.merchant.service.application.service.MaintenancePlanManagementSe
 import platform.merchant.service.domain.maintenance.MaintenancePlanStatus;
 import platform.merchant.service.domain.maintenance.model.MaintenancePlan;
 import platform.merchant.service.domain.maintenance.port.MaintenancePlanRepositoryPort;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;

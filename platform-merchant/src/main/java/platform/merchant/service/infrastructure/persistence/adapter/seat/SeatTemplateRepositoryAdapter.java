@@ -3,7 +3,7 @@ package platform.merchant.service.infrastructure.persistence.adapter.seat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import platform.core.common.service.domain.seat.SeatFloor;
-import platform.core.common.service.domain.seat.model.SeatTemplate;
+import platform.merchant.service.domain.seat.model.SeatTemplate;
 import platform.merchant.service.domain.seat.port.SeatTemplateRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.jpa.seat.repository.SeatTemplateEntityRepository;
 

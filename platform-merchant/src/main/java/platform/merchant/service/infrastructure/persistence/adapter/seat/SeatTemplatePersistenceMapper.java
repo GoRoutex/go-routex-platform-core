@@ -1,7 +1,7 @@
 package platform.merchant.service.infrastructure.persistence.adapter.seat;
 
 import org.springframework.stereotype.Component;
-import platform.core.common.service.domain.seat.model.SeatTemplate;
+import platform.merchant.service.domain.seat.model.SeatTemplate;
 import platform.merchant.service.infrastructure.persistence.jpa.seat.entity.SeatTemplateEntity;
 
 @Component

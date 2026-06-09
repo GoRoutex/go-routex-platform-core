@@ -1,4 +1,4 @@
-package platform.core.common.service.domain.vehicle.model;
+package platform.merchant.service.domain.vehicle.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

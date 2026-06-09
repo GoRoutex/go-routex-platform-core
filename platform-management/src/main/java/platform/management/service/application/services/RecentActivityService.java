@@ -14,8 +14,18 @@ public interface RecentActivityService {
     Page<RecentActivity> fetch(
             OffsetDateTime from,
             OffsetDateTime to,
+            String audienceType,
+            String scopeType,
+            String scopeId,
             String merchantId,
             Set<String> eventTypes,
+            String severity,
+            String status,
+            String sourceService,
+            String entityType,
+            String entityId,
+            String actorUserId,
+            String keyword,
             int pageNumber,
             int pageSize
     );

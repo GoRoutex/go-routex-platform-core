@@ -2,7 +2,6 @@ package platform.management.service.application.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import platform.core.common.service.domain.seat.model.SeatTemplate;
 import platform.core.common.service.domain.seat.model.TripSeat;
 import platform.core.common.service.domain.seat.port.TripSeatRepositoryPort;
 import platform.core.common.service.infrastructure.redis.models.TripCacheSeat;
@@ -12,6 +11,7 @@ import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.management.service.application.command.seat.SearchSeatCommand;
 import platform.management.service.application.command.seat.SearchSeatResult;
 import platform.management.service.application.services.TripSeatService;
+import platform.merchant.service.domain.seat.model.SeatTemplate;
 import platform.merchant.service.domain.seat.port.SeatTemplateRepositoryPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 

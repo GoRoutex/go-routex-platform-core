@@ -14,6 +14,8 @@ import platform.core.common.service.persistence.utils.JsonUtils;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -131,6 +133,77 @@ public class KafkaEventPublisher {
         }
     }
 
+    public void publishRecentActivity(
+            String topicName,
+            String audienceType,
+            String scopeType,
+            String scopeId,
+            String visibility,
+            String severity,
+            String status,
+            String sourceService,
+            String correlationId,
+            String merchantId,
+            String eventKey,
+            String aggregateId,
+            String title,
+            String message,
+            String actorUserId,
+            String actorName,
+            String entityType,
+            String entityId,
+            String entityDisplayName,
+            Map<String, Object> metadata
+    ) {
+        try {
+            Map<String, Object> header = new HashMap<>();
+            putIfNotBlank(header, "audienceType", audienceType);
+            putIfNotBlank(header, "scopeType", scopeType);
+            putIfNotBlank(header, "scopeId", scopeId);
+            putIfNotBlank(header, "visibility", visibility);
+            putIfNotBlank(header, "severity", severity);
+            putIfNotBlank(header, "status", status);
+            putIfNotBlank(header, "sourceService", sourceService);
+            putIfNotBlank(header, "correlationId", correlationId);
+            putIfNotBlank(header, "merchantId", merchantId);
+
+            Map<String, Object> data = new HashMap<>();
+            putIfNotBlank(data, "audienceType", audienceType);
+            putIfNotBlank(data, "scopeType", scopeType);
+            putIfNotBlank(data, "scopeId", scopeId);
+            putIfNotBlank(data, "visibility", visibility);
+            putIfNotBlank(data, "severity", severity);
+            putIfNotBlank(data, "status", status);
+            putIfNotBlank(data, "sourceService", sourceService);
+            putIfNotBlank(data, "correlationId", correlationId);
+            putIfNotBlank(data, "merchantId", merchantId);
+            putIfNotBlank(data, "title", title);
+            putIfNotBlank(data, "message", message);
+            putIfNotBlank(data, "actorUserId", actorUserId);
+            putIfNotBlank(data, "actorName", actorName);
+            putIfNotBlank(data, "entityType", entityType);
+            putIfNotBlank(data, "entityId", entityId);
+            putIfNotBlank(data, "entityDisplayName", entityDisplayName);
+            if (metadata != null && !metadata.isEmpty()) {
+                data.put("metadata", metadata);
+            }
+
+            DomainEvent event = DomainEvent.builder()
+                    .eventId(UUID.randomUUID().toString())
+                    .eventType("routex.recent-activity." + normalizeEventKey(eventKey))
+                    .eventKey(eventKey)
+                    .aggregateId(aggregateId)
+                    .occurredAt(OffsetDateTime.now())
+                    .header(header)
+                    .payload(Map.of("data", data))
+                    .build();
+
+            kafkaTemplate.send(topicName, aggregateId, objectMapper.writeValueAsString(event));
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Kafka recent activity publish failed: ", ex);
+        }
+    }
+
     private DomainEvent toDomainEvent(OutBoxEvent outBoxEvent) {
 
         if(outBoxEvent == null) {
@@ -145,5 +218,18 @@ public class KafkaEventPublisher {
                 .payload(outBoxEvent.getPayload())
                 .occurredAt(outBoxEvent.getProcessedAt())
                 .build();
+    }
+
+    private static void putIfNotBlank(Map<String, Object> target, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            target.put(key, value);
+        }
+    }
+
+    private static String normalizeEventKey(String eventKey) {
+        if (eventKey == null || eventKey.isBlank()) {
+            return "unknown";
+        }
+        return eventKey.trim().toLowerCase().replace('_', '-');
     }
 }

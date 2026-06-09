@@ -7,7 +7,6 @@ import platform.core.common.service.application.command.common.PageInfo;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.domain.seat.port.TripSeatAvailabilityPort;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.management.service.application.command.route.FetchTripQuery;
@@ -36,6 +35,7 @@ import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
 import platform.merchant.service.domain.route.port.RouteStopRepositoryPort;
 import platform.merchant.service.domain.trip.port.TripQueryPort;
 import platform.merchant.service.domain.trip.readmodel.TripFetchView;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 

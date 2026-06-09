@@ -3,8 +3,6 @@ package platform.merchant.service.application.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import platform.core.common.service.common.RequestContext;
-import platform.core.common.service.domain.seat.model.SeatTemplate;
-import platform.core.common.service.domain.vehicle.model.VehicleProfile;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.service.InternalBookingContextService;
@@ -12,9 +10,11 @@ import platform.merchant.service.domain.assignment.model.TripAssignmentRecord;
 import platform.merchant.service.domain.assignment.port.TripAssignmentRepositoryPort;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
+import platform.merchant.service.domain.seat.model.SeatTemplate;
 import platform.merchant.service.domain.seat.port.SeatTemplateRepositoryPort;
 import platform.merchant.service.domain.trip.model.TripAggregate;
 import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
@@ -30,7 +30,7 @@ import static platform.core.common.service.persistence.constant.ErrorConstant.VE
 
 @Service
 @RequiredArgsConstructor
-public class InternalBookingContextServiceImpl implements InternalBookingContextService {
+public class InternalBookingContextServiceImpl implements InternalBookingContextService, platform.core.common.service.api.InternalBookingContextService {
 
     private final TripAggregateRepositoryPort tripAggregateRepositoryPort;
     private final TripAssignmentRepositoryPort tripAssignmentRepositoryPort;
@@ -91,6 +91,39 @@ public class InternalBookingContextServiceImpl implements InternalBookingContext
                                 .floor(seat.getFloor())
                                 .rowNo(seat.getRowNo())
                                 .columnNo(seat.getColumnNo())
+                                .build())
+                        .toList())
+                .build();
+    }
+
+    @Override
+    public platform.core.common.service.api.TripBookingContextResponse getTripBookingContext(String tripId, RequestContext context) {
+        InternalBookingContextResponses.TripBookingContextData data = fetchTripBookingContext(tripId, context);
+        return platform.core.common.service.api.TripBookingContextResponse.builder()
+                .tripId(data.getTripId())
+                .routeId(data.getRouteId())
+                .merchantId(data.getMerchantId())
+                .vehicleId(data.getVehicleId())
+                .status(data.getTripStatus())
+                .basePrice(data.getTicketPrice())
+                .build();
+    }
+
+    @Override
+    public platform.core.common.service.api.VehicleSeatBlueprintResponse getVehicleSeatBlueprint(String vehicleId, RequestContext context) {
+        InternalBookingContextResponses.VehicleSeatBlueprintData data = fetchVehicleSeatBlueprint(vehicleId, context);
+        return platform.core.common.service.api.VehicleSeatBlueprintResponse.builder()
+                .blueprintId(data.getTemplateId())
+                .merchantId(data.getMerchantId())
+                .vehicleType(data.getVehicleStatus() == null ? null : data.getVehicleStatus().name())
+                .totalSeats(data.getSeatCapacity() == null ? null : data.getSeatCapacity().intValue())
+                .numberOfFloors(data.isHasFloor() ? 2 : 1)
+                .seatConfigs(data.getSeats().stream()
+                        .map(seat -> platform.core.common.service.api.VehicleSeatBlueprintResponse.SeatConfig.builder()
+                                .seatNo(seat.getSeatCode())
+                                .floor(seat.getFloor() == null ? null : seat.getFloor().ordinal() + 1)
+                                .x(seat.getColumnNo())
+                                .y(seat.getRowNo())
                                 .build())
                         .toList())
                 .build();
