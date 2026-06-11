@@ -3,6 +3,7 @@ package platform.core.common.service.domain.ticket.port;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.domain.ticket.TicketStatus;
 import platform.core.common.service.domain.ticket.model.Ticket;
 
 import java.time.OffsetDateTime;
@@ -27,6 +28,15 @@ public interface TicketRepositoryPort {
     long countByMerchantId(String merchantId);
 
     Page<Ticket> findAllByMerchantId(String merchantId, Pageable pageable);
+
+    Page<Ticket> findByMerchantFilters(
+            String merchantId,
+            String query,
+            TicketStatus status,
+            OffsetDateTime issuedFrom,
+            OffsetDateTime issuedTo,
+            Pageable pageable
+    );
 
     Page<Ticket> findByCustomer(
             String email,

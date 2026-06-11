@@ -5,18 +5,20 @@ import org.springframework.stereotype.Service;
 import platform.core.common.service.application.command.common.PageContext;
 import platform.core.common.service.application.command.common.PageInfo;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.application.readmodel.TripSearchView;
 import platform.core.common.service.common.RequestContext;
-import platform.core.common.service.domain.seat.port.TripSeatAvailabilityPort;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
-import platform.management.service.application.command.route.FetchTripQuery;
-import platform.management.service.application.command.route.FetchTripResult;
-import platform.management.service.application.command.route.FetchTripsQuery;
-import platform.management.service.application.command.route.FetchTripsResult;
-import platform.management.service.application.command.route.RoutePointResult;
-import platform.management.service.application.command.route.SearchTripItemResult;
-import platform.management.service.application.command.route.SearchTripQuery;
-import platform.management.service.application.command.route.SearchTripResult;
+import platform.management.service.application.command.trip.FetchTripQuery;
+import platform.management.service.application.command.trip.FetchTripResult;
+import platform.management.service.application.command.trip.FetchTripsQuery;
+import platform.management.service.application.command.trip.FetchTripsResult;
+import platform.management.service.application.command.trip.RoutePointResult;
+import platform.management.service.application.command.trip.SearchRoundTripQuery;
+import platform.management.service.application.command.trip.SearchRoundTripResult;
+import platform.management.service.application.command.trip.SearchTripItemResult;
+import platform.management.service.application.command.trip.SearchTripQuery;
+import platform.management.service.application.command.trip.SearchTripResult;
 import platform.management.service.application.services.TripManagementService;
 import platform.management.service.domain.assignment.port.TripAssignmentRepositoryPort;
 import platform.management.service.domain.trip.model.TripAggregate;
@@ -33,13 +35,18 @@ import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.model.RouteStopPlan;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
 import platform.merchant.service.domain.route.port.RouteStopRepositoryPort;
+import platform.merchant.service.domain.seat.port.TripSeatAvailabilityPort;
 import platform.merchant.service.domain.trip.port.TripQueryPort;
 import platform.merchant.service.domain.trip.readmodel.TripFetchView;
 import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -70,43 +77,121 @@ public class TripManagementServiceImpl implements TripManagementService {
     private final DepartmentRepositoryPort departmentRepositoryPort;
     private final SystemLog sLog = SystemLog.getLogger(this.getClass());
 
+
+    @Override
+    public SearchRoundTripResult searchRoundTrip(SearchRoundTripQuery query) {
+        PageInfo pageInfo = validatePageContext(query.context(), query.pageContext());
+        validateRoundTripQuery(query);
+        return SearchRoundTripResult.builder()
+                .outBoundTrip(searchTripLeg(
+                        query.outBoundTrip().originName(),
+                        query.outBoundTrip().destinationName(),
+                        query.outBoundTrip().departureDate(),
+                        query.seat(),
+                        pageInfo,
+                        query.context()
+                ))
+                .returnTrip(searchTripLeg(
+                        query.returnTrip().originName(),
+                        query.returnTrip().destinationName(),
+                        query.returnTrip().departureDate(),
+                        query.seat(),
+                        pageInfo,
+                        query.context()
+                ))
+                .build();
+    }
+
     @Override
     public SearchTripResult searchTrip(SearchTripQuery query) {
         PageInfo pageInfo = validatePageContext(query.context(), query.pageContext());
 
-        List<platform.core.common.service.application.readmodel.TripSearchView> searchedRoutes = tripQueryPort.searchAssignedTrips(
-                null,
+        List<SearchTripItemResult> items = searchTripLeg(
                 query.originName(),
                 query.destinationName(),
+                query.departureDate(),
+                query.seat(),
+                pageInfo,
+                query.context()
+        );
+
+        return SearchTripResult.builder()
+                .data(items)
+                .build();
+    }
+
+    private List<SearchTripItemResult> searchTripLeg(String originName,
+                                                     String destinationName,
+                                                     String departureDate,
+                                                     String seat,
+                                                     PageInfo pageInfo,
+                                                     RequestContext context) {
+        List<TripSearchView> searchedTrips = tripQueryPort.searchAssignedTrips(
+                originName,
+                destinationName,
+                departureDate,
                 pageInfo.pageNumber() - 1, // external is 1-based; Spring Data is 0-based
                 pageInfo.pageSize()
         );
 
         TripEnrichment enrichment = enrichRoutes(
-                searchedRoutes.stream().map(platform.core.common.service.application.readmodel.TripSearchView::getId).toList(),
-                searchedRoutes.stream().map(platform.core.common.service.application.readmodel.TripSearchView::getRouteId).toList(),
-                searchedRoutes.stream().flatMap(route -> Stream.of(
-                        route.getOriginDepartmentId(),
-                        route.getDestinationDepartmentId()
+                searchedTrips.stream().map(t -> t.getTripInformation().getId()).toList(),
+                searchedTrips.stream().map(t -> t.getRouteInformation().getRouteId()).toList(),
+                searchedTrips.stream().flatMap(route -> Stream.of(
+                        route.getRouteInformation().getOriginDepartmentId(),
+                        route.getRouteInformation().getDestinationDepartmentId()
                 ))
                         .filter(Objects::nonNull)
                         .distinct().toList()
         );
 
-        sLog.info("Enrichment: {}", enrichment);
-
         Map<String, String> merchantNames = fetchMerchantNames(
-                searchedRoutes.stream().map(platform.core.common.service.application.readmodel.TripSearchView::getMerchantId).distinct().toList(),
-                query.context()
+                searchedTrips.stream().map(t -> t.getTripInformation().getMerchantId()).distinct().toList(),
+                context
         );
 
-        List<SearchTripItemResult> items = searchedRoutes.stream()
+        return searchedTrips.stream()
                 .map(route -> toSearchRouteItem(route, enrichment, merchantNames))
+                .filter(item -> hasEnoughSeats(item, seat))
                 .collect(Collectors.toList());
+    }
 
-        return SearchTripResult.builder()
-                .data(items)
-                .build();
+    private void validateRoundTripQuery(SearchRoundTripQuery query) {
+        if (query.outBoundTrip() == null || query.returnTrip() == null) {
+            throw new BusinessException(
+                    query.context().requestId(),
+                    query.context().requestDateTime(),
+                    query.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "outboundData and returnData are required")
+            );
+        }
+        if (query.outBoundTrip().departureDate() == null || query.outBoundTrip().departureDate().isBlank()
+                || query.returnTrip().departureDate() == null || query.returnTrip().departureDate().isBlank()) {
+            throw new BusinessException(
+                    query.context().requestId(),
+                    query.context().requestDateTime(),
+                    query.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "departureDate is required for round trip")
+            );
+        }
+        LocalDate outboundDate = LocalDate.parse(query.outBoundTrip().departureDate().trim());
+        LocalDate returnDate = LocalDate.parse(query.returnTrip().departureDate().trim());
+        if (returnDate.isBefore(outboundDate)) {
+            throw new BusinessException(
+                    query.context().requestId(),
+                    query.context().requestDateTime(),
+                    query.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "return departureDate must be on or after outbound departureDate")
+            );
+        }
+    }
+
+    private boolean hasEnoughSeats(SearchTripItemResult item, String seat) {
+        if (seat == null || seat.isBlank()) {
+            return true;
+        }
+        int requestedSeats = Integer.parseInt(seat.trim());
+        return item.availableSeats() != null && item.availableSeats() >= requestedSeats;
     }
 
     @Override
@@ -134,6 +219,46 @@ public class TripManagementServiceImpl implements TripManagementService {
         return toFetchTripDetail(route, trip, enrichment);
     }
 
+    @Override
+    public FetchTripsResult fetchTrips(FetchTripsQuery query) {
+        PageInfo pageInfo = validatePageContext(query.context(), query.pageContext());
+        DateRange dateRange = resolveDateFilter(query.context(), query.dateFilter());
+
+        // external is 1-based; Spring Data is 0-based
+        PagedResult<TripFetchView> page = tripQueryPort.fetchTrips(
+                dateRange.from(),
+                dateRange.to(),
+                pageInfo.pageNumber() - 1,
+                pageInfo.pageSize()
+        );
+
+        List<TripFetchView> trips = page.getItems();
+        TripEnrichment enrichment = enrichRoutes(
+                trips.stream().map(TripFetchView::getId).toList(),
+                trips.stream().map(TripFetchView::getRouteId).toList(),
+                trips.stream()
+                        .flatMap(trip -> Stream.of(
+                                trip.getOriginDepartmentId(),
+                                trip.getDestinationDepartmentId()
+                        ))
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .toList()
+        );
+
+        List<FetchTripResult> items = trips.stream()
+                .map(trip -> toFetchRouteItem(trip, enrichment))
+                .collect(Collectors.toList());
+
+        return FetchTripsResult.builder()
+                .items(items)
+                .pageNumber(page.getPageNumber() + 1)
+                .pageSize(page.getPageSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
     private RoutePointResult toRoutePoint(RouteStopPlan s) {
         return RoutePointResult.builder()
                 .id(s.getId())
@@ -150,44 +275,32 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .build();
     }
 
+    private DateRange resolveDateFilter(RequestContext context, String dateFilter) {
+        if (dateFilter == null || dateFilter.isBlank()) {
+            return new DateRange(null, null);
+        }
 
-    @Override
-    public FetchTripsResult fetchTrips(FetchTripsQuery query) {
-        PageInfo pageInfo = validatePageContext(query.context(), query.pageContext());
-        // external is 1-based; Spring Data is 0-based
-        PagedResult<TripFetchView> page = tripQueryPort.fetchTrips(
-                query.merchantId(),
-                resolveMerchantIds(query),
-                pageInfo.pageNumber() - 1,
-                pageInfo.pageSize()
-        );
+        LocalDate targetDate = switch (dateFilter.trim().toUpperCase(Locale.ROOT)) {
+            case "YESTERDAY" -> LocalDate.now().minusDays(1);
+            case "TODAY" -> LocalDate.now();
+            case "TOMORROW" -> LocalDate.now().plusDays(1);
+            default -> throw new BusinessException(
+                    context.requestId(),
+                    context.requestDateTime(),
+                    context.channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "dateFilter must be YESTERDAY, TODAY, or TOMORROW")
+            );
+        };
 
-        List<TripFetchView> routes = page.getItems();
-        TripEnrichment enrichment = enrichRoutes(
-                routes.stream().map(TripFetchView::getId).toList(),
-                routes.stream().map(TripFetchView::getRouteId).toList(),
-                routes.stream()
-                        .flatMap(route -> Stream.of(
-                                route.getOriginDepartmentId(),
-                                route.getDestinationDepartmentId()
-                        ))
-                        .filter(Objects::nonNull)
-                        .distinct()
-                        .toList()
-        );
-
-        List<FetchTripResult> items = routes.stream()
-                .map(route -> toFetchRouteItem(route, enrichment))
-                .collect(Collectors.toList());
-
-        return FetchTripsResult.builder()
-                .items(items)
-                .pageNumber(page.getPageNumber() + 1)
-                .pageSize(page.getPageSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .build();
+        ZoneId zoneId = ZoneId.systemDefault();
+        OffsetDateTime from = targetDate.atStartOfDay(zoneId).toOffsetDateTime();
+        OffsetDateTime to = targetDate.plusDays(1).atStartOfDay(zoneId).toOffsetDateTime();
+        return new DateRange(from, to);
     }
+
+    private record DateRange(OffsetDateTime from, OffsetDateTime to) {
+    }
+
     private TripEnrichment enrichRoutes(List<String> tripIds, List<String> routeIds, List<String> departmentIds) {
         if (tripIds.isEmpty()) {
             return new TripEnrichment(Map.of(), Map.of(), Map.of(), Map.of(), Map.of());
@@ -213,56 +326,49 @@ public class TripManagementServiceImpl implements TripManagementService {
     }
 
     private SearchTripItemResult toSearchRouteItem(
-            platform.core.common.service.application.readmodel.TripSearchView trip,
+            TripSearchView trip,
             TripEnrichment enrichment,
             Map<String, String> merchantNames
     ) {
-        TripAssignmentRecord assignment = enrichment.assignments().get(trip.getId());
+        TripSearchView.TripInformation tripInformation = trip.getTripInformation();
+        TripSearchView.TripAssignment searchAssignment = trip.getAssignment();
+        TripSearchView.RouteInformation routeInformation = trip.getRouteInformation();
+        TripAssignmentRecord assignment = enrichment.assignments().get(tripInformation.getId());
         VehicleProfile vehicle = findVehicle(assignment, enrichment);
-        List<RouteStopPlan> routeStopPlans = enrichment.stopsByRouteId().get(trip.getRouteId());
+        List<RouteStopPlan> routeStopPlans = enrichment.stopsByRouteId().get(routeInformation.getRouteId());
         List<RoutePointResult> routePointResults = toRoutePoints(routeStopPlans);
-
-        String originDepartmentName = enrichment.departmentMap.get(trip.getOriginDepartmentId()).getName();
-        String destinationDepartmentName = enrichment.departmentMap.get(trip.getDestinationDepartmentId()).getName();
+        sLog.info("Enrichment DepartmentMap: {}", enrichment.departmentMap);
+        String originDepartmentName = enrichment.departmentMap.get(routeInformation.getOriginDepartmentId()).getName();
+        String destinationDepartmentName = enrichment.departmentMap.get(routeInformation.getDestinationDepartmentId()).getName();
 
         return SearchTripItemResult.builder()
-                .id(trip.getId())
-                .merchantId(trip.getMerchantId())
-                .vehicleId(assignment.getVehicleId())
-                .driverId(assignment.getDriverId())
-                .ticketPrice(assignment.getTicketPrice())
-                .merchantName(merchantNames.get(trip.getMerchantId()))
-                .tripCode(trip.getTripCode())
-                .originCode(trip.getOriginCode())
-                .originName(trip.getOriginName())
-                .destinationName(trip.getDestinationName())
-                .destinationCode(trip.getDestinationCode())
-                .originProvinceId(trip.getOriginProvinceId())
-                .destinationProvinceId(trip.getDestinationProvinceId())
-                .originDepartmentId(trip.getOriginDepartmentId())
+                .id(tripInformation.getId())
+                .merchantId(tripInformation.getMerchantId())
+                .vehicleId(searchAssignment.getVehicleId())
+                .driverId(searchAssignment.getDriverId())
+                .routeId(routeInformation.getRouteId())
+                .ticketPrice(searchAssignment.getTicketPrice())
+                .merchantName(merchantNames.get(tripInformation.getMerchantId()))
+                .tripCode(tripInformation.getTripCode())
+                .originCode(routeInformation.getOriginCode())
+                .originName(routeInformation.getOriginName())
+                .destinationName(routeInformation.getDestinationName())
+                .destinationCode(routeInformation.getDestinationCode())
+                .originProvinceId(routeInformation.getOriginProvinceId())
+                .destinationProvinceId(routeInformation.getDestinationProvinceId())
+                .originDepartmentId(routeInformation.getOriginDepartmentId())
                 .originDepartmentName(originDepartmentName)
-                .destinationDepartmentId(trip.getDestinationDepartmentId())
+                .destinationDepartmentId(routeInformation.getDestinationDepartmentId())
                 .destinationDepartmentName(destinationDepartmentName)
-                .availableSeats(enrichment.seatAvailable().getOrDefault(trip.getId(), 0L))
-                .departureTime(trip.getDepartureTime())
-                .rawDepartureTime(trip.getRawDepartureTime())
-                .rawDepartureDate(trip.getRawDepartureDate())
-                .durationMinutes(trip.getDurationMinutes())
+                .availableSeats(enrichment.seatAvailable().getOrDefault(tripInformation.getId(), 0L))
+                .departureTime(tripInformation.getDepartureTime())
+                .rawDepartureTime(tripInformation.getRawDepartureTime())
+                .rawDepartureDate(tripInformation.getRawDepartureDate())
+                .durationMinutes(routeInformation.getDurationMinutes())
                 .vehiclePlate(vehicle == null ? null : vehicle.getVehiclePlate())
                 .hasFloor(vehicle != null && vehicle.isHasFloor())
                 .routePoints(routePointResults)
                 .build();
-    }
-
-    private List<String> resolveMerchantIds(FetchTripsQuery query) {
-        if (query.merchantName() == null || query.merchantName().isBlank()) {
-            return null;
-        }
-
-        return InternalApiExecutor.execute(
-                query.context(),
-                () -> merchantPlatformInternalClient.searchMerchantIds(query.merchantName().trim())
-        );
     }
 
     private Map<String, String> fetchMerchantNames(List<String> merchantIds, RequestContext context) {
@@ -312,12 +418,16 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .creator(trip.getCreator())
                 .tripCode(trip.getTripCode())
                 .originCode(trip.getOriginCode())
+                .merchantId(trip.getMerchantId())
+                .merchantName(trip.getMerchantName())
                 .originName(trip.getOriginName())
                 .destinationCode(trip.getDestinationCode())
                 .destinationName(trip.getDestinationName())
                 .originProvinceId(trip.getOriginProvinceId())
                 .destinationProvinceId(trip.getDestinationProvinceId())
                 .originDepartmentId(trip.getOriginDepartmentId())
+                .originDepartmentName(trip.getOriginDepartmentName())
+                .destinationDepartmentName(trip.getDestinationDepartmentName())
                 .destinationDepartmentId(trip.getDestinationDepartmentId())
                 .departureTime(trip.getDepartureTime())
                 .rawDepartureTime(trip.getRawDepartureTime())
@@ -329,6 +439,8 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .hasFloor(vehicle != null && vehicle.isHasFloor())
                 .assignedAt(assignment == null ? null : assignment.getAssignedAt())
                 .routePoints(toRoutePoints(enrichment.stopsByRouteId().get(trip.getRouteId())))
+                .ticketPrice(assignment.getTicketPrice())
+                .availableSeat(enrichment.seatAvailable.get(trip.getId()))
                 .build();
     }
 

@@ -1,4 +1,4 @@
-package platform.management.service.application.command.route;
+package platform.management.service.application.command.trip;
 
 import lombok.Builder;
 import platform.core.common.service.application.command.common.PageContext;

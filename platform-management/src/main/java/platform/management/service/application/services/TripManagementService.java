@@ -1,12 +1,14 @@
 package platform.management.service.application.services;
 
 
-import platform.management.service.application.command.route.FetchTripQuery;
-import platform.management.service.application.command.route.FetchTripResult;
-import platform.management.service.application.command.route.FetchTripsQuery;
-import platform.management.service.application.command.route.FetchTripsResult;
-import platform.management.service.application.command.route.SearchTripQuery;
-import platform.management.service.application.command.route.SearchTripResult;
+import platform.management.service.application.command.trip.FetchTripQuery;
+import platform.management.service.application.command.trip.FetchTripResult;
+import platform.management.service.application.command.trip.FetchTripsQuery;
+import platform.management.service.application.command.trip.FetchTripsResult;
+import platform.management.service.application.command.trip.SearchRoundTripQuery;
+import platform.management.service.application.command.trip.SearchRoundTripResult;
+import platform.management.service.application.command.trip.SearchTripQuery;
+import platform.management.service.application.command.trip.SearchTripResult;
 
 public interface TripManagementService {
     SearchTripResult searchTrip(SearchTripQuery query);
@@ -14,4 +16,6 @@ public interface TripManagementService {
     FetchTripResult fetchTripDetail(FetchTripQuery query);
 
     FetchTripsResult fetchTrips(FetchTripsQuery query);
+
+    SearchRoundTripResult searchRoundTrip(SearchRoundTripQuery query);
 }

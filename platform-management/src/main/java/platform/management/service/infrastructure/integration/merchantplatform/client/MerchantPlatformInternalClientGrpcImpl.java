@@ -8,6 +8,7 @@ import platform.core.common.service.api.ApiResult;
 import platform.core.common.service.api.BaseResponse;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.common.RequestAttributes;
+import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.persistence.constant.ErrorConstant;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformFetchMerchantsRequest;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformInternalModels;
@@ -100,7 +101,7 @@ public class MerchantPlatformInternalClientGrpcImpl implements MerchantPlatformI
         return successResponse(mapApplicationFormData(form));
     }
 
-    private platform.core.common.service.common.RequestContext buildRequestContext() {
+    private RequestContext buildRequestContext() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         String requestId = null;
         String requestDateTime = null;
@@ -120,7 +121,7 @@ public class MerchantPlatformInternalClientGrpcImpl implements MerchantPlatformI
         if (channel == null || channel.isBlank()) {
             channel = "ONL";
         }
-        return platform.core.common.service.common.RequestContext.builder()
+        return RequestContext.builder()
                 .requestId(requestId)
                 .requestDateTime(requestDateTime)
                 .channel(channel)

@@ -1,4 +1,4 @@
-package platform.management.service.application.command.route;
+package platform.management.service.application.command.trip;
 
 import lombok.Builder;
 
@@ -11,6 +11,7 @@ public record SearchTripItemResult(
         String id,
         String merchantId,
         String vehicleId,
+        String routeId,
         String driverId,
         String merchantName,
         String originCode,

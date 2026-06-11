@@ -99,6 +99,7 @@ spring:
       payments: ${KAFKA_TOPIC_PAYMENTS:route.payments.event}
       seats: ${KAFKA_TOPIC_SEATS:seat.event.management}
       notifications: ${KAFKA_TOPIC_NOTIFICATIONS:notification.event.management}
+      activities: ${KAFKA_TOPIC_ACTIVITIES:recent.activities.event}
       dead-letter: ${KAFKA_TOPIC_DEAD_LETTER:bus-dead-letter-queue}
     group-id:
       booking-trips: ${KAFKA_GROUP_BOOKING_TRIPS:booking-service-trips}
@@ -186,6 +187,7 @@ kafka:
     notification-sms: ${KAFKA_EVENT_NOTIFICATION_SMS:routex.notification.sms}
     notification-activities: ${KAFKA_EVENT_NOTIFICATION_ACTIVITIES:routex.notification.activities}
   topics:
+    activities: ${KAFKA_TOPIC_ACTIVITIES:recent.activities.event}
     trips: ${KAFKA_TOPIC_TRIPS:trip.management.event}
     routes: ${KAFKA_TOPIC_ROUTES:route.management.event}
     booking: ${KAFKA_TOPIC_BOOKING:route.bookings.event}

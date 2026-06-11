@@ -1,4 +1,4 @@
-package platform.core.common.service.domain.seat.port;
+package platform.merchant.service.domain.seat.port;
 
 import java.util.List;
 import java.util.Map;

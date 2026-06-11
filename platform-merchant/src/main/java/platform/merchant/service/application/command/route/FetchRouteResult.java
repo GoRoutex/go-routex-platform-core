@@ -19,6 +19,6 @@ public record FetchRouteResult(
         String destinationDepartmentName,
         Long duration,
         RouteStatus status,
-        List<platform.merchant.service.application.command.route.RoutePointResult> routePoints
+        List<RoutePointResult> routePoints
 ) {
 }

@@ -34,20 +34,20 @@ public interface TripAssignmentEntityRepository extends JpaRepository<TripAssign
               AND ra.unassigned_at IS NULL
         """, nativeQuery = true)
     List<TripAssignmentEntity> findActiveByTripIdsNative(
-            @Param("TripIds") List<String> tripIds,
+            @Param("tripIds") List<String> tripIds,
             @Param("status") String status
     );
 
     @Query(value = """
             SELECT ra.*
             FROM trip_assignment ra
-            WHERE ra.trip_id IN (:TripIds)
+            WHERE ra.trip_id IN (:tripIds)
               AND ra.merchant_id = :merchantId
               AND ra.status = :status
               AND ra.unassigned_at IS NULL
         """, nativeQuery = true)
     List<TripAssignmentEntity> findActiveByTripIdsAndMerchantIdNative(
-            @Param("TripIds") List<String> TripIds,
+            @Param("tripIds") List<String> TripIds,
             @Param("merchantId") String merchantId,
             @Param("status") String status
     );

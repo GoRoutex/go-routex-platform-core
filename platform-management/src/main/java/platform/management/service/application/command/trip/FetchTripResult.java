@@ -1,8 +1,9 @@
-package platform.management.service.application.command.route;
+package platform.management.service.application.command.trip;
 
 import lombok.Builder;
 import platform.core.common.service.domain.trip.TripStatus;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -11,6 +12,8 @@ public record FetchTripResult(
         String id,
         String creator,
         String tripCode,
+        String merchantId,
+        String merchantName,
         String originCode,
         String originName,
         String destinationCode,
@@ -30,6 +33,8 @@ public record FetchTripResult(
         String vehiclePlate,
         Boolean hasFloor,
         OffsetDateTime assignedAt,
+        BigDecimal ticketPrice,
+        Long availableSeat,
         List<RoutePointResult> routePoints
 ) {
 }

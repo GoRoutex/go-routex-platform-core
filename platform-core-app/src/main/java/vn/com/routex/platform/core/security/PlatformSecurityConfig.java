@@ -48,7 +48,12 @@ public class PlatformSecurityConfig {
                                 "/swagger-ui.html",
                                 "/api/v1/booking-service/trips/hold-seat",
                                 "/api/v1/booking-service/payments/context",
+                                "/api/v1/management/trip-service/fetch",
                                 "/api/v1/payment-service/vnpay-ipn",
+                                "/api/v1/merchant-service/provinces/search",
+                                "/api/v1/management/trip-service/search",
+                                "/api/v1/management/seat-diagram/search",
+                                "/api/v1/management/trip-service/detail",
                                 "/api/v1/payment-service/return-url"
                         ).permitAll()
                         .anyRequest().authenticated()

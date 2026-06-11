@@ -40,6 +40,7 @@ import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
 import platform.merchant.service.interfaces.model.assignment.AssignRouteBatchRequest;
 import platform.merchant.service.interfaces.model.assignment.AssignRouteBatchResponse;
+import platform.merchant.service.interfaces.model.assignment.AssignRouteRequest;
 import platform.merchant.service.interfaces.model.assignment.AssignRouteResponse;
 import platform.merchant.service.interfaces.model.trip.CreateTripBatchRequest;
 import platform.merchant.service.interfaces.model.trip.CreateTripBatchResponse;
@@ -89,7 +90,7 @@ public class MerchantTripController {
     }
 
     @PostMapping(TRIPS_PATH + ASSIGNMENT_PATH)
-    public ResponseEntity<AssignRouteResponse> assignRoute(@Valid @RequestBody platform.merchant.service.interfaces.model.assignment.AssignRouteRequest request,
+    public ResponseEntity<AssignRouteResponse> assignRoute(@Valid @RequestBody AssignRouteRequest request,
                                                            HttpServletRequest servletRequest) {
         sLog.info("[ASSIGN-ROUTE] Assign Route Request: {}", request);
         String merchantId = ApiRequestUtils.requireMerchantId(servletRequest, request);

@@ -8,6 +8,7 @@ import platform.booking.service.application.handler.PaymentEvent;
 import platform.booking.service.infrastructure.cache.mapper.TripCacheMapper;
 import platform.booking.service.infrastructure.integration.merchantplatform.MerchantTicketGrpcAdapter;
 import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.application.service.OutBoxService;
 import platform.core.common.service.domain.booking.BookingSeatStatus;
 import platform.core.common.service.domain.booking.BookingStatus;
 import platform.core.common.service.domain.booking.PaymentStatus;
@@ -22,6 +23,7 @@ import platform.core.common.service.domain.seat.model.TripSeat;
 import platform.core.common.service.domain.seat.port.TripSeatRepositoryPort;
 import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.core.common.service.infrastructure.event.DomainEvent;
+import platform.core.common.service.infrastructure.kafka.activity.RecentActivityPublisher;
 import platform.core.common.service.infrastructure.kafka.event.PaymentFailedEvent;
 import platform.core.common.service.infrastructure.kafka.event.PaymentSuccessEvent;
 import platform.core.common.service.infrastructure.kafka.event.TicketIssuedEvent;
@@ -36,7 +38,9 @@ import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.PAYMENT_NOT_FOUND;
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;
@@ -52,8 +56,9 @@ public class PaymentEventHandler implements PaymentEvent {
     private final PaymentRepositoryPort paymentRepositoryPort;
     private final TripAggregateRepositoryPort tripAggregateRepositoryPort;
     private final TripSeatCacheService tripSeatCacheService;
-    private final platform.core.common.service.application.service.OutBoxService outBoxService;
+    private final OutBoxService outBoxService;
     private final TripCacheMapper tripCacheMapper;
+    private final RecentActivityPublisher recentActivityPublisher;
 
     @Value("${spring.kafka.topics.booking}")
     private String bookingTopic;
@@ -88,6 +93,8 @@ public class PaymentEventHandler implements PaymentEvent {
         // 4. Cache & Integration: Cập nhật hạ tầng liên quan
         updateTripSeatCache(aggregate);
         publishTicketIssuedEvent(context, aggregate, issuedTickets, paidAt);
+        publishPaymentSuccessActivities(event, context, payload, aggregate, issuedTickets);
+        publishTicketIssuedActivity(event, context, aggregate, issuedTickets);
     }
 
     private boolean isAlreadyProcessed(BookingAggregate aggregate) {
@@ -157,6 +164,7 @@ public class PaymentEventHandler implements PaymentEvent {
         paymentAggregate.setFailedAt(OffsetDateTime.now());
         paymentAggregate.setFailureReason(payload.reason());
         saveAggregate(aggregate, cancelledSeats, paymentAggregate, aggregate.tripSeats());
+        publishPaymentFailedActivities(event, context, payload, aggregate);
     }
 
     private BookingAggregate loadAggregate(
@@ -282,5 +290,145 @@ public class PaymentEventHandler implements PaymentEvent {
                 payload,
                 context
         );
+    }
+
+    private void publishPaymentSuccessActivities(DomainEvent event,
+                                                  BaseRequest context,
+                                                  PaymentSuccessEvent payload,
+                                                  BookingAggregate aggregate,
+                                                  List<Ticket> issuedTickets) {
+        Booking booking = aggregate.booking();
+        Map<String, Object> metadata = metadata();
+        metadata.put("bookingCode", booking.getBookingCode());
+        metadata.put("paymentId", payload.paymentId());
+        metadata.put("amount", payload.amount());
+        metadata.put("currency", payload.currency());
+        metadata.put("ticketCount", issuedTickets.size());
+
+        String title = "Payment succeeded";
+        String message = "Payment succeeded for booking " + booking.getBookingCode();
+
+        recentActivityPublisher.publishAdminActivity(
+                "PAYMENT_SUCCESS",
+                booking.getId(),
+                "INFO",
+                "SUCCESS",
+                "platform-booking",
+                correlationId(event, context),
+                title,
+                message,
+                booking.getCustomerId(),
+                booking.getCustomerName(),
+                "BOOKING",
+                booking.getId(),
+                booking.getBookingCode(),
+                metadata
+        );
+        recentActivityPublisher.publishMerchantActivity(
+                booking.getMerchantId(),
+                "PAYMENT_SUCCESS",
+                booking.getId(),
+                "INFO",
+                "SUCCESS",
+                "platform-booking",
+                correlationId(event, context),
+                title,
+                message,
+                booking.getCustomerId(),
+                booking.getCustomerName(),
+                "BOOKING",
+                booking.getId(),
+                booking.getBookingCode(),
+                metadata
+        );
+    }
+
+    private void publishPaymentFailedActivities(DomainEvent event,
+                                                BaseRequest context,
+                                                PaymentFailedEvent payload,
+                                                BookingAggregate aggregate) {
+        Booking booking = aggregate.booking();
+        Map<String, Object> metadata = metadata();
+        metadata.put("bookingCode", booking.getBookingCode());
+        metadata.put("paymentId", payload.paymentId());
+        metadata.put("reason", payload.reason());
+
+        String title = "Payment failed";
+        String message = "Payment failed for booking " + booking.getBookingCode();
+
+        recentActivityPublisher.publishAdminActivity(
+                "PAYMENT_FAILED",
+                booking.getId(),
+                "WARNING",
+                "FAILED",
+                "platform-booking",
+                correlationId(event, context),
+                title,
+                message,
+                booking.getCustomerId(),
+                booking.getCustomerName(),
+                "BOOKING",
+                booking.getId(),
+                booking.getBookingCode(),
+                metadata
+        );
+        recentActivityPublisher.publishMerchantActivity(
+                booking.getMerchantId(),
+                "PAYMENT_FAILED",
+                booking.getId(),
+                "WARNING",
+                "FAILED",
+                "platform-booking",
+                correlationId(event, context),
+                title,
+                message,
+                booking.getCustomerId(),
+                booking.getCustomerName(),
+                "BOOKING",
+                booking.getId(),
+                booking.getBookingCode(),
+                metadata
+        );
+    }
+
+    private void publishTicketIssuedActivity(DomainEvent event,
+                                             BaseRequest context,
+                                             BookingAggregate aggregate,
+                                             List<Ticket> issuedTickets) {
+        Booking booking = aggregate.booking();
+        Map<String, Object> metadata = metadata();
+        metadata.put("bookingCode", booking.getBookingCode());
+        metadata.put("tripId", booking.getTripId());
+        metadata.put("ticketCount", issuedTickets.size());
+        metadata.put("ticketCodes", issuedTickets.stream().map(Ticket::getTicketCode).toList());
+
+        recentActivityPublisher.publishMerchantActivity(
+                booking.getMerchantId(),
+                "TICKET_ISSUED",
+                booking.getId(),
+                "INFO",
+                "SUCCESS",
+                "platform-booking",
+                correlationId(event, context),
+                "Tickets issued",
+                "Tickets issued for booking " + booking.getBookingCode(),
+                booking.getCustomerId(),
+                booking.getCustomerName(),
+                "BOOKING",
+                booking.getId(),
+                booking.getBookingCode(),
+                metadata
+        );
+    }
+
+    private Map<String, Object> metadata() {
+        return new HashMap<>();
+    }
+
+    private String correlationId(DomainEvent event, BaseRequest context) {
+        if (event != null && event.eventId() != null && !event.eventId().isBlank()) {
+            return event.eventId();
+        }
+        return context == null ? null : context.getRequestId();
     }
 }

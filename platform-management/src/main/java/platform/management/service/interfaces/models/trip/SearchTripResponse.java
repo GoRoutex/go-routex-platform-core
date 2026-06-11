@@ -1,4 +1,4 @@
-package platform.management.service.interfaces.models.route;
+package platform.management.service.interfaces.models.trip;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +24,7 @@ public class SearchTripResponse extends BaseResponse<List<SearchTripResponse.Sea
         private String id;
         private String merchantId;
         private String driverId;
+        private String routeId;
         private String vehicleId;
         private String merchantName;
         private String originCode;

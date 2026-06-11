@@ -26,6 +26,7 @@ public class ApiConstant {
     public static final String UPDATE_PATH = "/update";
     public static final String DELETE_PATH = "/delete";
     public static final String SEARCH_PATH = "/search";
+    public static final String ROUND_TRIP_PATH = "/round-trip";
     public static final String RECENT_ACTIVITIES = "/recent-activities";
     public static final String ADMIN_PATH = "/admin";
     public static final String MERCHANT_PATH = "/merchant";

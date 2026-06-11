@@ -1,29 +1,182 @@
 package vn.com.routex.platform.core.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+import platform.core.common.service.api.ApiResult;
+import platform.core.common.service.api.BaseRequest;
+import platform.core.common.service.api.BaseResponse;
+import platform.core.common.service.persistence.exception.BusinessException;
+import platform.core.common.service.persistence.utils.ApiRequestUtils;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import static platform.core.common.service.persistence.constant.ErrorConstant.AUTHORITIES_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.AUTHORIZATION_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_HTTP_REQUEST_RESOURCE_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_HTTP_REQUEST_RESOURCE_ERROR_MESSAGE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_MESSAGE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_REQUEST_TIMESTAMP;
+import static platform.core.common.service.persistence.constant.ErrorConstant.SYSTEM_ERROR;
+import static platform.core.common.service.persistence.constant.ErrorConstant.SYSTEM_ERROR_MESSAGE;
+import static platform.core.common.service.persistence.constant.ErrorConstant.TIMEOUT_ERROR;
+
+@Slf4j
 @RestControllerAdvice
 public class PlatformRestExceptionHandler {
 
+    private BaseResponse<Void> buildBaseResponse(BaseRequest baseRequest, ApiResult result) {
+        return BaseResponse.<Void>builder()
+                .requestId(baseRequest.getRequestId())
+                .requestDateTime(baseRequest.getRequestDateTime())
+                .channel(baseRequest.getChannel())
+                .result(result)
+                .build();
+    }
+
+    private ResponseEntity<BaseResponse<Void>> createErrorResponse(
+            HttpStatus status,
+            BaseRequest baseRequest,
+            String responseCode,
+            String description
+    ) {
+        ApiResult result = ApiResult.builder()
+                .responseCode(responseCode)
+                .description(description)
+                .build();
+
+        return ResponseEntity.status(status)
+                .body(buildBaseResponse(baseRequest, result));
+    }
+
+    private BaseRequest logAndGetBaseRequest(HttpServletRequest request, Exception e) {
+        if (Objects.nonNull(e)) {
+            log.error(ExceptionUtils.getStackTrace(e));
+        }
+        return ApiRequestUtils.getBaseRequestOrDefault(request);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<BaseResponse<Void>> handleBusinessException(HttpServletRequest request, BusinessException ex) {
+        BaseRequest baseRequest = logAndGetBaseRequest(request, ex);
+
+        if (TIMEOUT_ERROR.equals(ex.getResult().getResponseCode())) {
+            return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(buildBaseResponse(baseRequest, ex.getResult()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildBaseResponse(baseRequest, ex.getResult()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException exception) {
-        return ResponseEntity.badRequest().body(Map.of(
-                "code", "VALIDATION_ERROR",
-                "message", exception.getMessage()
-        ));
+    public ResponseEntity<BaseResponse<Void>> handleMethodArgumentNotValidException(
+            HttpServletRequest request,
+            MethodArgumentNotValidException ex
+    ) {
+        String errorFieldList = getErrorFieldListResponse(ex.getBindingResult().getAllErrors());
+        String errorMessage = "Invalid Input: " + errorFieldList;
+        BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(request);
+        String responseCode = getValidationResponseCode(ex);
+        return createErrorResponse(HttpStatus.BAD_REQUEST, baseRequest, responseCode, errorMessage);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<BaseResponse<Void>> handleHttpMessageNotReadableException(
+            HttpServletRequest request,
+            HttpMessageNotReadableException e
+    ) {
+        BaseRequest baseRequest = logAndGetBaseRequest(request, e);
+        return createErrorResponse(HttpStatus.BAD_REQUEST, baseRequest, INVALID_INPUT_ERROR, INVALID_INPUT_MESSAGE);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<BaseResponse<Void>> handleHttpRequestMethodNotSupportedException(
+            HttpServletRequest request,
+            HttpRequestMethodNotSupportedException e
+    ) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<BaseResponse<Void>> handleNoResourceFoundException(
+            HttpServletRequest request,
+            NoResourceFoundException e
+    ) {
+        BaseRequest baseRequest = logAndGetBaseRequest(request, e);
+        String description = String.format(INVALID_HTTP_REQUEST_RESOURCE_ERROR_MESSAGE, e.getResourcePath());
+        return createErrorResponse(HttpStatus.BAD_REQUEST, baseRequest, INVALID_HTTP_REQUEST_RESOURCE_ERROR, description);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<BaseResponse<Void>> handleAuthorizationDeniedException(
+            HttpServletRequest request,
+            AuthorizationDeniedException e
+    ) {
+        BaseRequest baseRequest = logAndGetBaseRequest(request, e);
+        return createErrorResponse(HttpStatus.FORBIDDEN, baseRequest, AUTHORIZATION_ERROR, AUTHORITIES_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(Exception exception) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                "code", "INTERNAL_ERROR",
-                "message", exception.getMessage() == null ? "Unexpected error" : exception.getMessage()
-        ));
+    public ResponseEntity<BaseResponse<Void>> handleGenericException(HttpServletRequest request, Exception e) {
+        BaseRequest baseRequest = logAndGetBaseRequest(request, e);
+        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, baseRequest, SYSTEM_ERROR, SYSTEM_ERROR_MESSAGE);
+    }
+
+    private static String getValidationResponseCode(MethodArgumentNotValidException e) {
+        String responseCode = INVALID_INPUT_ERROR;
+        FieldError fieldError = e.getFieldError();
+        if (fieldError == null) {
+            return responseCode;
+        }
+
+        if ("channel".equals(fieldError.getField()) && "ValidChannelList".equals(fieldError.getCode())) {
+            responseCode = INVALID_HTTP_REQUEST_RESOURCE_ERROR;
+        }
+
+        if ("requestDateTime".equals(fieldError.getField()) && "ValidRequestDateTime".equals(fieldError.getCode())) {
+            responseCode = INVALID_REQUEST_TIMESTAMP;
+        }
+        return responseCode;
+    }
+
+    private static String getFieldNameResponse(String fieldNameFullPath) {
+        if (!fieldNameFullPath.contains(".")) {
+            return fieldNameFullPath;
+        }
+        String[] fieldNameSplit = fieldNameFullPath.split("\\.");
+        return fieldNameSplit[(fieldNameSplit.length - 1)];
+    }
+
+    private static String getErrorFieldListResponse(List<ObjectError> listError) {
+        List<String> listField = new ArrayList<>();
+        listError.forEach(errorObject -> {
+            if (errorObject instanceof FieldError fieldError) {
+                String fieldName = getFieldNameResponse(fieldError.getField());
+                if (!listField.contains(fieldName)) {
+                    listField.add(fieldName);
+                }
+            }
+        });
+
+        String result = listField.stream().map(field -> String.format("%s", field)).collect(Collectors.joining(","));
+        if (result.length() > 83) {
+            int lastCommaIndex = result.lastIndexOf(",");
+            result = (lastCommaIndex != -1) ? result.substring(0, lastCommaIndex) + ",..." : result;
+        }
+
+        return result;
     }
 }

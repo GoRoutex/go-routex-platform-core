@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import platform.core.common.service.domain.ticket.TicketStatus;
 import platform.merchant.service.infrastructure.persistence.jpa.ticket.entity.TicketEntity;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +29,23 @@ public interface TicketRepository extends JpaRepository<TicketEntity, String> {
     long countByMerchantId(String merchantId);
 
     Page<TicketEntity> findAllByMerchantId(String merchantId, Pageable pageable);
+
+    @Query("SELECT t FROM TicketEntity t WHERE " +
+            "t.merchantId = :merchantId AND " +
+            "(:query IS NULL OR :query = '' OR " +
+            "LOWER(t.ticketCode) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(t.customerName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(t.customerPhone) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(t.customerEmail) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
+            "(:status IS NULL OR t.status = :status) AND " +
+            "(CAST(:issuedFrom AS timestamp) IS NULL OR t.issuedAt >= :issuedFrom) AND " +
+            "(CAST(:issuedTo AS timestamp) IS NULL OR t.issuedAt < :issuedTo)")
+    Page<TicketEntity> findByMerchantFilters(@Param("merchantId") String merchantId,
+                                             @Param("query") String query,
+                                             @Param("status") TicketStatus status,
+                                             @Param("issuedFrom") OffsetDateTime issuedFrom,
+                                             @Param("issuedTo") OffsetDateTime issuedTo,
+                                             Pageable pageable);
 
     Page<TicketEntity> findAllByCreatedBy(String createdBy, Pageable pageable);
 

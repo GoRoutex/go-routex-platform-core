@@ -1,6 +1,7 @@
 package platform.core.common.service.domain.booking.port;
 
 
+import platform.core.common.service.domain.booking.BookingSeatStatus;
 import platform.core.common.service.domain.booking.model.BookingSeat;
 
 import java.util.List;
@@ -17,5 +18,5 @@ public interface BookingSeatRepositoryPort {
 
     Optional<BookingSeat> findOneByBookingId(String bookingId);
 
-    List<BookingSeat> findByBookingIdAndStatus(String bookingId, platform.core.common.service.domain.booking.BookingSeatStatus status);
+    List<BookingSeat> findByBookingIdAndStatus(String bookingId, BookingSeatStatus status);
 }

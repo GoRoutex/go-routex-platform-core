@@ -97,7 +97,7 @@ public class ApiRequestUtils {
             String channel
     ) {
         if (v == null || v.isBlank()) return defaultValue;
-        return platform.booking.service.infrastructure.persistence.utils.DateTimeUtils.parseIntOrThrow(v, field, requestId, requestDateTime, channel);
+        return DateTimeUtils.parseIntOrThrow(v, field, requestId, requestDateTime, channel);
     }
 
 

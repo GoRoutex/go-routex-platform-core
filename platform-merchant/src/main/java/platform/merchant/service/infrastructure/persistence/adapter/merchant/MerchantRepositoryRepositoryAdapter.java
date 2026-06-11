@@ -11,10 +11,13 @@ import platform.merchant.service.domain.merchant.port.MerchantRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.jpa.merchant.entity.MerchantEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.merchant.repository.MerchantEntityRepository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -97,6 +100,18 @@ public class MerchantRepositoryRepositoryAdapter implements MerchantRepositoryPo
                 .stream()
                 .map(MerchantEntity::getId)
                 .toList();
+    }
+
+    @Override
+    public Map<String, Merchant> findNamesByIds(List<String> merchantIds) {
+        List<MerchantEntity> merchants = merchantEntityRepository.findAllByIdIn(merchantIds);
+        return merchants.stream()
+                .map(merchantPersistenceMapper::toDomain)
+                .collect(Collectors.toMap(
+                        Merchant::getId,
+                        Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(Merchant::getCreatedAt))
+                ));
     }
 
     private PagedResult<Merchant> toPagedResult(Page<MerchantEntity> page) {

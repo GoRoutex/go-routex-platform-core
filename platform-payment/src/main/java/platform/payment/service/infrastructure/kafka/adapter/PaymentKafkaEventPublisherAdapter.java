@@ -3,6 +3,7 @@ package platform.payment.service.infrastructure.kafka.adapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import platform.core.common.service.application.service.OutBoxService;
 import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.domain.payment.model.PaymentAggregate;
 import platform.core.common.service.infrastructure.kafka.event.PaymentFailedEvent;
@@ -14,7 +15,7 @@ import platform.payment.service.infrastructure.persistence.utils.ApiRequestUtils
 @RequiredArgsConstructor
 public class PaymentKafkaEventPublisherAdapter implements PaymentEventPublisherPort {
 
-    private final platform.core.common.service.application.service.OutBoxService outBoxService;
+    private final OutBoxService outBoxService;
 
     @Value("${spring.kafka.topics.payments}")
     private String paymentTopics;

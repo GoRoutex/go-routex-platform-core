@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import platform.core.common.service.common.RequestContext;
+import platform.core.common.service.infrastructure.kafka.activity.RecentActivityPublisher;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.merchant.service.application.command.merchant.AcceptMerchantApplicationCommand;
@@ -29,7 +30,9 @@ import platform.merchant.service.domain.merchant.port.MerchantRepositoryPort;
 import platform.merchant.service.domain.merchant.port.MerchantUserRepositoryPort;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,6 +58,7 @@ public class MerchantApplicationFormServiceImpl implements MerchantApplicationFo
     private final UserAccountLookupPort userAccountLookupPort;
     private final RoleRepositoryPort roleRepositoryPort;
     private final UserRoleAssignmentRepositoryPort userRoleAssignmentRepositoryPort;
+    private final RecentActivityPublisher recentActivityPublisher;
 
     @Override
     @Transactional
@@ -89,6 +93,7 @@ public class MerchantApplicationFormServiceImpl implements MerchantApplicationFo
         );
 
         MerchantApplicationForm savedApplicationForm = merchantApplicationFormRepositoryPort.save(applicationForm);
+        publishApplicationSubmittedActivity(command, savedApplicationForm);
 
         return SubmitMerchantApplicationResult.builder()
                 .applicationId(savedApplicationForm.getId())
@@ -160,6 +165,7 @@ public class MerchantApplicationFormServiceImpl implements MerchantApplicationFo
 
         applicationForm.approve(command.approvedBy(), approvedAt);
         MerchantApplicationForm savedApplicationForm = merchantApplicationFormRepositoryPort.save(applicationForm);
+        publishApplicationApprovedActivity(command, savedApplicationForm, savedMerchant, submittedUser);
 
         return AcceptMerchantApplicationResult.builder()
                 .applicationId(savedApplicationForm.getId())
@@ -192,6 +198,7 @@ public class MerchantApplicationFormServiceImpl implements MerchantApplicationFo
 
         applicationForm.reject(command.rejectedBy(), command.rejectionReason().trim(), OffsetDateTime.now());
         MerchantApplicationForm savedApplicationForm = merchantApplicationFormRepositoryPort.save(applicationForm);
+        publishApplicationRejectedActivity(command, savedApplicationForm);
 
         return RejectMerchantApplicationResult.builder()
                 .applicationId(savedApplicationForm.getId())
@@ -212,6 +219,111 @@ public class MerchantApplicationFormServiceImpl implements MerchantApplicationFo
                 .replaceAll("[^a-z0-9]+", "-")
                 .replaceAll("(^-|-$)", "");
     }
+
+    private void publishApplicationSubmittedActivity(SubmitMerchantApplicationCommand command,
+                                                     MerchantApplicationForm applicationForm) {
+        Map<String, Object> metadata = merchantApplicationMetadata(applicationForm);
+        recentActivityPublisher.publishAdminActivity(
+                "MERCHANT_APPLICATION_SUBMITTED",
+                applicationForm.getId(),
+                "INFO",
+                "SUCCESS",
+                "platform-merchant",
+                correlationId(command.context()),
+                "Merchant application submitted",
+                "Merchant application " + applicationForm.getFormCode() + " submitted by " + applicationForm.getDisplayName(),
+                applicationForm.getSubmittedBy(),
+                applicationForm.getOwnerInfo() == null ? applicationForm.getSubmittedBy() : applicationForm.getOwnerInfo().getOwnerFullName(),
+                "MERCHANT_APPLICATION",
+                applicationForm.getId(),
+                applicationForm.getDisplayName(),
+                metadata
+        );
+    }
+
+    private void publishApplicationApprovedActivity(AcceptMerchantApplicationCommand command,
+                                                    MerchantApplicationForm applicationForm,
+                                                    Merchant merchant,
+                                                    UserAccountReference submittedUser) {
+        Map<String, Object> metadata = merchantApplicationMetadata(applicationForm);
+        metadata.put("merchantId", merchant.getId());
+        metadata.put("merchantCode", merchant.getCode());
+        metadata.put("commissionRate", merchant.getCommissionRate());
+        metadata.put("ownerUserId", submittedUser.id());
+
+        recentActivityPublisher.publishAdminActivity(
+                "MERCHANT_APPLICATION_APPROVED",
+                applicationForm.getId(),
+                "INFO",
+                "SUCCESS",
+                "platform-merchant",
+                correlationId(command.context()),
+                "Merchant application approved",
+                "Merchant application " + applicationForm.getFormCode() + " approved for " + merchant.getDisplayName(),
+                command.approvedBy(),
+                command.approvedBy(),
+                "MERCHANT_APPLICATION",
+                applicationForm.getId(),
+                merchant.getDisplayName(),
+                metadata
+        );
+        recentActivityPublisher.publishMerchantActivity(
+                merchant.getId(),
+                "MERCHANT_APPLICATION_APPROVED",
+                applicationForm.getId(),
+                "INFO",
+                "SUCCESS",
+                "platform-merchant",
+                correlationId(command.context()),
+                "Merchant application approved",
+                "Merchant " + merchant.getDisplayName() + " is now active",
+                command.approvedBy(),
+                command.approvedBy(),
+                "MERCHANT",
+                merchant.getId(),
+                merchant.getDisplayName(),
+                metadata
+        );
+    }
+
+    private void publishApplicationRejectedActivity(RejectMerchantApplicationCommand command,
+                                                    MerchantApplicationForm applicationForm) {
+        Map<String, Object> metadata = merchantApplicationMetadata(applicationForm);
+        metadata.put("rejectionReason", applicationForm.getRejectionReason());
+        recentActivityPublisher.publishAdminActivity(
+                "MERCHANT_APPLICATION_REJECTED",
+                applicationForm.getId(),
+                "WARNING",
+                "FAILED",
+                "platform-merchant",
+                correlationId(command.context()),
+                "Merchant application rejected",
+                "Merchant application " + applicationForm.getFormCode() + " rejected for " + applicationForm.getDisplayName(),
+                command.rejectedBy(),
+                command.rejectedBy(),
+                "MERCHANT_APPLICATION",
+                applicationForm.getId(),
+                applicationForm.getDisplayName(),
+                metadata
+        );
+    }
+
+    private Map<String, Object> merchantApplicationMetadata(MerchantApplicationForm applicationForm) {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("applicationId", applicationForm.getId());
+        metadata.put("formCode", applicationForm.getFormCode());
+        metadata.put("displayName", applicationForm.getDisplayName());
+        metadata.put("legalName", applicationForm.getLegalName());
+        metadata.put("taxCode", applicationForm.getTaxCode());
+        metadata.put("status", applicationForm.getStatus() == null ? null : applicationForm.getStatus().name());
+        metadata.put("submittedBy", applicationForm.getSubmittedBy());
+        return metadata;
+    }
+
+    private String correlationId(RequestContext context) {
+        return context == null ? null : context.requestId();
+    }
+
     private void validatePendingApplication(MerchantApplicationForm applicationForm, RequestContext context) {
         if (applicationForm.getStatus() != ApplicationFormStatus.SUBMITTED) {
             throw new BusinessException(

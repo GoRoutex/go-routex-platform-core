@@ -8,6 +8,7 @@ import platform.merchant.service.application.command.ticket.FetchTicketDetailQue
 import platform.merchant.service.application.command.ticket.FetchTicketDetailResult;
 import platform.merchant.service.application.command.ticket.FetchTicketListQuery;
 import platform.merchant.service.application.command.ticket.FetchTicketListResult;
+import platform.merchant.service.application.command.ticket.SearchTicketListQuery;
 import platform.merchant.service.application.command.ticket.UpdateTicketCommand;
 import platform.merchant.service.application.command.ticket.UpdateTicketResult;
 
@@ -18,7 +19,7 @@ public interface TicketService {
     UpdateTicketResult updateTicket(UpdateTicketCommand command);
     FetchTicketDetailResult getTicketDetail(FetchTicketDetailQuery query);
     FetchTicketListResult getTickets(FetchTicketListQuery query);
+    FetchTicketListResult searchTickets(SearchTicketListQuery query);
     FetchTicketListResult getCustomerTickets(FetchCustomerTicketsQuery query);
     FetchTicketDetailResult getCustomerTicketDetail(FetchTicketDetailQuery query);
 }
-

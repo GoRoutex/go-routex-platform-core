@@ -1,11 +1,16 @@
 package platform.management.service.interfaces.mapper;
 
 import org.springframework.stereotype.Component;
-import platform.management.service.application.command.route.FetchTripResult;
-import platform.management.service.application.command.route.RoutePointResult;
-import platform.management.service.application.command.route.SearchTripItemResult;
-import platform.management.service.interfaces.models.route.SearchTripResponse;
+import platform.management.service.application.command.trip.FetchTripResult;
+import platform.management.service.application.command.trip.RoutePointResult;
+import platform.management.service.application.command.trip.SearchRoundTripResult;
+import platform.management.service.application.command.trip.SearchTripItemResult;
 import platform.management.service.interfaces.models.trip.FetchTripResponse;
+import platform.management.service.interfaces.models.trip.SearchRoundTripResponse;
+import platform.management.service.interfaces.models.trip.SearchTripResponse;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class TripResponseMapper {
@@ -44,11 +49,15 @@ public class TripResponseMapper {
                 .tripCode(item.tripCode())
                 .originCode(item.originCode())
                 .originName(item.originName())
+                .merchantId(item.merchantId())
+                .merchantName(item.merchantName())
                 .destinationCode(item.destinationCode())
                 .destinationName(item.destinationName())
                 .originProvinceId(item.originProvinceId())
                 .destinationProvinceId(item.destinationProvinceId())
                 .originDepartmentId(item.originDepartmentId())
+                .originDepartmentName(item.originDepartmentName())
+                .destinationDepartmentName(item.destinationDepartmentName())
                 .destinationDepartmentId(item.destinationDepartmentId())
                 .rawDepartureTime(item.rawDepartureTime())
                 .rawDepartureDate(item.rawDepartureDate())
@@ -57,6 +66,8 @@ public class TripResponseMapper {
                 .status(item.status())
                 .vehiclePlate(item.vehiclePlate())
                 .hasFloor(item.hasFloor())
+                .ticketPrice(item.ticketPrice())
+                .availableSeats(item.availableSeat())
                 .routePoints(item.routePoints() == null ? null : item.routePoints().stream()
                         .map(this::toSearchRoutePoint)
                         .toList())
@@ -93,6 +104,71 @@ public class TripResponseMapper {
                 .build();
     }
 
+    public SearchRoundTripResponse.SearchRoundTripResponseData toSearchRoundTripResponseData(SearchRoundTripResult item) {
+        return SearchRoundTripResponse.SearchRoundTripResponseData.builder()
+                .outboundTrips(item.outBoundTrip().stream()
+                        .map(out -> SearchTripResponse.SearchTripResponseData
+                                .builder()
+                                .id(out.id())
+                                .merchantId(out.merchantId())
+                                .merchantName(out.merchantName())
+                                .vehicleId(out.vehicleId())
+                                .driverId(out.driverId())
+                                .routeId(out.routeId())
+                                .originCode(out.originCode())
+                                .originName(out.originName())
+                                .destinationCode(out.destinationCode())
+                                .destinationName(out.destinationName())
+                                .originProvinceId(out.originProvinceId())
+                                .destinationProvinceId(out.destinationProvinceId())
+                                .originDepartmentName(out.originDepartmentName())
+                                .destinationDepartmentName(out.destinationDepartmentName())
+                                .originDepartmentId(out.originDepartmentId())
+                                .destinationDepartmentId(out.destinationDepartmentId())
+                                .ticketPrice(out.ticketPrice())
+                                .availableSeats(out.availableSeats())
+                                .departureTime(out.departureTime())
+                                .rawDepartureDate(out.rawDepartureDate())
+                                .rawDepartureTime(out.rawDepartureTime())
+                                .rawArrivalTime(calculateArrivalTime(out.rawDepartureTime(), out.durationMinutes()))
+                                .vehiclePlate(out.vehiclePlate())
+                                .hasFloor(out.hasFloor())
+                                .tripCode(out.tripCode())
+                                .routePoints(toSearchRoutePoints(out.routePoints()))
+                                .build())
+                        .collect(Collectors.toList()))
+                .returnTrips(item.returnTrip().stream()
+                        .map(inbound -> SearchTripResponse.SearchTripResponseData.builder()
+                                .id(inbound.id())
+                                .merchantId(inbound.merchantId())
+                                .merchantName(inbound.merchantName())
+                                .vehicleId(inbound.vehicleId())
+                                .driverId(inbound.driverId())
+                                .routeId(inbound.routeId())
+                                .originCode(inbound.originCode())
+                                .originName(inbound.originName())
+                                .destinationCode(inbound.destinationCode())
+                                .destinationName(inbound.destinationName())
+                                .originProvinceId(inbound.originProvinceId())
+                                .destinationProvinceId(inbound.destinationProvinceId())
+                                .originDepartmentName(inbound.originDepartmentName())
+                                .destinationDepartmentName(inbound.destinationDepartmentName())
+                                .originDepartmentId(inbound.originDepartmentId())
+                                .destinationDepartmentId(inbound.destinationDepartmentId())
+                                .ticketPrice(inbound.ticketPrice())
+                                .availableSeats(inbound.availableSeats())
+                                .departureTime(inbound.departureTime())
+                                .rawDepartureDate(inbound.rawDepartureDate())
+                                .rawDepartureTime(inbound.rawDepartureTime())
+                                .rawArrivalTime(calculateArrivalTime(inbound.rawDepartureTime(), inbound.durationMinutes()))
+                                .vehiclePlate(inbound.vehiclePlate())
+                                .hasFloor(inbound.hasFloor())
+                                .tripCode(inbound.tripCode())
+                                .routePoints(toSearchRoutePoints(inbound.routePoints()))
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
+    }
 
     public SearchTripResponse.SearchTripResponseData toSearchTripResponseData(SearchTripItemResult item) {
         return SearchTripResponse.SearchTripResponseData.builder()
@@ -101,6 +177,7 @@ public class TripResponseMapper {
                 .merchantName(item.merchantName())
                 .vehicleId(item.vehicleId())
                 .driverId(item.driverId())
+                .routeId(item.routeId())
                 .originCode(item.originCode())
                 .originName(item.originName())
                 .destinationCode(item.destinationCode())
@@ -120,10 +197,14 @@ public class TripResponseMapper {
                 .vehiclePlate(item.vehiclePlate())
                 .hasFloor(item.hasFloor())
                 .tripCode(item.tripCode())
-                .routePoints(item.routePoints().stream()
-                        .map(this::toSearchRoutePoint)
-                        .toList())
+                .routePoints(toSearchRoutePoints(item.routePoints()))
                 .build();
+    }
+
+    private List<SearchTripResponse.SearchRoutePoints> toSearchRoutePoints(List<RoutePointResult> routePoints) {
+        return routePoints == null ? List.of() : routePoints.stream()
+                .map(this::toSearchRoutePoint)
+                .toList();
     }
 
     public SearchTripResponse.SearchRoutePoints toSearchRoutePoint(RoutePointResult point) {

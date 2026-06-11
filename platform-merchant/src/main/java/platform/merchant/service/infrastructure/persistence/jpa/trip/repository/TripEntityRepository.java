@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import platform.core.common.service.domain.trip.TripStatus;
 import platform.merchant.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +31,17 @@ public interface TripEntityRepository extends JpaRepository<TripEntity, String>,
     String generateTripCode(@Param("origin") String origin,
                              @Param("destination") String destination);
 
+
+    @Query(value = """
+            SELECT t from TripEntity t
+                        WHERE t.departureTime >= :from
+                        AND t.departureTime <= :to
+                        AND t.status = 'ASSIGNED'
+            """)
+    Page<TripEntity> findAllBy(
+            @Param("from") OffsetDateTime from,
+            @Param("to") OffsetDateTime to,
+            Pageable pageable);
 
     @Query(value = """
         SELECT t FROM TripEntity t

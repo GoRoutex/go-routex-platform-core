@@ -9,6 +9,7 @@ import platform.core.common.service.application.command.common.PagedResult;
 import platform.merchant.service.domain.merchant.ApplicationFormStatus;
 import platform.merchant.service.domain.merchant.model.MerchantApplicationForm;
 import platform.merchant.service.domain.merchant.port.MerchantApplicationFormRepositoryPort;
+import platform.merchant.service.infrastructure.persistence.jpa.merchant.entity.MerchantApplicationFormEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.merchant.repository.MerchantApplicationFormEntityRepository;
 
 import java.util.Optional;
@@ -47,7 +48,7 @@ public class MerchantApplicationFormRepositoryRepositoryAdapter implements Merch
 
     @Override
     public PagedResult<MerchantApplicationForm> fetch(int pageNumber, int pageSize) {
-        Page<platform.merchant.service.infrastructure.persistence.jpa.merchant.entity.MerchantApplicationFormEntity> page =
+        Page<MerchantApplicationFormEntity> page =
                 merchantApplicationFormEntityRepository.findAll(
                         PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "submittedAt"))
                 );
@@ -63,7 +64,7 @@ public class MerchantApplicationFormRepositoryRepositoryAdapter implements Merch
 
     @Override
     public PagedResult<MerchantApplicationForm> fetchByStatus(ApplicationFormStatus status, int pageNumber, int pageSize) {
-        Page<platform.merchant.service.infrastructure.persistence.jpa.merchant.entity.MerchantApplicationFormEntity> page =
+        Page<MerchantApplicationFormEntity> page =
                 merchantApplicationFormEntityRepository.findByStatus(
                         status,
                         PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "submittedAt"))

@@ -12,6 +12,7 @@ import platform.merchant.service.domain.trip.model.TripAggregate;
 import platform.merchant.service.infrastructure.persistence.jpa.route.entity.RouteEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.routepoint.entity.RouteStopEntity;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 
@@ -93,6 +94,16 @@ public class TripSpecification {
         };
     }
 
+    public static Specification<TripAggregate> hasRawDepartureDate(String departureDate) {
+        String v = normalize(departureDate);
+        return (root, query, cb) -> {
+            if (v.isBlank()) {
+                return cb.conjunction();
+            }
+            return cb.equal(root.get("rawDepartureDate"), v);
+        };
+    }
+
     public static Specification<TripAggregate> hasMerchantId(String merchantId) {
         return (root, query, cb) -> {
             if (merchantId == null || merchantId.isBlank()) {
@@ -114,6 +125,25 @@ public class TripSpecification {
             return root.get("merchantId").in(merchantIds);
         };
     }
+
+    public static Specification<TripAggregate> departureTimeBetween(OffsetDateTime from, OffsetDateTime to) {
+        return (root, query, cb) -> {
+            if (from == null && to == null) {
+                return cb.conjunction();
+            }
+            if (from == null) {
+                return cb.lessThan(root.get("departureTime"), to);
+            }
+            if (to == null) {
+                return cb.greaterThanOrEqualTo(root.get("departureTime"), from);
+            }
+            return cb.and(
+                    cb.greaterThanOrEqualTo(root.get("departureTime"), from),
+                    cb.lessThan(root.get("departureTime"), to)
+            );
+        };
+    }
+
     private static String normalize(String message) {
         return message == null ? "" : message.trim().toLowerCase();
     }

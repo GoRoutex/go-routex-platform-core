@@ -27,16 +27,6 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
     private final SystemLog sLog = SystemLog.getLogger(this.getClass());
 
     @Override
-    public boolean existsActiveByTripId(String tripId) {
-        return tripAssignmentEntityRepository.existsByTripId(tripId);
-    }
-
-    @Override
-    public boolean existsActiveByTripId(String tripId, String merchantId) {
-        return tripAssignmentEntityRepository.existsByTripIdAndMerchantId(tripId, merchantId);
-    }
-
-    @Override
     public Optional<TripAssignmentRecord> findByTripIdAndStatus(String tripId, TripAssignmentStatus status) {
         Optional<TripAssignmentEntity> entityOptional = tripAssignmentEntityRepository.findByTripIdAndStatus(tripId, TripAssignmentStatus.PENDING_ASSIGNMENT);
 
@@ -51,46 +41,9 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
     }
 
     @Override
-    public Optional<TripAssignmentRecord> findActiveByTripId(String tripId) {
-        return tripAssignmentEntityRepository
-                .findFirstByTripIdAndStatusAndUnAssignedAtIsNullOrderByAssignedAtDesc(tripId, TripAssignmentStatus.ASSIGNED)
-                .map(routePersistenceMapper::toAssignmentRecord);
-    }
-
-    @Override
-    public Optional<TripAssignmentRecord> findActiveByTripId(String tripId, String merchantId) {
-        return tripAssignmentEntityRepository
-                .findFirstByTripIdAndMerchantIdAndStatusAndUnAssignedAtIsNullOrderByAssignedAtDesc(
-                        tripId,
-                        merchantId,
-                        TripAssignmentStatus.ASSIGNED
-                )
-                .map(routePersistenceMapper::toAssignmentRecord);
-    }
-
-    @Override
     public Map<String, TripAssignmentRecord> findLatestActiveByTripIds(List<String> tripIds) {
         List<TripAssignmentEntity> assignments = tripAssignmentEntityRepository.findActiveByTripIdsNative(tripIds, TripAssignmentStatus.ASSIGNED.name());
         return toAssignmentMap(assignments);
-    }
-
-    @Override
-    public Map<String, TripAssignmentRecord> findLatestActiveByTripIds(List<String> tripIds, String merchantId) {
-        List<TripAssignmentEntity> assignments = tripAssignmentEntityRepository.findActiveByTripIdsAndMerchantIdNative(
-                tripIds,
-                merchantId,
-                TripAssignmentStatus.ASSIGNED.name()
-        );
-
-        sLog.info("Assignment: {}", assignments);
-        return toAssignmentMap(assignments);
-    }
-
-    @Override
-    public List<TripAssignmentRecord> findByMerchantId(String merchantId) {
-        return tripAssignmentEntityRepository.findByMerchantId(merchantId).stream()
-                .map(routePersistenceMapper::toAssignmentRecord)
-                .toList();
     }
 
     private Map<String, TripAssignmentRecord> toAssignmentMap(List<TripAssignmentEntity> assignments) {

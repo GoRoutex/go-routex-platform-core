@@ -6,8 +6,8 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import platform.core.common.service.api.BaseResponse;
 import platform.core.common.service.domain.trip.TripStatus;
-import platform.management.service.interfaces.models.route.SearchTripResponse;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -34,6 +34,8 @@ public class FetchTripResponse extends BaseResponse<FetchTripResponse.FetchTripR
         private String id;
         private String creator;
         private String tripCode;
+        private String merchantId;
+        private String merchantName;
         private String originCode;
         private String originName;
         private String destinationCode;
@@ -53,6 +55,8 @@ public class FetchTripResponse extends BaseResponse<FetchTripResponse.FetchTripR
         private String vehiclePlate;
         private Boolean hasFloor;
         private OffsetDateTime assignedAt;
+        private Long availableSeats;
+        private BigDecimal ticketPrice;
         private List<SearchTripResponse.SearchRoutePoints> routePoints;
     }
 

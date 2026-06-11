@@ -21,6 +21,7 @@ import platform.merchant.service.application.command.ticket.FetchTicketDetailQue
 import platform.merchant.service.application.command.ticket.FetchTicketDetailResult;
 import platform.merchant.service.application.command.ticket.FetchTicketListQuery;
 import platform.merchant.service.application.command.ticket.FetchTicketListResult;
+import platform.merchant.service.application.command.ticket.SearchTicketListQuery;
 import platform.merchant.service.application.command.ticket.UpdateTicketCommand;
 import platform.merchant.service.application.command.ticket.UpdateTicketResult;
 import platform.merchant.service.application.service.TicketService;
@@ -41,6 +42,7 @@ import static platform.core.common.service.persistence.constant.ApiConstant.API_
 import static platform.core.common.service.persistence.constant.ApiConstant.DETAIL_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.FETCH_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.MERCHANT_SERVICE;
+import static platform.core.common.service.persistence.constant.ApiConstant.SEARCH_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.TICKETS_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.UPDATE_PATH;
 
@@ -141,29 +143,62 @@ public class MerchantTicketController {
     public ResponseEntity<FetchTicketListResponse> fetchList(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String query,
             @RequestParam(required = false) TicketStatus status,
+            @RequestParam(required = false) String month,
             HttpServletRequest servletRequest
     ) {
         BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
-        String merchantId = ApiRequestUtils.getMerchantId(servletRequest);
 
+        String merchantId = ApiRequestUtils.getMerchantId(servletRequest);
         FetchTicketListQuery fetchQuery = FetchTicketListQuery.builder()
                 .context(HttpUtils.toContext(baseRequest, merchantId))
                 .merchantId(merchantId)
-                .query(query)
                 .status(status)
+                .month(month)
                 .pageNumber(page)
                 .pageSize(size)
                 .build();
 
         FetchTicketListResult result = ticketService.getTickets(fetchQuery);
+        FetchTicketListResponse response = buildTicketListResponse(result);
 
+        return HttpUtils.buildResponse(baseRequest, response);
+    }
+
+    @GetMapping(TICKETS_PATH + SEARCH_PATH)
+    public ResponseEntity<FetchTicketListResponse> searchList(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) TicketStatus status,
+            @RequestParam(required = false) String month,
+            HttpServletRequest servletRequest
+    ) {
+        BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
+
+        String merchantId = ApiRequestUtils.getMerchantId(servletRequest);
+        SearchTicketListQuery searchQuery = SearchTicketListQuery.builder()
+                .context(HttpUtils.toContext(baseRequest, merchantId))
+                .merchantId(merchantId)
+                .keyword(keyword)
+                .status(status)
+                .month(month)
+                .pageNumber(page)
+                .pageSize(size)
+                .build();
+
+        FetchTicketListResult result = ticketService.searchTickets(searchQuery);
+        FetchTicketListResponse response = buildTicketListResponse(result);
+
+        return HttpUtils.buildResponse(baseRequest, response);
+    }
+
+    private FetchTicketListResponse buildTicketListResponse(FetchTicketListResult result) {
         List<TicketResponse> items = result.items().stream()
                 .map(this::mapToTicketResponse)
                 .collect(Collectors.toList());
 
-        FetchTicketListResponse response = FetchTicketListResponse.builder()
+        return FetchTicketListResponse.builder()
                 .result(apiResultFactory.buildSuccess())
                 .data(FetchTicketListResponse.FetchTicketListResponsePage.builder()
                         .items(items)
@@ -175,8 +210,6 @@ public class MerchantTicketController {
                                 .build())
                         .build())
                 .build();
-
-        return HttpUtils.buildResponse(baseRequest, response);
     }
 
 

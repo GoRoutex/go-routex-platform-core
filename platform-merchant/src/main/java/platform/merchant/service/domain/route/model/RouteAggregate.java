@@ -35,7 +35,7 @@ public class RouteAggregate extends AbstractAuditingEntity {
     private Long duration;
     private Long distance;
     private RouteStatus status;
-    private List<platform.merchant.service.domain.route.model.RouteStopPlan> stopPlans;
+    private List<RouteStopPlan> stopPlans;
 
     public static RouteAggregate plan(
             String id,
@@ -54,7 +54,7 @@ public class RouteAggregate extends AbstractAuditingEntity {
             Long duration,
             Long distance,
             OffsetDateTime createdAt,
-            List<platform.merchant.service.domain.route.model.RouteStopPlan> stopPlans
+            List<RouteStopPlan> stopPlans
     ) {
         return RouteAggregate.builder()
                 .id(id)

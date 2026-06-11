@@ -14,6 +14,7 @@ import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
 import platform.merchant.service.infrastructure.persistence.jpa.trip.repository.TripEntityRepository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,6 +84,11 @@ public class TripAggregateRepositoryAdapter implements TripAggregateRepositoryPo
     public Page<TripAggregate> findAll(Specification<TripAggregate> specification, Pageable pageable) {
         Specification<TripEntity> entitySpec = (root, query, cb) -> specification.toPredicate((Root) root, query, cb);
         return tripEntityRepository.findAll(entitySpec, pageable).map(tripAggregatePersistenceMapper::toDomain);
+    }
+
+    @Override
+    public Page<TripAggregate> findAllByFilter(OffsetDateTime from, OffsetDateTime to, Pageable pageable) {
+        return tripEntityRepository.findAllBy(from, to, pageable).map(tripAggregatePersistenceMapper::toDomain);
     }
 
     private PagedResult<TripAggregate> toPagedResult(Page<TripEntity> page) {

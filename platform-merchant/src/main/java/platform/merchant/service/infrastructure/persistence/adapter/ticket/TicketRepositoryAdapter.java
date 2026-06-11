@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.domain.ticket.TicketStatus;
 import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.core.common.service.domain.ticket.port.TicketRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.jpa.ticket.repository.TicketRepository;
@@ -75,6 +76,17 @@ public class TicketRepositoryAdapter implements TicketRepositoryPort {
     @Override
     public Page<Ticket> findAllByMerchantId(String merchantId, Pageable pageable) {
         return ticketRepository.findAllByMerchantId(merchantId, pageable).map(ticketPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public Page<Ticket> findByMerchantFilters(String merchantId,
+                                              String query,
+                                              TicketStatus status,
+                                              OffsetDateTime issuedFrom,
+                                              OffsetDateTime issuedTo,
+                                              Pageable pageable) {
+        return ticketRepository.findByMerchantFilters(merchantId, query, status, issuedFrom, issuedTo, pageable)
+                .map(ticketPersistenceMapper::toDomain);
     }
 
     @Override

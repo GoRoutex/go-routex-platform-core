@@ -98,20 +98,15 @@ public class PlatformRequestContextFilter extends OncePerRequestFilter {
         }
 
         String requestId = firstNonBlank(
-                request.getHeader("requestId"),
                 request.getHeader("RT-REQUEST-ID"),
-                request.getHeader("X-Request-Id"),
                 request.getParameter("requestId")
         );
         String requestDateTime = firstNonBlank(
-                request.getHeader("requestDateTime"),
-                request.getHeader("RT-REQUEST-DATE-TIME"),
-                request.getHeader("X-Request-DateTime"),
+                request.getHeader("RT-REQUEST_DATE_TIME"),
                 request.getParameter("requestDateTime")
         );
         String channel = firstNonBlank(
-                request.getHeader("channel"),
-                request.getHeader("X-Channel"),
+                request.getHeader("RT-CHANNEL"),
                 request.getParameter("channel")
         );
 

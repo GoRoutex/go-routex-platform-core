@@ -19,6 +19,7 @@ import platform.merchant.service.application.command.ticket.FetchTicketDetailQue
 import platform.merchant.service.application.command.ticket.FetchTicketDetailResult;
 import platform.merchant.service.application.command.ticket.FetchTicketListQuery;
 import platform.merchant.service.application.command.ticket.FetchTicketListResult;
+import platform.merchant.service.application.command.ticket.SearchTicketListQuery;
 import platform.merchant.service.application.command.ticket.UpdateTicketCommand;
 import platform.merchant.service.application.command.ticket.UpdateTicketResult;
 import platform.merchant.service.application.event.ticket.TicketIssuedEvent;
@@ -45,12 +46,16 @@ import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPo
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;
 
 
@@ -275,14 +280,47 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public FetchTicketListResult getTickets(FetchTicketListQuery query) {
-        Page<Ticket> page;
-        if (query.query() != null && !query.query().isEmpty()) {
-            page = ticketRepositoryPort.search(query.query(), PageRequest.of(query.pageNumber() - 1, query.pageSize()));
-            // Filter manually if port search doesn't support merchantId yet
-            // In a real project, we should update the repository query to include merchantId
-        } else {
-            page = ticketRepositoryPort.findAllByMerchantId(query.merchantId(), PageRequest.of(query.pageNumber() - 1, query.pageSize()));
+        return fetchMerchantTickets(
+                query.merchantId(),
+                null,
+                query.status(),
+                query.month(),
+                query.pageNumber(),
+                query.pageSize()
+        );
+    }
+
+    @Override
+    public FetchTicketListResult searchTickets(SearchTicketListQuery query) {
+        String keyword = normalizeQuery(query.keyword());
+        if (keyword == null) {
+            throw new BusinessException(ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "keyword is required"));
         }
+        return fetchMerchantTickets(
+                query.merchantId(),
+                keyword,
+                query.status(),
+                query.month(),
+                query.pageNumber(),
+                query.pageSize()
+        );
+    }
+
+    private FetchTicketListResult fetchMerchantTickets(String merchantId,
+                                                       String keyword,
+                                                       TicketStatus status,
+                                                       String month,
+                                                       int pageNumber,
+                                                       int pageSize) {
+        MonthRange monthRange = resolveMonthRange(month);
+        Page<Ticket> page = ticketRepositoryPort.findByMerchantFilters(
+                merchantId,
+                keyword,
+                status,
+                monthRange.from(),
+                monthRange.to(),
+                PageRequest.of(pageNumber - 1, pageSize)
+        );
 
         return FetchTicketListResult.builder()
                 .items(page.getContent())
@@ -291,6 +329,28 @@ public class TicketServiceImpl implements TicketService {
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())
                 .build();
+    }
+
+    private MonthRange resolveMonthRange(String month) {
+        if (month == null || month.isBlank()) {
+            return new MonthRange(null, null);
+        }
+        try {
+            YearMonth yearMonth = YearMonth.parse(month.trim());
+            ZoneId zoneId = ZoneId.systemDefault();
+            OffsetDateTime from = yearMonth.atDay(1).atStartOfDay(zoneId).toOffsetDateTime();
+            OffsetDateTime to = yearMonth.plusMonths(1).atDay(1).atStartOfDay(zoneId).toOffsetDateTime();
+            return new MonthRange(from, to);
+        } catch (DateTimeParseException ex) {
+            throw new BusinessException(ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "month must use yyyy-MM format"));
+        }
+    }
+
+    private String normalizeQuery(String query) {
+        return query == null || query.isBlank() ? null : query.trim();
+    }
+
+    private record MonthRange(OffsetDateTime from, OffsetDateTime to) {
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.application.service.OutBoxService;
 import platform.core.common.service.domain.trip.TripStatus;
+import platform.core.common.service.infrastructure.kafka.activity.RecentActivityPublisher;
 import platform.core.common.service.infrastructure.kafka.event.AiOptimizationRequestedEvent;
 import platform.core.common.service.infrastructure.kafka.event.TripAssignedEvent;
 import platform.core.common.service.infrastructure.kafka.event.TripSellableEvent;
@@ -56,6 +57,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,6 +92,7 @@ public class MerchantTripServiceImpl implements MerchantTripService {
     private final HolidayService holidayService;
     private final PlatformTransactionManager transactionManager;
     private final OptimizationJobRepository optimizationJobRepository;
+    private final RecentActivityPublisher recentActivityPublisher;
 
     @Value("${spring.kafka.topics.trips}")
     private String tripTopic;
@@ -360,6 +363,7 @@ public class MerchantTripServiceImpl implements MerchantTripService {
                 .build();
 
         outBoxService.generateEvent(routeAssignment.getTripId(), tripTopic, tripAssignedEvent, routeAssignment.getId(), assignedEvent, ApiRequestUtils.getHeader(command.context()));
+        publishTripAssignedActivity(command, routeAssignment, route, trip, vehicle);
 
         return AssignRouteResult.builder()
                 .creator(command.creator())
@@ -369,6 +373,44 @@ public class MerchantTripServiceImpl implements MerchantTripService {
                 .driverId(routeAssignment.getDriverId())
                 .status(routeAssignment.getStatus().name())
                 .build();
+    }
+
+    private void publishTripAssignedActivity(AssignRouteCommand command,
+                                             TripAssignmentRecord assignment,
+                                             RouteAggregate route,
+                                             TripAggregate trip,
+                                             VehicleProfile vehicle) {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("tripId", assignment.getTripId());
+        metadata.put("routeId", trip.getRouteId());
+        metadata.put("vehicleId", assignment.getVehicleId());
+        metadata.put("driverId", assignment.getDriverId());
+        metadata.put("originName", route.getOriginName());
+        metadata.put("destinationName", route.getDestinationName());
+        metadata.put("departureTime", trip.getDepartureTime());
+
+        String routeLabel = route.getOriginName() + " - " + route.getDestinationName();
+        String vehicleDisplay = vehicle.getVehiclePlate() == null || vehicle.getVehiclePlate().isBlank()
+                ? assignment.getVehicleId()
+                : vehicle.getVehiclePlate();
+
+        recentActivityPublisher.publishMerchantActivity(
+                command.merchantId(),
+                "TRIP_ASSIGNED",
+                assignment.getTripId(),
+                "INFO",
+                "SUCCESS",
+                "platform-merchant",
+                command.context() == null ? null : command.context().requestId(),
+                "Trip assigned",
+                "Trip " + routeLabel + " assigned to vehicle " + vehicleDisplay,
+                command.creator(),
+                command.creator(),
+                "TRIP",
+                assignment.getTripId(),
+                routeLabel,
+                metadata
+        );
     }
 
 

@@ -21,4 +21,5 @@ public interface MerchantEntityRepository extends JpaRepository<MerchantEntity, 
             """, nativeQuery = true)
     String generateMerchantcode();
 
+    List<MerchantEntity> findAllByIdIn(List<String> merchantIds);
 }

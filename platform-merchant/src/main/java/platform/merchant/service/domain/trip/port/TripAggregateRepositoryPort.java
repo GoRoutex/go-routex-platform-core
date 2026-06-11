@@ -8,6 +8,7 @@ import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.domain.trip.TripStatus;
 import platform.merchant.service.domain.trip.model.TripAggregate;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,4 +33,6 @@ public interface TripAggregateRepositoryPort {
     List<TripAggregate> findByIds(List<String> tripIds, String merchantId);
 
     Page<TripAggregate> findAll(Specification<TripAggregate> specification, Pageable pageable);
+
+    Page<TripAggregate> findAllByFilter(OffsetDateTime from, OffsetDateTime to, Pageable pageable);
 }

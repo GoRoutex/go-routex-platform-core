@@ -1,4 +1,4 @@
-package platform.management.service.interfaces.models.route;
+package platform.management.service.interfaces.models.trip;
 
 
 import jakarta.validation.Valid;
@@ -25,14 +25,14 @@ public class SearchTripRequest extends BaseRequest {
 
     @Valid
     @NotNull
-    private SearchRouteRequestData data;
+    private SearchTripRequestData data;
 
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @SuperBuilder
-    public static class SearchRouteRequestData {
+    public static class SearchTripRequestData {
 
         @NotNull
         @NotBlank

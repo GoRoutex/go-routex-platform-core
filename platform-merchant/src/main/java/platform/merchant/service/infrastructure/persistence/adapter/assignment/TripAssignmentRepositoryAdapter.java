@@ -30,28 +30,28 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
     }
 
     @Override
-    public boolean existsActiveByTripId(String TripId, String merchantId) {
-        return tripAssignmentEntityRepository.existsByTripIdAndMerchantId(TripId, merchantId);
+    public boolean existsActiveByTripId(String tripId, String merchantId) {
+        return tripAssignmentEntityRepository.existsByTripIdAndMerchantId(tripId, merchantId);
     }
 
 
     @Override
-    public Optional<TripAssignmentRecord> findByTripIdAndMerchantId(String TripId, String merchantId) {
-        return tripAssignmentEntityRepository.findByTripIdAndMerchantId(TripId, merchantId)
+    public Optional<TripAssignmentRecord> findByTripIdAndMerchantId(String tripId, String merchantId) {
+        return tripAssignmentEntityRepository.findByTripIdAndMerchantId(tripId, merchantId)
                 .map(routePersistenceMapper::toAssignmentRecord);
     }
 
     @Override
-    public List<TripAssignmentRecord> findByTripIdAndMerchantId(List<String> TripIds, String merchantId) {
-        return tripAssignmentEntityRepository.findByTripIdInAndMerchantId(TripIds, merchantId)
+    public List<TripAssignmentRecord> findByTripIdAndMerchantId(List<String> tripIds, String merchantId) {
+        return tripAssignmentEntityRepository.findByTripIdInAndMerchantId(tripIds, merchantId)
                 .stream()
                 .map(routePersistenceMapper::toAssignmentRecord).toList();
     }
 
     @Override
-    public Optional<TripAssignmentRecord> findActiveByTripId(String TripId) {
+    public Optional<TripAssignmentRecord> findActiveByTripId(String tripId) {
         return tripAssignmentEntityRepository
-                .findFirstByTripIdAndStatusAndUnAssignedAtIsNullOrderByAssignedAtDesc(TripId, TripAssignmentStatus.ASSIGNED)
+                .findFirstByTripIdAndStatusAndUnAssignedAtIsNullOrderByAssignedAtDesc(tripId, TripAssignmentStatus.ASSIGNED)
                 .map(routePersistenceMapper::toAssignmentRecord);
     }
 
@@ -67,15 +67,15 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
     }
 
     @Override
-    public Map<String, TripAssignmentRecord> findLatestActiveByTripIds(List<String> TripIds) {
-        List<TripAssignmentEntity> assignments = tripAssignmentEntityRepository.findActiveByTripIdsNative(TripIds, TripAssignmentStatus.ASSIGNED.name());
+    public Map<String, TripAssignmentRecord> findLatestActiveByTripIds(List<String> tripIds) {
+        List<TripAssignmentEntity> assignments = tripAssignmentEntityRepository.findActiveByTripIdsNative(tripIds, TripAssignmentStatus.ASSIGNED.name());
         return toAssignmentMap(assignments);
     }
 
     @Override
-    public Map<String, TripAssignmentRecord> findLatestActiveByTripIds(List<String> TripIds, String merchantId) {
+    public Map<String, TripAssignmentRecord> findLatestActiveByTripIds(List<String> tripIds, String merchantId) {
         List<TripAssignmentEntity> assignments = tripAssignmentEntityRepository.findActiveByTripIdsAndMerchantIdNative(
-                TripIds,
+                tripIds,
                 merchantId,
                 TripAssignmentStatus.ASSIGNED.name()
         );
