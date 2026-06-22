@@ -4,6 +4,7 @@ package platform.booking.service.infrastructure.kafka.consumer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -23,12 +24,13 @@ import static platform.core.common.service.persistence.constant.ErrorConstant.IN
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
 
 @Component
+@Lazy(false)
 @RequiredArgsConstructor
 public class TripForSaleConsumer {
 
 
     @Value("${spring.kafka.events.trip-ready-for-sale}")
-    private String routeReadyForSale;
+    private String tripReadyForSale;
 
     @Value("${spring.kafka.topics.notifications}")
     private String notificationTopic;
@@ -53,10 +55,7 @@ public class TripForSaleConsumer {
                         new TypeReference<>() {
                         });
 
-
         sLog.info("[TRIP-FOR-SALE] Domain Event: {}", event);
-
-
         if (event == null
                 || event.header() == null
                 || event.payload() == null
@@ -65,7 +64,7 @@ public class TripForSaleConsumer {
             throw new BusinessException(ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, INVALID_DATA_ERROR_MESSAGE));
         }
 
-        if (!routeReadyForSale.equals(event.eventType())) {
+        if (!tripReadyForSale.equals(event.eventType())) {
             sLog.info("Ignore event {}", event.eventType());
             acknowledgment.acknowledge();
             return;

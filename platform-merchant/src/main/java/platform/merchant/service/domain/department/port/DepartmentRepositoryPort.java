@@ -3,6 +3,7 @@ package platform.merchant.service.domain.department.port;
 
 
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.merchant.service.domain.department.DepartmentStatus;
 import platform.merchant.service.domain.department.model.Department;
 
 import java.util.List;
@@ -30,6 +31,8 @@ public interface DepartmentRepositoryPort {
     PagedResult<Department> fetch(String merchantId, int pageNumber, int pageSize);
 
     PagedResult<Department> fetch(String merchantId, String provinceId, int pageNumber, int pageSize);
+
+    PagedResult<Department> fetch(String merchantId, String provinceId, DepartmentStatus status, int pageNumber, int pageSize);
 
     List<Department> findAllByIdIn(List<String> departmentIds);
 

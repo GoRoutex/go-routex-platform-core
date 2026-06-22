@@ -9,8 +9,10 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableKafka
 @EnableScheduling
 @EnableJpaAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
 @EntityScan(basePackages = {

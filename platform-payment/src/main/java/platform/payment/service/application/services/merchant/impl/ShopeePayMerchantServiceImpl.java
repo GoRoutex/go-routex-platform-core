@@ -17,7 +17,7 @@ import platform.payment.service.domain.booking.port.BookingPaymentQueryPort;
 import platform.payment.service.domain.merchant.MerchantSessionStatus;
 import platform.payment.service.domain.merchant.model.MerchantSessionAggregate;
 import platform.payment.service.domain.merchant.port.MerchantSessionRepositoryPort;
-import platform.payment.service.domain.payment.port.PaymentRepositoryPort;
+import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
 import platform.payment.service.domain.payment.port.QrCodeGeneratorPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 

@@ -2,6 +2,7 @@ package platform.merchant.service.application.command.department;
 
 import lombok.Builder;
 import platform.core.common.service.common.RequestContext;
+import platform.merchant.service.domain.department.DepartmentStatus;
 
 @Builder
 public record FetchDepartmentQuery(
@@ -9,6 +10,7 @@ public record FetchDepartmentQuery(
         String pageNumber,
         String merchantId,
         String provinceId,
+        DepartmentStatus status,
         RequestContext context
 ) {
 }

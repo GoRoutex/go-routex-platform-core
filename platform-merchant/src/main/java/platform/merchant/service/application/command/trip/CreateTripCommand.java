@@ -10,6 +10,7 @@ public record CreateTripCommand(
         RequestContext context,
         String routeId,
         String merchantId,
+        String creator,
         OffsetDateTime departureTime,
         String rawDepartureTime,
         String rawDepartureDate

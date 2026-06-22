@@ -54,6 +54,7 @@ public class PlatformSecurityConfig {
                                 "/api/v1/management/trip-service/search",
                                 "/api/v1/management/seat-diagram/search",
                                 "/api/v1/management/trip-service/detail",
+                                "/api/v1/management/trip-service/search/round-trip",
                                 "/api/v1/payment-service/return-url"
                         ).permitAll()
                         .anyRequest().authenticated()

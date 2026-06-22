@@ -13,6 +13,8 @@ import platform.management.service.application.command.trip.FetchTripQuery;
 import platform.management.service.application.command.trip.FetchTripResult;
 import platform.management.service.application.command.trip.FetchTripsQuery;
 import platform.management.service.application.command.trip.FetchTripsResult;
+import platform.management.service.application.command.trip.FetchRoundTripDetailQuery;
+import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.RoutePointResult;
 import platform.management.service.application.command.trip.SearchRoundTripQuery;
 import platform.management.service.application.command.trip.SearchRoundTripResult;
@@ -126,6 +128,8 @@ public class TripManagementServiceImpl implements TripManagementService {
                                                      String seat,
                                                      PageInfo pageInfo,
                                                      RequestContext context) {
+
+        sLog.info("Origin Name: {} Destination Name: {} Departure Date: {}",originName, destinationName, departureDate);
         List<TripSearchView> searchedTrips = tripQueryPort.searchAssignedTrips(
                 originName,
                 destinationName,
@@ -194,6 +198,26 @@ public class TripManagementServiceImpl implements TripManagementService {
         return item.availableSeats() != null && item.availableSeats() >= requestedSeats;
     }
 
+    private void validateRoundTripDetailQuery(FetchRoundTripDetailQuery query) {
+        if (query.outboundTripId() == null || query.outboundTripId().isBlank()
+                || query.returnTripId() == null || query.returnTripId().isBlank()) {
+            throw new BusinessException(
+                    query.requestId(),
+                    query.requestDateTime(),
+                    query.channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "outboundTripId and returnTripId are required")
+            );
+        }
+        if (query.outboundTripId().equals(query.returnTripId())) {
+            throw new BusinessException(
+                    query.requestId(),
+                    query.requestDateTime(),
+                    query.channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "outboundTripId and returnTripId must be different")
+            );
+        }
+    }
+
     @Override
     public FetchTripResult fetchTripDetail(FetchTripQuery query) {
         TripAggregate trip = tripAggregateRepositoryPort.findById(query.tripId())
@@ -217,6 +241,41 @@ public class TripManagementServiceImpl implements TripManagementService {
         TripEnrichment enrichment = enrichRoutes(List.of(trip.getId()), List.of(trip.getRouteId()), departmentIds);
 
         return toFetchTripDetail(route, trip, enrichment);
+    }
+
+    @Override
+    public FetchRoundTripDetailResult fetchRoundTripDetail(FetchRoundTripDetailQuery query) {
+        validateRoundTripDetailQuery(query);
+
+        FetchTripResult outboundTrip = fetchTripDetail(FetchTripQuery.builder()
+                .tripId(query.outboundTripId())
+                .requestId(query.requestId())
+                .requestDateTime(query.requestDateTime())
+                .channel(query.channel())
+                .build());
+
+        FetchTripResult returnTrip = fetchTripDetail(FetchTripQuery.builder()
+                .tripId(query.returnTripId())
+                .requestId(query.requestId())
+                .requestDateTime(query.requestDateTime())
+                .channel(query.channel())
+                .build());
+
+        if (outboundTrip.departureTime() != null
+                && returnTrip.departureTime() != null
+                && returnTrip.departureTime().isBefore(outboundTrip.departureTime())) {
+            throw new BusinessException(
+                    query.requestId(),
+                    query.requestDateTime(),
+                    query.channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "returnTrip must depart on or after outboundTrip")
+            );
+        }
+
+        return FetchRoundTripDetailResult.builder()
+                .outboundTrip(outboundTrip)
+                .returnTrip(returnTrip)
+                .build();
     }
 
     @Override

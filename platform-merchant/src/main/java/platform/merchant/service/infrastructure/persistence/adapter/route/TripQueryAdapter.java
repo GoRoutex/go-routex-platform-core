@@ -22,7 +22,12 @@ import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
 import platform.merchant.service.domain.trip.port.TripQueryPort;
 import platform.merchant.service.domain.trip.readmodel.TripFetchView;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +35,9 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class TripQueryAdapter implements TripQueryPort {
+
+    private static final ZoneId DEFAULT_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    private static final DateTimeFormatter RAW_DEPARTURE_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final MerchantRepositoryPort merchantRepositoryPort;
     private final TripAggregateRepositoryPort tripAggregateRepositoryPort;
@@ -44,9 +52,12 @@ public class TripQueryAdapter implements TripQueryPort {
             int pageNumber,
             int pageSize
     ) {
+        DateWindow dateWindow = resolveDepartureDateWindow(departureDate);
         Specification<TripAggregate> specification = TripSpecification.originNameContainsIgnoreCase(originName)
                 .and(TripSpecification.destinationNameContainsIgnoreCase(destinationName))
-                .and(TripSpecification.hasRawDepartureDate(departureDate))
+                .and(dateWindow == null
+                        ? TripSpecification.hasRawDepartureDate(departureDate)
+                        : TripSpecification.departureTimeBetween(dateWindow.from(), dateWindow.to()))
                 .and(TripSpecification.assignedStatus(TripStatus.ASSIGNED));
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "departureTime"));
@@ -104,6 +115,36 @@ public class TripQueryAdapter implements TripQueryPort {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    private DateWindow resolveDepartureDateWindow(String departureDate) {
+        if (departureDate == null || departureDate.isBlank()) {
+            return null;
+        }
+
+        LocalDate localDate = parseLocalDate(departureDate.trim());
+        if (localDate == null) {
+            return null;
+        }
+
+        OffsetDateTime from = localDate.atTime(LocalTime.MIN).atZone(DEFAULT_ZONE).toOffsetDateTime();
+        OffsetDateTime to = localDate.plusDays(1).atTime(LocalTime.MIN).atZone(DEFAULT_ZONE).toOffsetDateTime();
+        return new DateWindow(from, to);
+    }
+
+    private LocalDate parseLocalDate(String value) {
+        try {
+            return LocalDate.parse(value);
+        } catch (DateTimeParseException ignored) {
+            try {
+                return LocalDate.parse(value, RAW_DEPARTURE_DATE_FORMATTER);
+            } catch (DateTimeParseException ignoredAgain) {
+                return null;
+            }
+        }
+    }
+
+    private record DateWindow(OffsetDateTime from, OffsetDateTime to) {
     }
 
     @Override

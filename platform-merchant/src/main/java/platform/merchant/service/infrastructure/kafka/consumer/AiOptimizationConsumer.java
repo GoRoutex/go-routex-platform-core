@@ -3,6 +3,7 @@ package platform.merchant.service.infrastructure.kafka.consumer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import platform.core.common.service.api.BaseRequest;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
+@Lazy(false)
 @RequiredArgsConstructor
 public class AiOptimizationConsumer {
 

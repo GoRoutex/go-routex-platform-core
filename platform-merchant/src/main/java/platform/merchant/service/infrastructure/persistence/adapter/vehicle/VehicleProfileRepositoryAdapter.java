@@ -114,7 +114,11 @@ public class VehicleProfileRepositoryAdapter implements VehicleProfileRepository
 
     @Override
     public PagedResult<VehicleProfile> fetch(String merchantId, VehicleStatus status, int pageNumber, int pageSize) {
-        Page<VehicleEntity> page = vehicleEntityRepository.findByMerchantIdAndStatus(merchantId, status, PageRequest.of(pageNumber, pageSize));
+        Page<VehicleEntity> page = vehicleEntityRepository.findByMerchantIdAndStatus(
+                merchantId,
+                status.name(),
+                PageRequest.of(pageNumber, pageSize)
+        );
         return toPagedResult(page);
     }
 

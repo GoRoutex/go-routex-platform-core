@@ -205,12 +205,13 @@ public class DepartmentManagementServiceImpl implements DepartmentManagementServ
         int pageNumber = parseIntOrDefault(query.pageNumber(), DEFAULT_PAGE_NUMBER, "pageNumber",
                 query.context().requestId(), query.context().requestDateTime(), query.context().channel());
 
-        PagedResult<Department> page;
-        if(query.provinceId() != null) {
-            page = departmentRepositoryPort.fetch(query.merchantId(), query.provinceId(), pageNumber - 1, pageSize);
-        } else {
-            page = departmentRepositoryPort.fetch(query.merchantId(), pageNumber - 1, pageSize);
-        }
+        PagedResult<Department> page = departmentRepositoryPort.fetch(
+                query.merchantId(),
+                query.provinceId(),
+                query.status(),
+                pageNumber - 1,
+                pageSize
+        );
         List<FetchDepartmentResult.FetchDepartmentItemResult> items = page.getItems().stream()
                 .map(p -> FetchDepartmentResult.FetchDepartmentItemResult.builder()
                         .id(p.getId())

@@ -10,7 +10,7 @@ import platform.core.common.service.domain.payment.model.PaymentAggregate;
 import platform.payment.service.application.command.payment.GetPaymentUrlCommand;
 import platform.payment.service.application.services.VNPayService;
 import platform.payment.service.domain.payment.port.PaymentEventPublisherPort;
-import platform.payment.service.domain.payment.port.PaymentRepositoryPort;
+import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
 import platform.payment.service.infrastructure.integration.constant.VNPayConstant;
 import platform.payment.service.infrastructure.integration.utils.VNPayUtils;
 import platform.payment.service.interfaces.model.vnpay.VNPayIpnResponse;

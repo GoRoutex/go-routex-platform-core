@@ -3,7 +3,10 @@ package platform.merchant.service.infrastructure.persistence.jpa.department.repo
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import platform.merchant.service.domain.department.DepartmentStatus;
 import platform.merchant.service.infrastructure.persistence.jpa.department.entity.DepartmentEntity;
 
 import java.util.List;
@@ -26,6 +29,20 @@ public interface DepartmentEntityRepository extends JpaRepository<DepartmentEnti
     Page<DepartmentEntity> findByMerchantId(String merchantId, Pageable pageable);
 
     Page<DepartmentEntity> findByMerchantIdAndProvinceId(String merchantId, String provinceId, Pageable pageable);
+
+    @Query("""
+            select d
+            from DepartmentEntity d
+            where d.merchantId = :merchantId
+              and (:provinceId is null or :provinceId = '' or d.provinceId = :provinceId)
+              and (:status is null or d.status = :status)
+            """)
+    Page<DepartmentEntity> findByFilters(
+            @Param("merchantId") String merchantId,
+            @Param("provinceId") String provinceId,
+            @Param("status") DepartmentStatus status,
+            Pageable pageable
+    );
 
     List<DepartmentEntity> findByIdIn(List<String> departmentIds);
 

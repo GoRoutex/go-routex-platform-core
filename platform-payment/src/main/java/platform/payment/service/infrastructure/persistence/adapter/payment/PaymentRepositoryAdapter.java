@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import platform.core.common.service.domain.booking.PaymentStatus;
 import platform.core.common.service.domain.payment.PaymentMethod;
 import platform.core.common.service.domain.payment.model.PaymentAggregate;
-import platform.payment.service.domain.payment.port.PaymentRepositoryPort;
+import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
 import platform.payment.service.infrastructure.persistence.jpa.payment.repository.PaymentEntityRepository;
 
 import java.util.Optional;

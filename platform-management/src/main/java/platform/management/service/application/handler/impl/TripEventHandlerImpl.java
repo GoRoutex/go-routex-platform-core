@@ -27,7 +27,7 @@ import vn.com.go.routex.identity.security.log.SystemLog;
 import static platform.core.common.service.persistence.constant.ErrorConstant.DRIVER_NOT_FOUND_MESSAGE;
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;
-import static platform.core.common.service.persistence.constant.ErrorConstant.ROUTE_ASSIGNMENT_NOT_FOUND;
+import static platform.core.common.service.persistence.constant.ErrorConstant.TRIP_ASSIGNMENT_NOT_FOUND;
 import static platform.core.common.service.persistence.constant.ErrorConstant.ROUTE_NOT_FOUND;
 import static platform.core.common.service.persistence.constant.ErrorConstant.VEHICLE_NOT_FOUND;
 
@@ -56,7 +56,7 @@ public class TripEventHandlerImpl implements TripEventHandler {
 
         TripAssignmentRecord tripAssignmentRecord = tripAssignmentRepositoryPort.findByTripIdAndStatus(assignedEvent.tripId(), TripAssignmentStatus.PENDING_ASSIGNMENT)
                         .orElseThrow(() -> new BusinessException(context.getRequestId(), context.getRequestDateTime(), context.getChannel(),
-                                ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, ROUTE_ASSIGNMENT_NOT_FOUND)));
+                                ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, TRIP_ASSIGNMENT_NOT_FOUND)));
 
         TripAggregate tripAggregate = tripAggregateRepositoryPort.findById(assignedEvent.tripId())
                 .orElseThrow(() -> new BusinessException(context.getRequestId(), context.getRequestDateTime(), context.getChannel(),
@@ -112,7 +112,7 @@ public class TripEventHandlerImpl implements TripEventHandler {
                     context.getChannel(),
                     ExceptionUtils.buildResultResponse(
                             INVALID_INPUT_ERROR,
-                            String.format("Trip and Route Assignment with id %s is not yet SCHEDULED & PENDING_ASSIGNMENT",
+                            String.format("Trip and Trip Assignment with id %s is not yet SCHEDULED & PENDING_ASSIGNMENT",
                                     assignedEvent.tripId())
                     )
             );

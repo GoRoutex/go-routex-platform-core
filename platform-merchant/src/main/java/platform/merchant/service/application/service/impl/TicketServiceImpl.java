@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import platform.core.common.service.application.service.EntityPartitionService;
 import platform.core.common.service.domain.ticket.TicketStatus;
 import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.core.common.service.domain.ticket.port.TicketRepositoryPort;
@@ -73,6 +74,7 @@ public class TicketServiceImpl implements TicketService {
     private final VehicleProfileRepositoryPort vehicleProfileRepositoryPort;
     private final VehicleTemplateRepositoryPort vehicleTemplateRepositoryPort;
     private final CampaignRepositoryPort campaignRepositoryPort;
+    private final EntityPartitionService entityPartitionService;
 
     @Override
     @Transactional
@@ -96,7 +98,9 @@ public class TicketServiceImpl implements TicketService {
             Merchant merchant = merchantCache.get(command.merchantId());
             BigDecimal commissionRate = merchant.getCommissionRate() != null ? merchant.getCommissionRate() : BigDecimal.ZERO;
 
-            Ticket savedTicket = ticketRepositoryPort.save(buildTicket(command));
+            Ticket ticket = buildTicket(command);
+            entityPartitionService.ensureTicketPartition(ticket.getIssuedAt());
+            Ticket savedTicket = ticketRepositoryPort.save(ticket);
 
             // 1. Handle Promotion
             PromotionResult promoResult = handlePromotion(command, merchant.getId());

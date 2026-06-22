@@ -157,6 +157,7 @@ public class VehicleTemplateManagementServiceImpl implements VehicleTemplateMana
                 query.type(),
                 pageNumber - 1,
                 pageSize);
+
         List<FetchVehicleTemplatesResult.FetchVehicleTemplateItemResult> items = page.getItems().stream()
                 .map(this::toFetchItemResult)
                 .toList();

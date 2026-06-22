@@ -28,7 +28,15 @@ public interface TripAggregateRepositoryPort {
 
     void saveAll(List<TripAggregate> aggregates);
 
-    PagedResult<TripAggregate> fetch(String merchantId, TripStatus status, String rawDepartureDate, int pageNumber, int pageSize);
+    PagedResult<TripAggregate> fetch(
+            String merchantId,
+            TripStatus status,
+            String rawDepartureDate,
+            OffsetDateTime fromDepartureTime,
+            OffsetDateTime toDepartureTime,
+            int pageNumber,
+            int pageSize
+    );
 
     List<TripAggregate> findByIds(List<String> tripIds, String merchantId);
 

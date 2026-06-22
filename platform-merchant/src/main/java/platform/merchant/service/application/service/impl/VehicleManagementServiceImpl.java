@@ -23,6 +23,7 @@ import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -48,6 +49,7 @@ public class VehicleManagementServiceImpl implements VehicleManagementService {
 
     private final VehicleProfileRepositoryPort vehicleProfileRepositoryPort;
     private final VehicleTemplateRepositoryPort vehicleTemplateRepositoryPort;
+    private final SystemLog sLog = SystemLog.getLogger(this.getClass());
 
     @Override
     @Transactional
@@ -93,6 +95,8 @@ public class VehicleManagementServiceImpl implements VehicleManagementService {
                 .updatedBy(command.creator())
                 .build();
 
+
+        sLog.info("Vehicle Profile: {}", updated);
         vehicleProfileRepositoryPort.save(updated);
         return toUpdateVehicleResult(updated, updatedTemplate);
     }
@@ -124,20 +128,23 @@ public class VehicleManagementServiceImpl implements VehicleManagementService {
 
         validatePaging(query, pageSize, pageNumber);
 
+        PagedResult<VehicleProfile> page;
 
-        PagedResult<VehicleProfile> page = null;
         if(query.status() != null) {
              page = vehicleProfileRepositoryPort.fetch(query.merchantId(), query.status(), pageNumber - 1, pageSize);
         } else {
             page = vehicleProfileRepositoryPort.fetch(query.merchantId(), pageNumber - 1, pageSize);
         }
-        Map<String, VehicleTemplate> templatesById = vehicleTemplateRepositoryPort.findByIds(page.getItems().stream()
+        Map<String, VehicleTemplate> templatesById = vehicleTemplateRepositoryPort.findByIdsIncludingInactive(page.getItems().stream()
                 .map(VehicleProfile::getTemplateId)
                 .distinct()
                 .toList());
 
+
+        sLog.info("Templates by Ids: {}", templatesById);
+
         List<FetchVehiclesResult.FetchVehicleItemResult> items = page.getItems().stream()
-                .map(vehicle -> toFetchVehicleItemResult(vehicle, requireTemplate(templatesById, vehicle.getTemplateId(), query)))
+                .map(vehicle -> toFetchVehicleItemResult(vehicle, templatesById.get(vehicle.getTemplateId())))
                 .collect(Collectors.toList());
 
         return FetchVehiclesResult.builder()
@@ -213,7 +220,7 @@ public class VehicleManagementServiceImpl implements VehicleManagementService {
 
     private VehicleWithTemplate findVehicleWithTemplate(String vehicleId, String merchantId, FetchVehicleDetailQuery query) {
         VehicleProfile vehicle = findVehicleById(vehicleId, merchantId, query.context().requestId(), query.context().requestDateTime(), query.context().channel());
-        VehicleTemplate template = findTemplateById(vehicle.getTemplateId(), merchantId, query.context().requestId(), query.context().requestDateTime(), query.context().channel());
+        VehicleTemplate template = findTemplateByIdIncludingInactive(vehicle.getTemplateId(), merchantId, query.context().requestId(), query.context().requestDateTime(), query.context().channel());
         return new VehicleWithTemplate(vehicle, template);
     }
 
@@ -223,17 +230,14 @@ public class VehicleManagementServiceImpl implements VehicleManagementService {
                         ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(VEHICLE_NOT_FOUND_BY_ID, vehicleId))));
     }
 
-    private VehicleTemplate requireTemplate(Map<String, VehicleTemplate> templatesById, String templateId, FetchVehiclesQuery query) {
-        VehicleTemplate template = templatesById.get(templateId);
-        if (template == null) {
-            throw new BusinessException(query.context().requestId(), query.context().requestDateTime(), query.context().channel(),
-                    ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(VEHICLE_TEMPLATE_NOT_FOUND_BY_ID, templateId)));
-        }
-        return template;
-    }
-
     private VehicleTemplate findTemplateById(String templateId, String merchantId, String requestId, String requestDateTime, String channel) {
         return vehicleTemplateRepositoryPort.findById(templateId, merchantId)
+                .orElseThrow(() -> new BusinessException(requestId, requestDateTime, channel,
+                        ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(VEHICLE_TEMPLATE_NOT_FOUND_BY_ID, templateId))));
+    }
+
+    private VehicleTemplate findTemplateByIdIncludingInactive(String templateId, String merchantId, String requestId, String requestDateTime, String channel) {
+        return vehicleTemplateRepositoryPort.findByIdIncludingInactive(templateId, merchantId)
                 .orElseThrow(() -> new BusinessException(requestId, requestDateTime, channel,
                         ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(VEHICLE_TEMPLATE_NOT_FOUND_BY_ID, templateId))));
     }
@@ -270,15 +274,15 @@ public class VehicleManagementServiceImpl implements VehicleManagementService {
     private FetchVehiclesResult.FetchVehicleItemResult toFetchVehicleItemResult(VehicleProfile vehicle, VehicleTemplate template) {
         return FetchVehiclesResult.FetchVehicleItemResult.builder()
                 .id(vehicle.getId())
-                .templateId(template.getId())
+                .templateId(vehicle.getTemplateId())
                 .creator(vehicle.getCreator())
                 .status(vehicle.getStatus())
-                .category(template.getCategory())
-                .type(template.getType())
+                .category(template == null ? null : template.getCategory())
+                .type(template == null ? null : template.getType())
                 .vehiclePlate(vehicle.getVehiclePlate())
-                .seatCapacity(template.getSeatCapacity())
-                .hasFloor(template.isHasFloor())
-                .manufacturer(template.getManufacturer())
+                .seatCapacity(template == null ? null : template.getSeatCapacity())
+                .hasFloor(template == null ? null : template.isHasFloor())
+                .manufacturer(template == null ? null : template.getManufacturer())
                 .build();
     }
 

@@ -18,6 +18,10 @@ import platform.merchant.service.application.command.driver.FetchDriversResult;
 import platform.merchant.service.application.command.driver.UpdateDriverCommand;
 import platform.merchant.service.application.command.driver.UpdateDriverResult;
 import platform.merchant.service.application.service.DriverManagementService;
+import platform.merchant.service.domain.authorities.model.RoleAggregate;
+import platform.merchant.service.domain.authorities.model.UserRoleAssignment;
+import platform.merchant.service.domain.authorities.port.RoleRepositoryPort;
+import platform.merchant.service.domain.authorities.port.UserRoleAssignmentRepositoryPort;
 import platform.merchant.service.domain.customer.model.Customer;
 import platform.merchant.service.domain.customer.port.CustomerRepositoryPort;
 import platform.merchant.service.domain.driver.DriverStatus;
@@ -55,11 +59,14 @@ public class DriverManagementServiceImpl implements DriverManagementService {
 
     private static final int DEFAULT_PAGE_SIZE = 10;
     private static final int DEFAULT_PAGE_NUMBER = 1;
+    private static final String DRIVER_ROLE_CODE = "DRIVER";
 
     private final DriverProfileRepositoryPort driverProfileRepositoryPort;
     private final MerchantRepositoryPort merchantRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
     private final CustomerRepositoryPort customerRepositoryPort;
+    private final RoleRepositoryPort roleRepositoryPort;
+    private final UserRoleAssignmentRepositoryPort userRoleAssignmentRepositoryPort;
 
     @Override
     @Transactional
@@ -96,6 +103,7 @@ public class DriverManagementServiceImpl implements DriverManagementService {
                 .build();
 
         DriverProfile saved = driverProfileRepositoryPort.save(driverProfile);
+        assignDriverRole(saved.getUserId(), command);
         return toCreateResult(saved);
     }
 
@@ -241,6 +249,25 @@ public class DriverManagementServiceImpl implements DriverManagementService {
         if (hasText(employeeCode)
                 && driverProfileRepositoryPort.existsByEmployeeCode(employeeCode.trim(), merchantId)) {
             throw duplicate(command, String.format(DUPLICATE_DRIVER_BY_EMPLOYEE_CODE, employeeCode.trim()));
+        }
+    }
+
+    private void assignDriverRole(String userId, CreateDriverCommand command) {
+        RoleAggregate driverRole = roleRepositoryPort.findByCode(DRIVER_ROLE_CODE)
+                .orElseThrow(() -> new BusinessException(command.context().requestId(),
+                        command.context().requestDateTime(), command.context().channel(),
+                        ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, "DRIVER role not found")));
+
+        if (!Boolean.TRUE.equals(driverRole.getEnabled())) {
+            throw new BusinessException(command.context().requestId(), command.context().requestDateTime(),
+                    command.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "DRIVER role is inactive"));
+        }
+
+        if (!userRoleAssignmentRepositoryPort.exists(userId, driverRole.getId())) {
+            userRoleAssignmentRepositoryPort.save(
+                    UserRoleAssignment.assign(userId, driverRole.getId(), OffsetDateTime.now())
+            );
         }
     }
 

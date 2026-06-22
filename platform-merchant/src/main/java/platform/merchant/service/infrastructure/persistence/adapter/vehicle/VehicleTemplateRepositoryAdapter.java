@@ -59,10 +59,23 @@ public class VehicleTemplateRepositoryAdapter implements VehicleTemplateReposito
     }
 
     @Override
+    public Optional<VehicleTemplate> findByIdIncludingInactive(String id, String merchantId) {
+        return vehicleTemplateRepository.findByIdAndMerchantId(id, merchantId)
+                .map(vehicleTemplatePersistenceMapper::toDomain);
+    }
+
+    @Override
     public Map<String, VehicleTemplate> findByIds(List<String> ids) {
         return vehicleTemplateRepository.findAllById(ids).stream()
                 .map(vehicleTemplatePersistenceMapper::toDomain)
                 .filter(template -> template.getStatus() == VehicleTemplateStatus.ACTIVE)
+                .collect(Collectors.toMap(VehicleTemplate::getId, template -> template));
+    }
+
+    @Override
+    public Map<String, VehicleTemplate> findByIdsIncludingInactive(List<String> ids) {
+        return vehicleTemplateRepository.findAllById(ids).stream()
+                .map(vehicleTemplatePersistenceMapper::toDomain)
                 .collect(Collectors.toMap(VehicleTemplate::getId, template -> template));
     }
 

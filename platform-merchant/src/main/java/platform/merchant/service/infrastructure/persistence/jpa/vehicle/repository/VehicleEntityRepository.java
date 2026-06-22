@@ -3,8 +3,9 @@ package platform.merchant.service.infrastructure.persistence.jpa.vehicle.reposit
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.merchant.service.infrastructure.persistence.jpa.vehicle.entity.VehicleEntity;
 
 import java.util.List;
@@ -27,7 +28,24 @@ public interface VehicleEntityRepository extends JpaRepository<VehicleEntity, St
 
     List<VehicleEntity> findByMerchantId(String merchantId);
 
-    Page<VehicleEntity> findByMerchantIdAndStatus(String merchantId, VehicleStatus status, Pageable pageable);
+    @Query(value = """
+            SELECT v.*
+            FROM vehicle v
+            WHERE v.merchant_id = :merchantId
+              AND UPPER(TRIM(CAST(v.status AS TEXT))) = :status
+            """,
+            countQuery = """
+                    SELECT COUNT(*)
+                    FROM vehicle v
+                    WHERE v.merchant_id = :merchantId
+                      AND UPPER(TRIM(CAST(v.status AS TEXT))) = :status
+                    """,
+            nativeQuery = true)
+    Page<VehicleEntity> findByMerchantIdAndStatus(
+            @Param("merchantId") String merchantId,
+            @Param("status") String status,
+            Pageable pageable
+    );
 
     Page<VehicleEntity> findByMerchantId(String merchantId, Pageable pageable);
 

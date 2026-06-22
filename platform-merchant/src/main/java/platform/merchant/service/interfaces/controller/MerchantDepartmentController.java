@@ -27,6 +27,7 @@ import platform.merchant.service.application.command.department.GetDepartmentDet
 import platform.merchant.service.application.command.department.UpdateDepartmentCommand;
 import platform.merchant.service.application.command.department.UpdateDepartmentResult;
 import platform.merchant.service.application.service.DepartmentManagementService;
+import platform.merchant.service.domain.department.DepartmentStatus;
 import platform.merchant.service.infrastructure.persistence.utils.HttpUtils;
 import platform.merchant.service.interfaces.factory.ApiResultFactory;
 import platform.merchant.service.interfaces.model.department.CreateDepartmentRequest;
@@ -204,6 +205,7 @@ public class MerchantDepartmentController {
     public ResponseEntity<FetchDepartmentResponse> fetchDepartment(@RequestParam int pageNumber,
                                                                    @RequestParam int pageSize,
                                                                    @RequestParam(required = false) String provinceId,
+                                                                   @RequestParam(required = false) DepartmentStatus status,
                                                                    HttpServletRequest servletRequest) {
 
         BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
@@ -212,6 +214,7 @@ public class MerchantDepartmentController {
         FetchDepartmentResult result = departmentManagementService.fetchDepartment(FetchDepartmentQuery.builder()
                 .context(HttpUtils.toContext(baseRequest, merchantId))
                 .provinceId(provinceId)
+                .status(status)
                 .pageNumber(String.valueOf(pageNumber))
                 .pageSize(String.valueOf(pageSize))
                 .merchantId(merchantId)

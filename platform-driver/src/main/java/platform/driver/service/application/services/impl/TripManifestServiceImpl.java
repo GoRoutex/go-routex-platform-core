@@ -28,7 +28,7 @@ import java.util.List;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.DRIVER_NOT_FOUND_MESSAGE;
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;
-import static platform.core.common.service.persistence.constant.ErrorConstant.ROUTE_ASSIGNMENT_NOT_FOUND;
+import static platform.core.common.service.persistence.constant.ErrorConstant.TRIP_ASSIGNMENT_NOT_FOUND;
 import static platform.core.common.service.persistence.constant.ErrorConstant.TRIP_NOT_FOUND;
 import static platform.core.common.service.persistence.constant.ErrorConstant.VEHICLE_NOT_FOUND_MESSAGE;
 
@@ -52,7 +52,7 @@ public class TripManifestServiceImpl implements TripManifestService {
 
         TripAssignmentRecord tripAssignment = tripAssignmentRepositoryPort.findByTripId(query.routeId())
                 .orElseThrow(() -> new BusinessException(query.context().requestId(), query.context().requestDateTime(), query.context().channel(),
-                        ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, ROUTE_ASSIGNMENT_NOT_FOUND)));
+                        ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, TRIP_ASSIGNMENT_NOT_FOUND)));
 
         tripAggregateRepositoryPort.findById(query.routeId())
                 .orElseThrow(() -> new BusinessException(query.context().requestId(), query.context().requestDateTime(), query.context().channel(),

@@ -20,7 +20,11 @@ public interface VehicleTemplateRepositoryPort {
 
     Optional<VehicleTemplate> findById(String id, String merchantId);
 
+    Optional<VehicleTemplate> findByIdIncludingInactive(String id, String merchantId);
+
     Map<String, VehicleTemplate> findByIds(List<String> ids);
+
+    Map<String, VehicleTemplate> findByIdsIncludingInactive(List<String> ids);
 
     boolean existsByCode(String code, String merchantId);
 

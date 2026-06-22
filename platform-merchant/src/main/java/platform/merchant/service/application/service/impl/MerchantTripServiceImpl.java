@@ -8,8 +8,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.application.service.EntityPartitionService;
 import platform.core.common.service.application.service.OutBoxService;
 import platform.core.common.service.domain.trip.TripStatus;
+import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.core.common.service.infrastructure.kafka.activity.RecentActivityPublisher;
 import platform.core.common.service.infrastructure.kafka.event.AiOptimizationRequestedEvent;
 import platform.core.common.service.infrastructure.kafka.event.TripAssignedEvent;
@@ -38,8 +40,12 @@ import platform.merchant.service.application.command.trip.UpdateTripCommand;
 import platform.merchant.service.application.command.trip.UpdateTripResult;
 import platform.merchant.service.application.service.HolidayService;
 import platform.merchant.service.application.service.MerchantTripService;
+import platform.merchant.service.domain.assignment.TripAssignmentStatus;
 import platform.merchant.service.domain.assignment.model.TripAssignmentRecord;
 import platform.merchant.service.domain.assignment.port.TripAssignmentRepositoryPort;
+import platform.merchant.service.domain.driver.OperationStatus;
+import platform.merchant.service.domain.driver.model.DriverProfile;
+import platform.merchant.service.domain.driver.port.DriverProfileRepositoryPort;
 import platform.merchant.service.domain.job.OptimizationJobStatus;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
@@ -55,7 +61,10 @@ import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,8 +75,10 @@ import java.util.stream.Collectors;
 
 import static platform.core.common.service.persistence.constant.ApplicationConstant.DEFAULT_PAGE_NUMBER;
 import static platform.core.common.service.persistence.constant.ApplicationConstant.DEFAULT_PAGE_SIZE;
+import static platform.core.common.service.persistence.constant.ApplicationConstant.DEFAULT_ZONE;
 import static platform.core.common.service.persistence.constant.ErrorConstant.DUPLICATE_ERROR;
 import static platform.core.common.service.persistence.constant.ErrorConstant.DUPLICATE_ROUTE_ASSIGNMENT;
+import static platform.core.common.service.persistence.constant.ErrorConstant.DRIVER_NOT_FOUND_MESSAGE;
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_PAGE_NUMBER;
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_PAGE_SIZE;
@@ -83,16 +94,22 @@ import static platform.core.common.service.persistence.constant.ErrorConstant.VE
 @RequiredArgsConstructor
 public class MerchantTripServiceImpl implements MerchantTripService {
 
+    private static final String PERIOD_MONTH = "MONTH";
+    private static final String PERIOD_QUARTER = "QUARTER";
+    private static final String PERIOD_YEAR = "YEAR";
+
     private final TripAggregateRepositoryPort tripAggregateRepositoryPort;
     private final RouteAggregateRepositoryPort routeAggregateRepositoryPort;
     private final TripAssignmentRepositoryPort tripAssignmentRepositoryPort;
     private final VehicleProfileRepositoryPort vehicleProfileRepositoryPort;
     private final VehicleTemplateRepositoryPort vehicleTemplateRepositoryPort;
+    private final DriverProfileRepositoryPort driverProfileRepositoryPort;
     private final OutBoxService outBoxService;
     private final HolidayService holidayService;
     private final PlatformTransactionManager transactionManager;
     private final OptimizationJobRepository optimizationJobRepository;
     private final RecentActivityPublisher recentActivityPublisher;
+    private final EntityPartitionService entityPartitionService;
 
     @Value("${spring.kafka.topics.trips}")
     private String tripTopic;
@@ -123,12 +140,12 @@ public class MerchantTripServiceImpl implements MerchantTripService {
                 .rawDepartureDate(command.rawDepartureDate())
                 .status(TripStatus.SCHEDULED)
                 .createdAt(now)
-                .createdBy(command.merchantId())
+                .createdBy(command.creator())
                 .updatedAt(now)
-                .updatedBy(command.merchantId())
+                .updatedBy(command.creator())
                 .build();
 
-        sLog.info("Trip: {}", trip);
+        entityPartitionService.ensureTripPartition(trip.getDepartureTime());
         tripAggregateRepositoryPort.save(trip);
         return toCreateResult(trip);
     }
@@ -165,6 +182,12 @@ public class MerchantTripServiceImpl implements MerchantTripService {
             tripsToSave.add(trip);
             tripIds.add(tripId);
         }
+
+        tripsToSave.stream()
+                .map(TripAggregate::getDepartureTime)
+                .filter(Objects::nonNull)
+                .distinct()
+                .forEach(entityPartitionService::ensureTripPartition);
 
         sLog.info("Batch saving {} trips for route {}", tripsToSave.size(), command.routeId());
         tripAggregateRepositoryPort.saveAll(tripsToSave);
@@ -204,6 +227,7 @@ public class MerchantTripServiceImpl implements MerchantTripService {
                 .updatedBy(command.merchantId())
                 .build();
 
+        entityPartitionService.ensureTripPartition(updated.getDepartureTime());
         tripAggregateRepositoryPort.save(updated);
         return toUpdateResult(updated);
     }
@@ -253,7 +277,17 @@ public class MerchantTripServiceImpl implements MerchantTripService {
 
         validatePaging(query, pageSize, pageNumber);
 
-        PagedResult<TripAggregate> page=  tripAggregateRepositoryPort.fetch(query.context().merchantId(), query.status(), query.rawDepartureDate(), pageNumber - 1, pageSize);
+        PeriodWindow periodWindow = resolvePeriodWindow(query);
+
+        PagedResult<TripAggregate> page = tripAggregateRepositoryPort.fetch(
+                query.context().merchantId(),
+                query.status(),
+                normalizeBlank(query.rawDepartureDate()),
+                periodWindow.from(),
+                periodWindow.to(),
+                pageNumber - 1,
+                pageSize
+        );
 
         List<String> routeIds = page.getItems().stream()
                 .map(TripAggregate::getRouteId)
@@ -307,6 +341,10 @@ public class MerchantTripServiceImpl implements MerchantTripService {
                 .orElseThrow(() -> new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
                         ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, VEHICLE_TEMPLATE_NOT_FOUND)));
 
+        DriverProfile driver = driverProfileRepositoryPort.findById(command.driverId(), command.merchantId())
+                .orElseThrow(() -> new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
+                        ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, DRIVER_NOT_FOUND_MESSAGE)));
+
         OffsetDateTime assignedAt = OffsetDateTime.now();
 
         // Dynamic Pricing: Check for Surcharge on Holidays/Peak Days
@@ -321,7 +359,7 @@ public class MerchantTripServiceImpl implements MerchantTripService {
             sLog.info("[DYNAMIC-PRICING] Surcharge applied: {}% for date: {}. Final Price: {}", surchargeRate, trip.getDepartureTime().toLocalDate(), finalPrice);
         }
 
-        TripAssignmentRecord routeAssignment = TripAssignmentRecord.assign(
+        TripAssignmentRecord tripAssignment = TripAssignmentRecord.assign(
                 UUID.randomUUID().toString(),
                 command.tripId(),
                 command.creator(),
@@ -331,47 +369,55 @@ public class MerchantTripServiceImpl implements MerchantTripService {
                 finalPrice,
                 assignedAt
         );
-        tripAssignmentRepositoryPort.save(routeAssignment);
+        trip.setStatus(TripStatus.ASSIGNED);
+        tripAssignment.setStatus(TripAssignmentStatus.ASSIGNED);
+        vehicle.setStatus(VehicleStatus.IN_SERVICE);
+        driver.setOperationStatus(OperationStatus.ON_TRIP);
+
+        tripAggregateRepositoryPort.save(trip);
+        tripAssignmentRepositoryPort.save(tripAssignment);
+        vehicleProfileRepositoryPort.save(vehicle);
+        driverProfileRepositoryPort.save(driver);
 
         sLog.info("[ASSIGN-ROUTE] Trip Assigned successfully with vehicleId: {} driverId: {}", vehicle.getId(), command.driverId());
 
         TripSellableEvent sellableEvent = TripSellableEvent
                 .builder()
-                .tripId(routeAssignment.getTripId())
-                .vehicleId(routeAssignment.getVehicleId())
+                .tripId(tripAssignment.getTripId())
+                .vehicleId(tripAssignment.getVehicleId())
                 .assignedBy(command.creator())
-                .assignedAt(routeAssignment.getAssignedAt())
+                .assignedAt(tripAssignment.getAssignedAt())
                 .status(TripStatus.ASSIGNED)
                 .seatCount(vehicleTemplate.getSeatCapacity())
                 .hasFloor(vehicle.isHasFloor())
                 .creator(command.creator())
                 .build();
 
-        outBoxService.generateEvent(routeAssignment.getTripId(), tripTopic, tripReadyForSaleEvent, routeAssignment.getId(), sellableEvent, ApiRequestUtils.getHeader(command.context()));
+        outBoxService.generateEvent(tripAssignment.getTripId(), tripTopic, tripReadyForSaleEvent, tripAssignment.getId(), sellableEvent, ApiRequestUtils.getHeader(command.context()));
 
         TripAssignedEvent assignedEvent = TripAssignedEvent
                 .builder()
-                .tripId(routeAssignment.getTripId())
-                .driverId(routeAssignment.getDriverId())
-                .vehicleId(routeAssignment.getVehicleId())
+                .tripId(tripAssignment.getTripId())
+                .driverId(tripAssignment.getDriverId())
+                .vehicleId(tripAssignment.getVehicleId())
                 .originName(route.getOriginName())
                 .destinationName(route.getDestinationName())
                 .departureTime(trip.getDepartureTime())
-                .status(trip.getStatus())
+                .status(TripStatus.ASSIGNED)
                 .assignedBy(command.creator())
-                .assignedAt(routeAssignment.getAssignedAt())
+                .assignedAt(tripAssignment.getAssignedAt())
                 .build();
 
-        outBoxService.generateEvent(routeAssignment.getTripId(), tripTopic, tripAssignedEvent, routeAssignment.getId(), assignedEvent, ApiRequestUtils.getHeader(command.context()));
-        publishTripAssignedActivity(command, routeAssignment, route, trip, vehicle);
+        outBoxService.generateEvent(tripAssignment.getTripId(), tripTopic, tripAssignedEvent, tripAssignment.getId(), assignedEvent, ApiRequestUtils.getHeader(command.context()));
+        publishTripAssignedActivity(command, tripAssignment, route, trip, vehicle);
 
         return AssignRouteResult.builder()
                 .creator(command.creator())
-                .assignedAt(routeAssignment.getAssignedAt().toString())
-                .tripId(routeAssignment.getTripId())
-                .vehicleId(routeAssignment.getVehicleId())
-                .driverId(routeAssignment.getDriverId())
-                .status(routeAssignment.getStatus().name())
+                .assignedAt(tripAssignment.getAssignedAt().toString())
+                .tripId(tripAssignment.getTripId())
+                .vehicleId(tripAssignment.getVehicleId())
+                .driverId(tripAssignment.getDriverId())
+                .status(tripAssignment.getStatus().name())
                 .build();
     }
 
@@ -423,6 +469,83 @@ public class MerchantTripServiceImpl implements MerchantTripService {
             throw new BusinessException(query.context().requestId(), query.context().requestDateTime(), query.context().channel(),
                     ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, INVALID_PAGE_NUMBER));
         }
+    }
+    private PeriodWindow resolvePeriodWindow(FetchTripListQuery query) {
+        LocalDate rawDepartureDate = parseRawDepartureDate(query.rawDepartureDate());
+        if (rawDepartureDate != null) {
+            return new PeriodWindow(toStartOfDay(rawDepartureDate), toStartOfDay(rawDepartureDate.plusDays(1)));
+        }
+
+        LocalDate today = LocalDate.now(DEFAULT_ZONE);
+        String period = normalizeBlank(query.period());
+        period = period == null ? PERIOD_MONTH : period.toUpperCase();
+        int year = parseOptionalInt(query.year(), today.getYear(), "year", query);
+
+        return switch (period) {
+            case PERIOD_MONTH -> {
+                int month = parseOptionalInt(query.month(), today.getMonthValue(), "month", query);
+                validateRange(month, 1, 12, "month", query);
+                YearMonth yearMonth = YearMonth.of(year, month);
+                yield new PeriodWindow(toStartOfDay(yearMonth.atDay(1)), toStartOfDay(yearMonth.plusMonths(1).atDay(1)));
+            }
+            case PERIOD_QUARTER -> {
+                int quarter = parseOptionalInt(query.quarter(), ((today.getMonthValue() - 1) / 3) + 1, "quarter", query);
+                validateRange(quarter, 1, 4, "quarter", query);
+                int startMonth = ((quarter - 1) * 3) + 1;
+                LocalDate startDate = LocalDate.of(year, startMonth, 1);
+                yield new PeriodWindow(toStartOfDay(startDate), toStartOfDay(startDate.plusMonths(3)));
+            }
+            case PERIOD_YEAR -> {
+                LocalDate startDate = LocalDate.of(year, 1, 1);
+                yield new PeriodWindow(toStartOfDay(startDate), toStartOfDay(startDate.plusYears(1)));
+            }
+            default -> throw new BusinessException(query.context().requestId(), query.context().requestDateTime(), query.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "period must be MONTH, QUARTER or YEAR"));
+        };
+    }
+
+    private LocalDate parseRawDepartureDate(String value) {
+        if (!hasText(value)) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value.trim());
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private int parseOptionalInt(String value, int defaultValue, String field, FetchTripListQuery query) {
+        return ApiRequestUtils.parseIntOrDefault(
+                value,
+                defaultValue,
+                field,
+                query.context().requestId(),
+                query.context().requestDateTime(),
+                query.context().channel()
+        );
+    }
+
+    private void validateRange(int value, int min, int max, String field, FetchTripListQuery query) {
+        if (value < min || value > max) {
+            throw new BusinessException(query.context().requestId(), query.context().requestDateTime(), query.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, field + " must be in [" + min + ".." + max + "]"));
+        }
+    }
+
+    private OffsetDateTime toStartOfDay(LocalDate date) {
+        return date.atTime(LocalTime.MIN).atZone(DEFAULT_ZONE).toOffsetDateTime();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private String normalizeBlank(String value) {
+        return hasText(value) ? value.trim() : null;
+    }
+
+    private record PeriodWindow(OffsetDateTime from, OffsetDateTime to) {
     }
 
     private RouteAggregate findRoute(String routeId, String merchantId, String requestId, String requestDateTime, String channel) {

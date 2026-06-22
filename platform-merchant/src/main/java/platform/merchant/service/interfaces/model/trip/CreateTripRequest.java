@@ -19,6 +19,11 @@ import java.time.OffsetDateTime;
 @SuperBuilder
 public class CreateTripRequest extends BaseRequest {
 
+
+    @Valid
+    @NotNull
+    private String creator;
+
     @Valid
     @NotNull
     private CreateTripRequestData data;

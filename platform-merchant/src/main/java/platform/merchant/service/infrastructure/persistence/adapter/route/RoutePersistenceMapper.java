@@ -145,9 +145,16 @@ public class RoutePersistenceMapper {
     public VehicleProfile toVehicleProfile(VehicleEntity vehicle, VehicleTemplateEntity template) {
         return VehicleProfile.builder()
                 .id(vehicle.getId())
+                .merchantId(vehicle.getMerchantId())
+                .creator(vehicle.getCreator())
+                .status(vehicle.getStatus())
                 .vehiclePlate(vehicle.getVehiclePlate())
                 .templateId(template.getId())
                 .hasFloor(template.isHasFloor())
+                .createdAt(vehicle.getCreatedAt())
+                .createdBy(vehicle.getCreatedBy())
+                .updatedAt(vehicle.getUpdatedAt())
+                .updatedBy(vehicle.getUpdatedBy())
                 .build();
     }
 }

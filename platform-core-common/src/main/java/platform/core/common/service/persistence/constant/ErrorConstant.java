@@ -15,11 +15,7 @@ public class ErrorConstant {
     public static final String PAYMENT_NOT_FOUND = "Payment with id %s not found";
     public static final String RECORD_NOT_FOUND = "1407";
     public static final String VEHICLE_NOT_FOUND_MESSAGE = "Vehicle information not found";
-    public static final String ROUTE_ASSIGNMENT_NOT_FOUND = "Route Assignment not found";
-    public static final String BOOKING_NOT_FOUND_MESSAGE = "Booking information not found";
-    public static final String ASSIGNMENT_NOT_FOUND = "Assignment with tripId %s not found";
-    public static final String FLARE_CONFIG_NOT_FOUND = "Flare Config not found";
-    public static final String SEAT_TEMPLATE_NOT_FOUND = "Seat template not found with template Id: %s";
+    public static final String TRIP_ASSIGNMENT_NOT_FOUND = "Trip Assignment not found";
     public static final String ROLE_NOT_FOUND = "Role not found";
     public static final String AUTHORITIES_NOT_FOUND = "Authorities not found";
     public static final String ROUTE_NOT_FOUND = "Route with Id %s not found";
@@ -59,7 +55,7 @@ public class ErrorConstant {
     public static final String INVALID_SEAT_NO = "seatNos must not be empty";
     public static final String DUPLICATE_VEHICLE = "Vehicle is already exists by %s";
     public static final String ROUTE_SEAT_EXIST = "Route Seat with tripId %s already created";
-    public static final String DUPLICATE_ROUTE_ASSIGNMENT = "Route Assignment with tripId %s already exists";
+    public static final String DUPLICATE_ROUTE_ASSIGNMENT = "Trip Assignment with tripId %s already exists";
     public static final String VEHICLE_NOT_ASSIGNED_TO_ROUTE = "Vehicle is not assigned to route %s";
     public static final String RECORD_EXISTS = "Record is already existed";
     public static final String INVALID_START_TIME = "Planned Start Time must be before Planned End Time";
@@ -68,7 +64,6 @@ public class ErrorConstant {
     public static final String INVALID_SEARCH_TIME = "From Time must be before To Time";
     public static final String WARD_NOT_FOUND = "Ward information not found";
     public static final String PROVINCE_NOT_FOUND = "Province information not found";
-    public static final String TRIP_ASSIGNMENT_NOT_FOUND = "Trip Assignment not found";
     public static final String DEPARTMENT_OR_STOP_NAME_REQUIRED =
             "Either departmentId or stopName is required (but not both)";
     public static final String STOP_COORDINATES_MUST_BE_PROVIDED_TOGETHER =

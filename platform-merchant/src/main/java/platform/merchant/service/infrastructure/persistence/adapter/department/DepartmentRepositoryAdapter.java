@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.merchant.service.domain.department.DepartmentStatus;
 import platform.merchant.service.domain.department.model.Department;
 import platform.merchant.service.domain.department.port.DepartmentRepositoryPort;
 import platform.merchant.service.infrastructure.persistence.jpa.department.entity.DepartmentEntity;
@@ -79,6 +80,17 @@ public class DepartmentRepositoryAdapter implements DepartmentRepositoryPort {
     @Override
     public PagedResult<Department> fetch(String merchantId, String provinceId, int pageNumber, int pageSize) {
         Page<DepartmentEntity> page = departmentEntityRepository.findByMerchantIdAndProvinceId(merchantId, provinceId, PageRequest.of(pageNumber, pageSize));
+        return toPagedResult(page);
+    }
+
+    @Override
+    public PagedResult<Department> fetch(String merchantId, String provinceId, DepartmentStatus status, int pageNumber, int pageSize) {
+        Page<DepartmentEntity> page = departmentEntityRepository.findByFilters(
+                merchantId,
+                provinceId,
+                status,
+                PageRequest.of(pageNumber, pageSize)
+        );
         return toPagedResult(page);
     }
 

@@ -3,6 +3,7 @@ package platform.booking.service.infrastructure.kafka.consumer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import static platform.core.common.service.persistence.constant.ErrorConstant.IN
 import static platform.core.common.service.persistence.constant.ErrorConstant.INVALID_INPUT_ERROR;
 
 @Component
+@Lazy(false)
 @RequiredArgsConstructor
 public class PaymentSuccessEventConsumer {
 

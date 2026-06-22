@@ -8,9 +8,6 @@ public class ApiConstant {
     public static final String BOOKING_PATH = "/booking-service";
     public static final String FETCH_PATH = "/fetch";
     public static final String DETAIL_PATH = "/detail";
-    public static final String PAYMENT_PATH = "/payment-service";
-    public static final String GET_PAYMENT_URL = "/get-payment-url";
-    public static final String POLLING_STATUS = "/polling/status";
     public static final String TRIP_SERVICE = "/trip-service";
     public static final String MANAGEMENT_PATH = "/management";
     public static final String AUTHORITIES_PATH = "/authorities";

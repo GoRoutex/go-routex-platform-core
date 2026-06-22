@@ -1,11 +1,13 @@
 package platform.management.service.interfaces.mapper;
 
 import org.springframework.stereotype.Component;
+import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.FetchTripResult;
 import platform.management.service.application.command.trip.RoutePointResult;
 import platform.management.service.application.command.trip.SearchRoundTripResult;
 import platform.management.service.application.command.trip.SearchTripItemResult;
 import platform.management.service.interfaces.models.trip.FetchTripResponse;
+import platform.management.service.interfaces.models.trip.FetchRoundTripDetailResponse;
 import platform.management.service.interfaces.models.trip.SearchRoundTripResponse;
 import platform.management.service.interfaces.models.trip.SearchTripResponse;
 
@@ -101,6 +103,13 @@ public class TripResponseMapper {
                 .routePoints(item.routePoints() == null ? null : item.routePoints().stream()
                         .map(this::toSearchRoutePoint)
                         .toList())
+                .build();
+    }
+
+    public FetchRoundTripDetailResponse.FetchRoundTripDetailResponseData toFetchRoundTripDetailResponseData(FetchRoundTripDetailResult item) {
+        return FetchRoundTripDetailResponse.FetchRoundTripDetailResponseData.builder()
+                .outboundTrip(toFetchTripDetailResponseData(item.outboundTrip()))
+                .returnTrip(toFetchTripDetailResponseData(item.returnTrip()))
                 .build();
     }
 
