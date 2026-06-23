@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import platform.core.common.service.application.command.common.PagedResult;
+import platform.core.common.service.domain.vehicle.VehicleStatus;
 import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ApiRequestUtils;
@@ -19,7 +20,9 @@ import platform.merchant.service.application.command.vehicletemplate.FetchVehicl
 import platform.merchant.service.application.command.vehicletemplate.UpdateVehicleTemplateCommand;
 import platform.merchant.service.application.command.vehicletemplate.UpdateVehicleTemplateResult;
 import platform.merchant.service.application.service.VehicleTemplateManagementService;
+import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
+import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 
 import java.math.BigDecimal;
@@ -43,6 +46,7 @@ import static platform.core.common.service.persistence.constant.ErrorConstant.VE
 public class VehicleTemplateManagementServiceImpl implements VehicleTemplateManagementService {
 
     private final VehicleTemplateRepositoryPort vehicleTemplateRepositoryPort;
+    private final VehicleProfileRepositoryPort vehicleProfileRepositoryPort;
 
     @Override
     @Transactional
@@ -104,6 +108,7 @@ public class VehicleTemplateManagementServiceImpl implements VehicleTemplateMana
                 .build();
 
         vehicleTemplateRepositoryPort.save(updated);
+        deactivateVehiclesWhenTemplateInactive(existing, updated, command.creator());
         return toUpdateResult(updated);
     }
 
@@ -134,6 +139,7 @@ public class VehicleTemplateManagementServiceImpl implements VehicleTemplateMana
                 .build();
 
         vehicleTemplateRepositoryPort.save(deleted);
+        deactivateVehiclesForTemplate(deleted.getId(), deleted.getMerchantId(), command.creator(), OffsetDateTime.now());
         return DeleteVehicleTemplateResult.builder()
                 .id(deleted.getId())
                 .code(deleted.getCode())
@@ -236,6 +242,28 @@ public class VehicleTemplateManagementServiceImpl implements VehicleTemplateMana
         if (ticketPrice != null && ticketPrice.compareTo(BigDecimal.ZERO) < 0) {
             throw new BusinessException(requestId, requestDateTime, channel,
                     ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "ticketPrice must be >= 0"));
+        }
+    }
+
+    private void deactivateVehiclesWhenTemplateInactive(VehicleTemplate existing, VehicleTemplate updated, String actor) {
+        if (VehicleTemplateStatus.INACTIVE.equals(updated.getStatus())
+                && !VehicleTemplateStatus.INACTIVE.equals(existing.getStatus())) {
+            deactivateVehiclesForTemplate(updated.getId(), updated.getMerchantId(), actor, updated.getUpdatedAt());
+        }
+    }
+
+    private void deactivateVehiclesForTemplate(String templateId, String merchantId, String actor, OffsetDateTime updatedAt) {
+        List<VehicleProfile> vehicles = vehicleProfileRepositoryPort.findByTemplateId(templateId, merchantId);
+        List<VehicleProfile> vehiclesToDeactivate = vehicles.stream()
+                .filter(vehicle -> !VehicleStatus.INACTIVE.equals(vehicle.getStatus()))
+                .peek(vehicle -> {
+                    vehicle.setStatus(VehicleStatus.INACTIVE);
+                    vehicle.setUpdatedAt(updatedAt);
+                    vehicle.setUpdatedBy(actor);
+                })
+                .toList();
+        if (!vehiclesToDeactivate.isEmpty()) {
+            vehicleProfileRepositoryPort.saveAll(vehiclesToDeactivate);
         }
     }
 

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import platform.core.common.service.api.BaseRequest;
 import platform.core.common.service.application.command.common.PageContext;
+import platform.core.common.service.common.RequestContext;
 import platform.management.service.application.command.trip.FetchRoundTripDetailQuery;
 import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.FetchTripQuery;
@@ -136,11 +137,15 @@ public class TripServiceController {
         BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
         sLog.info("[TRIP-SERVICE] Fetch Trip Detail Request tripId: {}", tripId);
 
-        FetchTripResult result = tripManagementService.fetchTripDetail(FetchTripQuery.builder()
-                .tripId(tripId)
+        RequestContext context = RequestContext.builder()
                 .requestId(baseRequest.getRequestId())
                 .requestDateTime(baseRequest.getRequestDateTime())
                 .channel(baseRequest.getChannel())
+                .build();
+
+        FetchTripResult result = tripManagementService.fetchTripDetail(FetchTripQuery.builder()
+                .tripId(tripId)
+                .context(context)
                 .build());
 
         FetchTripDetailResponse response = FetchTripDetailResponse.builder()
@@ -163,12 +168,15 @@ public class TripServiceController {
         BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
         sLog.info("[TRIP-SERVICE] Fetch Round Trip Detail Request outboundTripId={} returnTripId={}", outboundTripId, returnTripId);
 
-        FetchRoundTripDetailResult result = tripManagementService.fetchRoundTripDetail(FetchRoundTripDetailQuery.builder()
-                .outboundTripId(outboundTripId)
-                .returnTripId(returnTripId)
+        RequestContext context = RequestContext.builder()
                 .requestId(baseRequest.getRequestId())
                 .requestDateTime(baseRequest.getRequestDateTime())
                 .channel(baseRequest.getChannel())
+                .build();
+        FetchRoundTripDetailResult result = tripManagementService.fetchRoundTripDetail(FetchRoundTripDetailQuery.builder()
+                .outboundTripId(outboundTripId)
+                .returnTripId(returnTripId)
+                        .context(context)
                 .build());
 
         FetchRoundTripDetailResponse response = FetchRoundTripDetailResponse.builder()

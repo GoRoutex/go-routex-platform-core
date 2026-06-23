@@ -11,15 +11,14 @@ import platform.payment.service.application.command.payment.GetPaymentUrlCommand
 import platform.payment.service.application.services.VNPayService;
 import platform.payment.service.domain.payment.port.PaymentEventPublisherPort;
 import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
-import platform.payment.service.infrastructure.integration.constant.VNPayConstant;
+import platform.payment.service.infrastructure.integration.config.VNPayProperties;
 import platform.payment.service.infrastructure.integration.utils.VNPayUtils;
 import platform.payment.service.interfaces.model.vnpay.VNPayIpnResponse;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ import java.util.UUID;
 public class VNPayServiceImpl implements VNPayService {
 
     private final VNPayUtils vnPayUtils;
+    private final VNPayProperties vnPayProperties;
     private final PaymentRepositoryPort paymentRepositoryPort;
     private final PaymentEventPublisherPort paymentEventPublisherPort;
     private final SystemLog sLog = SystemLog.getLogger(this.getClass());
@@ -48,18 +48,21 @@ public class VNPayServiceImpl implements VNPayService {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
-        BigDecimal amount = request.amount().multiply(BigDecimal.valueOf(100));
+        String amount = request.amount()
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(0, RoundingMode.HALF_UP)
+                .toPlainString();
 
         String bankCode = request.bankCode();
         String vnp_IpAddr = hasText(request.clientIp()) ? request.clientIp().trim() : "127.0.0.1";
 
-        String vnp_TmnCode = VNPayConstant.vnp_TMNCODE;
+        String vnp_TmnCode = vnPayProperties.tmnCode();
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf(amount));
+        vnp_Params.put("vnp_Amount", amount);
         vnp_Params.put("vnp_CurrCode", "VND");
 
         if (bankCode != null && !bankCode.isEmpty()) {
@@ -70,10 +73,10 @@ public class VNPayServiceImpl implements VNPayService {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + request.bookingCode());
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", VNPayConstant.vnp_RETURNURL);
+        vnp_Params.put("vnp_ReturnUrl", vnPayProperties.returnUrl());
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
-        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
@@ -82,38 +85,13 @@ public class VNPayServiceImpl implements VNPayService {
         String vnp_ExpireDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
-        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
-        Collections.sort(fieldNames);
-        StringBuilder hashData = new StringBuilder();
-        StringBuilder query = new StringBuilder();
-
-        Iterator<String> itr = fieldNames.iterator();
-        while (itr.hasNext()) {
-
-            String fieldName = itr.next();
-            String fieldValue = vnp_Params.get(fieldName);
-
-            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
-                //Build hash data
-                hashData.append(fieldName)
-                        .append('=')
-                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-                //Build query
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII))
-                        .append('=')
-                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-                if (itr.hasNext()) {
-                    query.append('&');
-                    hashData.append('&');
-                }
-            }
-        }
-        String queryUrl = query.toString();
-        String vnp_SecureHash = vnPayUtils.hmacSHA512(VNPayConstant.SECRET_KEY, hashData.toString());
+        String hashData = vnPayUtils.buildHashData(vnp_Params);
+        String queryUrl = hashData;
+        String vnp_SecureHash = vnPayUtils.hmacSHA512(vnPayProperties.hashSecret(), hashData);
+        sLog.info("[VNPAY-CREATE] tmnCode={} amount={} hashData={} secureHash={}",
+                vnp_TmnCode, amount, hashData, vnp_SecureHash);
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-
-        sLog.info("Secure hash: {}", vnp_SecureHash);
-        return VNPayConstant.vnp_PAYURL + "?" + queryUrl;
+        return vnPayProperties.payUrl() + "?" + queryUrl;
     }
 
     @Override
@@ -125,8 +103,17 @@ public class VNPayServiceImpl implements VNPayService {
             fields.remove("vnp_SecureHashType");
             fields.remove("vnp_SecureHash");
 
-            String signValue = vnPayUtils.hashAllFields(fields);
-            if (!signValue.equals(vnpSecureHash)) {
+            String decodedHashData = vnPayUtils.buildHashData(fields);
+            String decodedSignValue = vnPayUtils.hmacSHA512(vnPayProperties.hashSecret(), decodedHashData);
+            String rawHashData = buildRawHashData(servletRequest.getQueryString());
+            String rawSignValue = hasText(rawHashData)
+                    ? vnPayUtils.hmacSHA512(vnPayProperties.hashSecret(), rawHashData)
+                    : null;
+
+            if (!matchesSecureHash(decodedSignValue, vnpSecureHash)
+                    && !matchesSecureHash(rawSignValue, vnpSecureHash)) {
+                sLog.warn("[VNPAY-IPN] Invalid checksum decodedHashData={} decodedSignValue={} rawHashData={} rawSignValue={} vnpSecureHash={} fields={}",
+                        decodedHashData, decodedSignValue, rawHashData, rawSignValue, vnpSecureHash, fields);
                 return ipnResponse("97", "Invalid Checksum");
             }
 
@@ -153,12 +140,17 @@ public class VNPayServiceImpl implements VNPayService {
                 return ipnResponse("02", "Order already confirmed");
             }
 
+            OffsetDateTime confirmedAt = OffsetDateTime.now();
             if ("00".equals(responseCode)) {
-                paymentEventPublisherPort.publishPaymentSucceeded(buildMetadata(), payment);
+                payment.markPaid(confirmedAt);
+                PaymentAggregate paidPayment = paymentRepositoryPort.save(payment);
+                publishPaymentSucceededForBookings(paidPayment);
                 return ipnResponse("00", "Confirm Success");
             }
             String failureReason = "VNPAY payment failed with response code: " + responseCode;
-            paymentEventPublisherPort.publishPaymentFailed(buildMetadata(), payment, failureReason);
+            payment.markFailed(confirmedAt, failureReason);
+            PaymentAggregate failedPayment = paymentRepositoryPort.save(payment);
+            publishPaymentFailedForBookings(failedPayment, failureReason);
             return ipnResponse("00", "Confirm Success");
         } catch (Exception ex) {
             return ipnResponse("99", "Unknown error");
@@ -186,12 +178,12 @@ public class VNPayServiceImpl implements VNPayService {
         }
 
         sLog.info("Fields: {}", fields);
-        String signValue = vnPayUtils.hashAllFields(fields);
+        String signValue = vnPayUtils.hashAllFields(vnPayProperties.hashSecret(), fields);
 
         sLog.info("Sign value: {}", signValue);
         String frontendRedirectUrl = "http://localhost:5173/payment-result"; // Link về app frontend của bạn
 
-        if (signValue.equals(vnp_SecureHash)) {
+        if (signValue.equalsIgnoreCase(vnp_SecureHash)) {
             if ("00".equals(request.getParameter("vnp_ResponseCode"))) {
                 response.sendRedirect(frontendRedirectUrl + "?status=success&txnRef=" + request.getParameter("vnp_TxnRef"));
             } else {
@@ -199,6 +191,8 @@ public class VNPayServiceImpl implements VNPayService {
             }
 
         } else {
+            sLog.warn("[VNPAY-RETURN] Invalid checksum hashData={} signValue={} vnpSecureHash={} fields={}",
+                    vnPayUtils.buildHashData(fields), signValue, vnp_SecureHash, fields);
             response.sendRedirect(frontendRedirectUrl + "?status=invalid_signature");
         }
     }
@@ -211,13 +205,48 @@ public class VNPayServiceImpl implements VNPayService {
             if (paramValue == null || paramValue.isEmpty()) {
                 continue;
             }
-            fields.put(
-                    URLEncoder.encode(paramName, StandardCharsets.US_ASCII),
-                    URLEncoder.encode(paramValue, StandardCharsets.US_ASCII)
-            );
+            fields.put(paramName, paramValue);
         }
         return fields;
     }
+
+    private String buildRawHashData(String rawQueryString) {
+        if (!hasText(rawQueryString)) {
+            return "";
+        }
+
+        Map<String, String> fields = new HashMap<>();
+        for (String param : rawQueryString.split("&")) {
+            int separatorIndex = param.indexOf('=');
+            String fieldName = separatorIndex >= 0 ? param.substring(0, separatorIndex) : param;
+            String fieldValue = separatorIndex >= 0 ? param.substring(separatorIndex + 1) : "";
+            if (!hasText(fieldName)
+                    || !hasText(fieldValue)
+                    || "vnp_SecureHash".equals(fieldName)
+                    || "vnp_SecureHashType".equals(fieldName)) {
+                continue;
+            }
+            fields.put(fieldName, fieldValue);
+        }
+
+        List<String> fieldNames = new ArrayList<>(fields.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> itr = fieldNames.iterator();
+        while (itr.hasNext()) {
+            String fieldName = itr.next();
+            sb.append(fieldName).append('=').append(fields.get(fieldName));
+            if (itr.hasNext()) {
+                sb.append('&');
+            }
+        }
+        return sb.toString();
+    }
+
+    private boolean matchesSecureHash(String signValue, String secureHash) {
+        return hasText(signValue) && hasText(secureHash) && signValue.equalsIgnoreCase(secureHash);
+    }
+
     private boolean isValidAmount(PaymentAggregate payment, String amountParam) {
         if (!hasText(amountParam)) {
             return false;
@@ -229,6 +258,46 @@ public class VNPayServiceImpl implements VNPayService {
         } catch (NumberFormatException ex) {
             return false;
         }
+    }
+
+    private void publishPaymentSucceededForBookings(PaymentAggregate payment) {
+        resolveBookingCodes(payment).forEach(bookingCode ->
+                paymentEventPublisherPort.publishPaymentSucceeded(buildMetadata(), paymentForBooking(payment, bookingCode))
+        );
+    }
+
+    private void publishPaymentFailedForBookings(PaymentAggregate payment, String failureReason) {
+        resolveBookingCodes(payment).forEach(bookingCode ->
+                paymentEventPublisherPort.publishPaymentFailed(buildMetadata(), paymentForBooking(payment, bookingCode), failureReason)
+        );
+    }
+
+    private List<String> resolveBookingCodes(PaymentAggregate payment) {
+        List<String> bookingCodes = paymentRepositoryPort.findBookingCodesByPaymentId(payment.getId());
+        if (!bookingCodes.isEmpty()) {
+            return bookingCodes;
+        }
+        return List.of(payment.getBookingCode());
+    }
+
+    private PaymentAggregate paymentForBooking(PaymentAggregate payment, String bookingCode) {
+        return PaymentAggregate.builder()
+                .id(payment.getId())
+                .bookingCode(bookingCode)
+                .method(payment.getMethod())
+                .txnRef(payment.getTxnRef())
+                .amount(payment.getAmount())
+                .currency(payment.getCurrency())
+                .status(payment.getStatus())
+                .paidAt(payment.getPaidAt())
+                .failedAt(payment.getFailedAt())
+                .failureReason(payment.getFailureReason())
+                .description(payment.getDescription())
+                .createdAt(payment.getCreatedAt())
+                .createdBy(payment.getCreatedBy())
+                .updatedAt(payment.getUpdatedAt())
+                .updatedBy(payment.getUpdatedBy())
+                .build();
     }
 
     private RequestContext buildMetadata() {

@@ -23,6 +23,10 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
 
     private final TripAssignmentEntityRepository tripAssignmentEntityRepository;
     private final RoutePersistenceMapper routePersistenceMapper;
+    private static final List<TripAssignmentStatus> ACTIVE_ASSIGNMENT_STATUSES = List.of(
+            TripAssignmentStatus.PENDING_ASSIGNMENT,
+            TripAssignmentStatus.ASSIGNED
+    );
 
     @Override
     public boolean existsActiveByTripId(String tripId) {
@@ -31,7 +35,11 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
 
     @Override
     public boolean existsActiveByTripId(String tripId, String merchantId) {
-        return tripAssignmentEntityRepository.existsByTripIdAndMerchantId(tripId, merchantId);
+        return tripAssignmentEntityRepository.existsByTripIdAndMerchantIdAndStatusIn(
+                tripId,
+                merchantId,
+                ACTIVE_ASSIGNMENT_STATUSES
+        );
     }
 
 
@@ -132,7 +140,7 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
 
     @Override
     public Optional<TripAssignmentRecord> findByTripId(String id) {
-        return tripAssignmentEntityRepository.findById(id)
+        return tripAssignmentEntityRepository.findFirstByTripIdOrderByAssignedAtDesc(id)
                 .map(routePersistenceMapper::toAssignmentRecord);
     }
 }

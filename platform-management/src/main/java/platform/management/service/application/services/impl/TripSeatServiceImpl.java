@@ -9,6 +9,7 @@ import platform.core.common.service.infrastructure.redis.service.TripSeatCacheSe
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.management.service.application.command.seat.SearchSeatCommand;
+import platform.management.service.application.command.seat.SearchRoundTripSeatResult;
 import platform.management.service.application.command.seat.SearchSeatResult;
 import platform.management.service.application.services.TripSeatService;
 import platform.merchant.service.domain.seat.model.SeatTemplate;
@@ -96,6 +97,14 @@ public class TripSeatServiceImpl implements TripSeatService {
         sLog.info("[SEARCH-SEAT] Search Seat Result Data: {}", seats);
         return SearchSeatResult.builder()
                 .data(seats)
+                .build();
+    }
+
+    @Override
+    public SearchRoundTripSeatResult searchRoundTripSeat(SearchSeatCommand outboundCommand, SearchSeatCommand returnCommand) {
+        return SearchRoundTripSeatResult.builder()
+                .outboundSeats(searchSeat(outboundCommand))
+                .returnSeats(searchSeat(returnCommand))
                 .build();
     }
 }

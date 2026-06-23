@@ -2,8 +2,10 @@ package platform.booking.service.infrastructure.persistence.adapter.booking;
 
 import org.springframework.stereotype.Component;
 import platform.booking.service.infrastructure.persistence.jpa.booking.entity.BookingEntity;
+import platform.booking.service.infrastructure.persistence.jpa.booking.entity.BookingLegEntity;
 import platform.booking.service.infrastructure.persistence.jpa.booking.entity.BookingSeatEntity;
 import platform.core.common.service.domain.booking.model.Booking;
+import platform.core.common.service.domain.booking.model.BookingLeg;
 import platform.core.common.service.domain.booking.model.BookingSeat;
 
 @Component
@@ -13,9 +15,7 @@ public class BookingPersistenceMapper {
         return Booking.builder()
                 .id(entity.getId())
                 .bookingCode(entity.getBookingCode())
-                .tripId(entity.getTripId())
                 .merchantId(entity.getMerchantId())
-                .vehicleId(entity.getVehicleId())
                 .customerId(entity.getCustomerId())
                 .customerName(entity.getCustomerName())
                 .customerPhone(entity.getCustomerPhone())
@@ -30,12 +30,6 @@ public class BookingPersistenceMapper {
                 .cancelledAt(entity.getCancelledAt())
                 .note(entity.getNote())
                 .creator(entity.getCreator())
-                .pickupType(entity.getPickupType())
-                .pickupStopId(entity.getPickupStopId())
-                .pickupAddress(entity.getPickupAddress())
-                .dropOffType(entity.getDropOffType())
-                .dropOffStopId(entity.getDropOffStopId())
-                .dropOffAddress(entity.getDropOffAddress())
                 .build();
     }
 
@@ -43,9 +37,7 @@ public class BookingPersistenceMapper {
         return BookingEntity.builder()
                 .id(booking.getId())
                 .bookingCode(booking.getBookingCode())
-                .tripId(booking.getTripId())
                 .merchantId(booking.getMerchantId())
-                .vehicleId(booking.getVehicleId())
                 .customerId(booking.getCustomerId())
                 .customerName(booking.getCustomerName())
                 .customerPhone(booking.getCustomerPhone())
@@ -60,12 +52,6 @@ public class BookingPersistenceMapper {
                 .cancelledAt(booking.getCancelledAt())
                 .note(booking.getNote())
                 .creator(booking.getCreator())
-                .pickupType(booking.getPickupType())
-                .pickupStopId(booking.getPickupStopId())
-                .pickupAddress(booking.getPickupAddress())
-                .dropOffType(booking.getDropOffType())
-                .dropOffStopId(booking.getDropOffStopId())
-                .dropOffAddress(booking.getDropOffAddress())
                 .build();
     }
 
@@ -73,11 +59,12 @@ public class BookingPersistenceMapper {
         return BookingSeat.builder()
                 .id(entity.getId())
                 .bookingId(entity.getBookingId())
-                .tripId(entity.getTripId())
+                .bookingLegId(entity.getBookingLegId())
                 .seatNo(entity.getSeatNo())
                 .price(entity.getPrice())
                 .status(entity.getStatus())
                 .ticketId(entity.getTicketId())
+                .ticketCode(entity.getTicketCode())
                 .creator(entity.getCreator())
                 .build();
     }
@@ -86,12 +73,43 @@ public class BookingPersistenceMapper {
         return BookingSeatEntity.builder()
                 .id(bookingSeat.getId())
                 .bookingId(bookingSeat.getBookingId())
-                .tripId(bookingSeat.getTripId())
+                .bookingLegId(bookingSeat.getBookingLegId())
                 .seatNo(bookingSeat.getSeatNo())
                 .price(bookingSeat.getPrice())
                 .status(bookingSeat.getStatus())
                 .ticketId(bookingSeat.getTicketId())
+                .ticketCode(bookingSeat.getTicketCode())
                 .creator(bookingSeat.getCreator())
+                .build();
+    }
+
+    public BookingLeg toDomain(BookingLegEntity entity) {
+        return BookingLeg.builder()
+                .id(entity.getId())
+                .bookingId(entity.getBookingId())
+                .tripId(entity.getTripId())
+                .vehicleId(entity.getVehicleId())
+                .pickupType(entity.getPickupType())
+                .pickupStopId(entity.getPickupStopId())
+                .pickupAddress(entity.getPickupAddress())
+                .dropOffType(entity.getDropOffType())
+                .dropOffStopId(entity.getDropOffStopId())
+                .dropOffAddress(entity.getDropOffAddress())
+                .build();
+    }
+
+    public BookingLegEntity toEntity(BookingLeg domain) {
+        return BookingLegEntity.builder()
+                .id(domain.getId())
+                .bookingId(domain.getBookingId())
+                .tripId(domain.getTripId())
+                .vehicleId(domain.getVehicleId())
+                .pickupType(domain.getPickupType())
+                .pickupStopId(domain.getPickupStopId())
+                .pickupAddress(domain.getPickupAddress())
+                .dropOffType(domain.getDropOffType())
+                .dropOffStopId(domain.getDropOffStopId())
+                .dropOffAddress(domain.getDropOffAddress())
                 .build();
     }
 }

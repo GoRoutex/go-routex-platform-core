@@ -104,6 +104,14 @@ public class TripAggregateRepositoryAdapter implements TripAggregateRepositoryPo
         return tripEntityRepository.findAllBy(from, to, pageable).map(tripAggregatePersistenceMapper::toDomain);
     }
 
+    @Override
+    public List<TripAggregate> findAssignedTripsBeforeForUpdate(OffsetDateTime cutoff, int limit) {
+        return tripEntityRepository.findAssignedTripsBeforeForUpdate(cutoff, PageRequest.of(0, limit))
+                .stream()
+                .map(tripAggregatePersistenceMapper::toDomain)
+                .toList();
+    }
+
     private PagedResult<TripAggregate> toPagedResult(Page<TripEntity> page) {
         return PagedResult.<TripAggregate>builder()
                 .items(page.getContent().stream()

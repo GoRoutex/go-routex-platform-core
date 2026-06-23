@@ -6,5 +6,5 @@ import platform.core.common.service.infrastructure.kafka.event.TripSellableEvent
 
 public interface TripEvent {
 
-    void generateRouteSeat(DomainEvent event, BaseRequest context, TripSellableEvent payload);
+    void generateTripSeat(DomainEvent event, BaseRequest context, TripSellableEvent payload);
 }

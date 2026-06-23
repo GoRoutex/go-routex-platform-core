@@ -102,8 +102,23 @@ public class VehicleProfileRepositoryAdapter implements VehicleProfileRepository
     }
 
     @Override
+    public List<VehicleProfile> findByTemplateId(String templateId, String merchantId) {
+        return vehicleEntityRepository.findByTemplateIdAndMerchantId(templateId, merchantId).stream()
+                .map(vehiclePersistenceMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public void save(VehicleProfile vehicleProfile) {
         vehicleEntityRepository.save(vehiclePersistenceMapper.toEntity(vehicleProfile));
+    }
+
+    @Override
+    public void saveAll(List<VehicleProfile> vehicleProfiles) {
+        List<VehicleEntity> entities = vehicleProfiles.stream()
+                .map(vehiclePersistenceMapper::toEntity)
+                .toList();
+        vehicleEntityRepository.saveAll(entities);
     }
 
     @Override

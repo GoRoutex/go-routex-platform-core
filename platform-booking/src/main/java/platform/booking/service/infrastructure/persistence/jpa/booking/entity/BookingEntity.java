@@ -33,14 +33,8 @@ public class BookingEntity extends AbstractAuditingEntity {
     @Column(name = "BOOKING_CODE", nullable = false, unique = true)
     private String bookingCode;
 
-    @Column(name = "TRIP_ID", nullable = false)
-    private String tripId;
-
     @Column(name = "MERCHANT_ID", nullable = false)
     private String merchantId;
-
-    @Column(name = "VEHICLE_ID", nullable = false)
-    private String vehicleId;
 
     @Column(name = "CUSTOMER_ID")
     private String customerId;
@@ -106,24 +100,4 @@ public class BookingEntity extends AbstractAuditingEntity {
 
     @Column(name = "CREATOR")
     private String creator;
-
-    @Column(name = "PICKUP_TYPE")
-    private String pickupType;
-
-    @Column(name = "PICKUP_STOP_ID")
-    private String pickupStopId;
-
-    @Column(name = "PICKUP_ADDRESS")
-    private String pickupAddress;
-
-    @Column(name = "DROP_OFF_TYPE")
-    private String dropOffType;
-
-    @Column(name = "DROP_OFF_STOP_ID")
-    private String dropOffStopId;
-
-    @Column(name = "DROP_OFF_ADDRESS")
-    private String dropOffAddress;
-
-
 }

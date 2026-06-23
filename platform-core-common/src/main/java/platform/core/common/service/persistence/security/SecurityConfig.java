@@ -20,6 +20,7 @@ import java.util.List;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.OPTIONS;
+import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
@@ -46,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/actuator/**",
                                 "/api/v1/booking-service/trips/hold-seat",
+                                "/api/v1/booking-service/trips/hold-seat/round-trip",
                                 "/api/v1/booking-service/payments/context",
                                 "/api/v1/internal/**",
                                 "/api/v1/management/trip-service/search",
@@ -53,9 +55,11 @@ public class SecurityConfig {
                                 "/api/v1/management/application-form/**",
                                 "/api/v1/management/route-service/**",
                                 "/api/v1/management/seat-diagram/search",
+                                "/api/v1/management/seat-diagram/search/round-trip",
                                 "/api/v1/merchant-service/internal/**",
                                 "/api/v1/merchant-service/provinces/search",
                                 "/api/v1/merchant-services/campaigns/validate",
+                                "/api/v1/payment-service/get-payment-url/batch",
                                 "/api/v1/management/authorities/**",
                                 "/api/v1/payment-service/vnpay-ipn",
                                 "/api/v1/management/route-service/**",
@@ -86,8 +90,12 @@ public class SecurityConfig {
     private CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             var corsConfig = new CorsConfiguration();
-            corsConfig.applyPermitDefaultValues();
-            corsConfig.setAllowedMethods(List.of(GET.name(), POST.name(), PUT.name(), DELETE.name(), OPTIONS.name()));
+            corsConfig.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*", "https://routex-go.com"));
+            corsConfig.setAllowedMethods(List.of(GET.name(), POST.name(), PUT.name(), PATCH.name(), DELETE.name(), OPTIONS.name()));
+            corsConfig.setAllowedHeaders(List.of("*"));
+            corsConfig.setExposedHeaders(List.of("Authorization", "Content-Disposition", "Location", "X-Request-Id", "RT-REQUEST-ID"));
+            corsConfig.setAllowCredentials(true);
+            corsConfig.setMaxAge(3600L);
             return corsConfig;
         };
     }

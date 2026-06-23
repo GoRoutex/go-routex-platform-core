@@ -43,4 +43,6 @@ public interface TripAggregateRepositoryPort {
     Page<TripAggregate> findAll(Specification<TripAggregate> specification, Pageable pageable);
 
     Page<TripAggregate> findAllByFilter(OffsetDateTime from, OffsetDateTime to, Pageable pageable);
+
+    List<TripAggregate> findAssignedTripsBeforeForUpdate(OffsetDateTime cutoff, int limit);
 }

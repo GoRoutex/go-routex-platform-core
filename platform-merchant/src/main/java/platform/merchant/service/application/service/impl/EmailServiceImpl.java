@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import platform.core.common.service.infrastructure.kafka.event.EmailNotificationEvent;
-import platform.core.common.service.infrastructure.kafka.model.KafkaEventMessage;
 import platform.merchant.service.application.command.email.TicketEmailCommand;
 import platform.merchant.service.application.service.EmailService;
 import platform.merchant.service.infrastructure.persistence.utils.JsonUtils;
@@ -14,6 +13,7 @@ import vn.com.go.routex.identity.security.log.SystemLog;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -53,19 +53,18 @@ public class EmailServiceImpl implements EmailService {
                 .variables(variables)
                 .build();
 
-        KafkaEventMessage<EmailNotificationEvent> message = KafkaEventMessage.<EmailNotificationEvent>builder()
-                .eventId(UUID.randomUUID().toString())
-                .eventType(emailEventName)
-                .aggregateId(command.toEmail())
-                .occurredAt(OffsetDateTime.now())
-                .payload(KafkaEventMessage.MessagePayload.<EmailNotificationEvent>builder()
-                        .data(emailEvent)
-                        .build())
-                .build();
+        Map<String, Object> message = new LinkedHashMap<>();
+        message.put("eventId", UUID.randomUUID().toString());
+        message.put("eventName", emailEventName);
+        message.put("aggregateId", command.toEmail());
+        message.put("source", "platform-core");
+        message.put("version", 1);
+        message.put("occurredAt", OffsetDateTime.now());
+        message.put("data", emailEvent);
 
         try {
             String payload = JsonUtils.parseToJsonStr(message);
-            sLog.info("[EMAIL-PUBLISHER] Publishing event payload to topic routex.notification.email");
+            sLog.info("[EMAIL-PUBLISHER] Publishing event payload to topic {}", emailEventName);
             kafkaTemplate.send(emailEventName, command.toEmail(), payload);
             sLog.info("[EMAIL-PUBLISHER] Successfully published ticket confirmation email event to Kafka");
         } catch (Exception e) {

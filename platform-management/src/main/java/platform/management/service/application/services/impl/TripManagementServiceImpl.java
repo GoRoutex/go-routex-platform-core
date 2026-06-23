@@ -9,12 +9,12 @@ import platform.core.common.service.application.readmodel.TripSearchView;
 import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
+import platform.management.service.application.command.trip.FetchRoundTripDetailQuery;
+import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.FetchTripQuery;
 import platform.management.service.application.command.trip.FetchTripResult;
 import platform.management.service.application.command.trip.FetchTripsQuery;
 import platform.management.service.application.command.trip.FetchTripsResult;
-import platform.management.service.application.command.trip.FetchRoundTripDetailQuery;
-import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.RoutePointResult;
 import platform.management.service.application.command.trip.SearchRoundTripQuery;
 import platform.management.service.application.command.trip.SearchRoundTripResult;
@@ -30,9 +30,11 @@ import platform.management.service.infrastructure.integration.merchantplatform.c
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformFetchMerchantsRequest;
 import platform.management.service.infrastructure.integration.merchantplatform.model.MerchantPlatformInternalModels;
 import platform.management.service.infrastructure.persistence.utils.ApiRequestUtils;
+import platform.merchant.service.application.service.InternalMerchantAdminService;
 import platform.merchant.service.domain.assignment.model.TripAssignmentRecord;
 import platform.merchant.service.domain.department.model.Department;
 import platform.merchant.service.domain.department.port.DepartmentRepositoryPort;
+import platform.merchant.service.domain.merchant.model.Merchant;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.model.RouteStopPlan;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
@@ -42,6 +44,7 @@ import platform.merchant.service.domain.trip.port.TripQueryPort;
 import platform.merchant.service.domain.trip.readmodel.TripFetchView;
 import platform.merchant.service.domain.vehicle.model.VehicleProfile;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
+import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.LocalDate;
@@ -77,7 +80,9 @@ public class TripManagementServiceImpl implements TripManagementService {
     private final MerchantPlatformInternalClient merchantPlatformInternalClient;
     private final TripAggregateRepositoryPort tripAggregateRepositoryPort;
     private final DepartmentRepositoryPort departmentRepositoryPort;
+    private final InternalMerchantAdminService internalMerchantAdminService;
     private final SystemLog sLog = SystemLog.getLogger(this.getClass());
+    private final VehicleTemplateRepositoryPort vehicleTemplateRepositoryPort;
 
 
     @Override
@@ -202,17 +207,17 @@ public class TripManagementServiceImpl implements TripManagementService {
         if (query.outboundTripId() == null || query.outboundTripId().isBlank()
                 || query.returnTripId() == null || query.returnTripId().isBlank()) {
             throw new BusinessException(
-                    query.requestId(),
-                    query.requestDateTime(),
-                    query.channel(),
+                    query.context().requestId(),
+                    query.context().requestDateTime(),
+                    query.context().channel(),
                     ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "outboundTripId and returnTripId are required")
             );
         }
         if (query.outboundTripId().equals(query.returnTripId())) {
             throw new BusinessException(
-                    query.requestId(),
-                    query.requestDateTime(),
-                    query.channel(),
+                    query.context().requestId(),
+                    query.context().requestDateTime(),
+                    query.context().channel(),
                     ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "outboundTripId and returnTripId must be different")
             );
         }
@@ -222,17 +227,17 @@ public class TripManagementServiceImpl implements TripManagementService {
     public FetchTripResult fetchTripDetail(FetchTripQuery query) {
         TripAggregate trip = tripAggregateRepositoryPort.findById(query.tripId())
                 .orElseThrow(() -> new BusinessException(
-                        query.requestId(),
-                        query.requestDateTime(),
-                        query.channel(),
+                        query.context().requestId(),
+                        query.context().requestDateTime(),
+                        query.context().channel(),
                         ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(TRIP_NOT_FOUND, query.tripId()))
                 ));
 
         RouteAggregate route = routeAggregateRepositoryPort.findById(trip.getRouteId())
                 .orElseThrow(() -> new BusinessException(
-                        query.requestId(),
-                        query.requestDateTime(),
-                        query.channel(),
+                        query.context().requestId(),
+                        query.context().requestDateTime(),
+                        query.context().channel(),
                         ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(ROUTE_NOT_FOUND, query.tripId()))
                 ));
 
@@ -240,7 +245,9 @@ public class TripManagementServiceImpl implements TripManagementService {
 
         TripEnrichment enrichment = enrichRoutes(List.of(trip.getId()), List.of(trip.getRouteId()), departmentIds);
 
-        return toFetchTripDetail(route, trip, enrichment);
+        Merchant merchant = internalMerchantAdminService.fetchMerchantDetail(trip.getMerchantId(), query.context());
+
+        return toFetchTripDetail(route, trip, enrichment, merchant);
     }
 
     @Override
@@ -249,25 +256,29 @@ public class TripManagementServiceImpl implements TripManagementService {
 
         FetchTripResult outboundTrip = fetchTripDetail(FetchTripQuery.builder()
                 .tripId(query.outboundTripId())
-                .requestId(query.requestId())
-                .requestDateTime(query.requestDateTime())
-                .channel(query.channel())
+                .context(RequestContext.builder()
+                        .requestId(query.context().requestId())
+                        .requestDateTime(query.context().requestDateTime())
+                        .channel(query.context().channel())
+                        .build())
                 .build());
 
         FetchTripResult returnTrip = fetchTripDetail(FetchTripQuery.builder()
                 .tripId(query.returnTripId())
-                .requestId(query.requestId())
-                .requestDateTime(query.requestDateTime())
-                .channel(query.channel())
+                .context(RequestContext.builder()
+                        .requestId(query.context().requestId())
+                        .requestDateTime(query.context().requestDateTime())
+                        .channel(query.context().channel())
+                        .build())
                 .build());
 
         if (outboundTrip.departureTime() != null
                 && returnTrip.departureTime() != null
                 && returnTrip.departureTime().isBefore(outboundTrip.departureTime())) {
             throw new BusinessException(
-                    query.requestId(),
-                    query.requestDateTime(),
-                    query.channel(),
+                    query.context().requestId(),
+                    query.context().requestDateTime(),
+                    query.context().channel(),
                     ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "returnTrip must depart on or after outboundTrip")
             );
         }
@@ -370,6 +381,7 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .map(TripAssignmentRecord::getVehicleId)
                 .distinct()
                 .toList();
+
         Map<String, VehicleProfile> vehicles = routeVehicleRepositoryPort.findByIds(vehicleIds);
         Map<String, List<RouteStopPlan>> stopsByRouteId = routePointRepositoryPort.findByRouteIds(routeIds);
         List<Department> listDepartment = departmentRepositoryPort.findAllByIdIn(departmentIds);
@@ -396,7 +408,6 @@ public class TripManagementServiceImpl implements TripManagementService {
         VehicleProfile vehicle = findVehicle(assignment, enrichment);
         List<RouteStopPlan> routeStopPlans = enrichment.stopsByRouteId().get(routeInformation.getRouteId());
         List<RoutePointResult> routePointResults = toRoutePoints(routeStopPlans);
-        sLog.info("Enrichment DepartmentMap: {}", enrichment.departmentMap);
         String originDepartmentName = enrichment.departmentMap.get(routeInformation.getOriginDepartmentId()).getName();
         String destinationDepartmentName = enrichment.departmentMap.get(routeInformation.getDestinationDepartmentId()).getName();
 
@@ -503,7 +514,7 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .build();
     }
 
-    private FetchTripResult toFetchTripDetail(RouteAggregate route, TripAggregate trip, TripEnrichment enrichment) {
+    private FetchTripResult toFetchTripDetail(RouteAggregate route, TripAggregate trip, TripEnrichment enrichment, Merchant merchant) {
         TripAssignmentRecord assignment = enrichment.assignments().get(trip.getId());
         VehicleProfile vehicle = findVehicle(assignment, enrichment);
 
@@ -514,6 +525,8 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .id(trip.getId())
                 .creator(route.getCreator())
                 .tripCode(trip.getTripCode())
+                .merchantId(merchant.getId())
+                .merchantName(merchant.getDisplayName())
                 .originName(route.getOriginName())
                 .originCode(route.getOriginCode())
                 .destinationName(route.getDestinationName())
@@ -534,6 +547,8 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .hasFloor(vehicle != null && vehicle.isHasFloor())
                 .assignedAt(assignment == null ? null : assignment.getAssignedAt())
                 .routePoints(toRoutePoints(enrichment.stopsByRouteId().get(route.getId())))
+                .availableSeat(enrichment.seatAvailable.get(trip.getId()))
+                .ticketPrice(assignment.getTicketPrice())
                 .build();
     }
 

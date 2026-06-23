@@ -4,12 +4,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import platform.core.common.service.domain.trip.TripStatus;
 import platform.merchant.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
 
+import jakarta.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -61,5 +63,14 @@ public interface TripEntityRepository extends JpaRepository<TripEntity, String>,
             Pageable pageable);
 
     List<TripEntity> findAllByIdInAndMerchantId(List<String> ids, String merchantId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT t FROM TripEntity t
+            WHERE t.status = 'ASSIGNED'
+            AND t.departureTime < :cutoff
+            ORDER BY t.departureTime ASC, t.id ASC
+            """)
+    List<TripEntity> findAssignedTripsBeforeForUpdate(@Param("cutoff") OffsetDateTime cutoff, Pageable pageable);
 
 }

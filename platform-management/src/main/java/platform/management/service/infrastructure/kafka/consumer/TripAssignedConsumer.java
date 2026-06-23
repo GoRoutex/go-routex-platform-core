@@ -38,7 +38,7 @@ public class TripAssignedConsumer {
             containerFactory = "kafkaListenerContainerFactory",
             groupId = "${spring.kafka.group-id.management-trips}"
     )
-    public void routeAssignedConsumer(String payload, Acknowledgment acknowledgment) {
+    public void tripAssignmentConsumer(String payload, Acknowledgment acknowledgment) {
         sLog.info("[TRIP-ASSIGNED] Raw Payload: {}", payload);
 
         DomainEvent event = JsonUtils.parseToKafkaObject(

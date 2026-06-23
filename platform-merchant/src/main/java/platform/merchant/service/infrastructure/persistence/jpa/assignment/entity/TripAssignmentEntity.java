@@ -58,5 +58,16 @@ public class TripAssignmentEntity extends AbstractAuditingEntity {
     @Enumerated(EnumType.STRING)
     private TripAssignmentStatus status;
 
-}
+    @Column(name = "SUCCESS_CODE")
+    private String successCode;
 
+    @Column(name = "SUCCESS_DESCRIPTION")
+    private String successDescription;
+
+    @Column(name = "FAIL_CODE")
+    private String failCode;
+
+    @Column(name = "FAIL_DESCRIPTION")
+    private String failDescription;
+
+}

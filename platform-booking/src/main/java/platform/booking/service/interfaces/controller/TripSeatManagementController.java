@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
+import platform.booking.service.application.command.seat.HoldRoundTripSeatCommand;
+import platform.booking.service.application.command.seat.HoldRoundTripSeatResult;
 import platform.booking.service.application.command.seat.HoldSeatCommand;
 import platform.booking.service.application.command.seat.HoldSeatResult;
 import platform.booking.service.application.services.HoldSeatService;
+import platform.booking.service.interfaces.models.seat.HoldRoundTripSeatRequest;
+import platform.booking.service.interfaces.models.seat.HoldRoundTripSeatResponse;
 import platform.booking.service.interfaces.models.seat.HoldSeatRequest;
 import platform.booking.service.interfaces.models.seat.HoldSeatResponse;
 import platform.core.common.service.api.ApiResult;
@@ -26,6 +30,7 @@ import static platform.core.common.service.persistence.constant.ApiConstant.API_
 import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;
 import static platform.core.common.service.persistence.constant.ApiConstant.BOOKING_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.HOLD_SEAT_PATH;
+import static platform.core.common.service.persistence.constant.ApiConstant.ROUND_TRIP_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.TRIP_PATH;
 
 
@@ -48,7 +53,7 @@ public class TripSeatManagementController {
 
         HoldSeatResult result = holdSeatService.holdSeat(HoldSeatCommand.builder()
                 .context(HttpUtils.toContext(request))
-                        .creator(request.getCreator())
+                .creator(request.getCreator())
                 .tripId(request.getData().getTripId())
                 .seatNos(request.getData().getSeatNos())
                 .holdBy(request.getData().getHoldBy())
@@ -63,14 +68,7 @@ public class TripSeatManagementController {
                 .dropOffAddress(request.getData().getDropOffAddress())
                 .build());
 
-        List<HoldSeatResponse.HoldSeatResponseData> responseData = result.seats().stream()
-                .map(item -> HoldSeatResponse.HoldSeatResponseData.builder()
-                        .tripId(item.tripId())
-                        .seatNo(item.seatNo())
-                        .status(item.status())
-                        .holdToken(item.holdToken())
-                        .build())
-                .collect(Collectors.toList());
+        List<HoldSeatResponse.HoldSeatResponseData> responseData = toHoldSeatResponseData(result);
 
         HoldSeatResponse.HoldSeatResponseBookingInfo bookingInfo = getHoldSeatResponseBookingInfo(result);
 
@@ -87,6 +85,78 @@ public class TripSeatManagementController {
         sLog.info("[HOLD-SEAT] Hold Seat Response: {}", response);
 
         return HttpUtils.buildResponse(request, response);
+    }
+
+    @PostMapping(TRIP_PATH + HOLD_SEAT_PATH + ROUND_TRIP_PATH)
+    public ResponseEntity<HoldRoundTripSeatResponse> holdRoundTripSeat(@Valid @RequestBody HoldRoundTripSeatRequest request) {
+        sLog.info("[HOLD-ROUND-TRIP-SEAT] Hold Round Trip Seat Request: {}", request);
+
+        HoldRoundTripSeatResult result = holdSeatService.holdRoundTripSeat(HoldRoundTripSeatCommand.builder()
+                .context(HttpUtils.toContext(request))
+                .creator(request.getCreator())
+                .holdBy(resolveHoldBy(request.getData()))
+                .customerName(request.getInfo().getCustomerName())
+                .customerPhone(request.getInfo().getCustomerPhone())
+                .customerEmail(request.getInfo().getCustomerEmail())
+                .outboundTrip(toRoundTripLegCommand(request.getData().getOutboundTrip()))
+                .returnTrip(toRoundTripLegCommand(request.getData().getReturnTrip()))
+                .build());
+
+        HoldRoundTripSeatResponse response = HoldRoundTripSeatResponse.builder()
+                .requestId(request.getRequestId())
+                .requestDateTime(request.getRequestDateTime())
+                .channel(request.getChannel())
+                .result(ApiResult.buildSuccess())
+                .data(HoldRoundTripSeatResponse.HoldRoundTripSeatResponseData.builder()
+                        .outboundTrip(toRoundTripLegResponse(result.outboundTrip()))
+                        .returnTrip(toRoundTripLegResponse(result.returnTrip()))
+                        .build())
+                .build();
+
+        sLog.info("[HOLD-ROUND-TRIP-SEAT] Hold Round Trip Seat Response: {}", response);
+
+        return HttpUtils.buildResponse(request, response);
+    }
+
+    private HoldRoundTripSeatCommand.HoldRoundTripSeatLegCommand toRoundTripLegCommand(HoldSeatRequest.HoldSeatRequestData data) {
+        return HoldRoundTripSeatCommand.HoldRoundTripSeatLegCommand.builder()
+                .tripId(data.getTripId())
+                .seatNos(data.getSeatNos())
+                .pickupType(data.getPickupType())
+                .pickupStopId(data.getPickupStopId())
+                .pickupAddress(data.getPickupAddress())
+                .dropOffType(data.getDropOffType())
+                .dropOffStopId(data.getDropOffStopId())
+                .dropOffAddress(data.getDropOffAddress())
+                .build();
+    }
+
+    private HoldRoundTripSeatResponse.HoldRoundTripSeatLegResponse toRoundTripLegResponse(HoldSeatResult result) {
+        return HoldRoundTripSeatResponse.HoldRoundTripSeatLegResponse.builder()
+                .booking(getHoldSeatResponseBookingInfo(result))
+                .seats(toHoldSeatResponseData(result))
+                .build();
+    }
+
+    private String resolveHoldBy(HoldRoundTripSeatRequest.HoldRoundTripSeatRequestData data) {
+        if (data.getHoldBy() != null && !data.getHoldBy().isBlank()) {
+            return data.getHoldBy();
+        }
+        if (data.getOutboundTrip().getHoldBy() != null && !data.getOutboundTrip().getHoldBy().isBlank()) {
+            return data.getOutboundTrip().getHoldBy();
+        }
+        return data.getReturnTrip().getHoldBy();
+    }
+
+    private static List<HoldSeatResponse.HoldSeatResponseData> toHoldSeatResponseData(HoldSeatResult result) {
+        return result.seats().stream()
+                .map(item -> HoldSeatResponse.HoldSeatResponseData.builder()
+                        .tripId(item.tripId())
+                        .seatNo(item.seatNo())
+                        .status(item.status())
+                        .holdToken(item.holdToken())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private static HoldSeatResponse.HoldSeatResponseBookingInfo getHoldSeatResponseBookingInfo(HoldSeatResult item) {

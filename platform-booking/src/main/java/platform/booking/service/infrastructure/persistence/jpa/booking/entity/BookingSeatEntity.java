@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Entity(name = "Booking_BookingSeatEntity")
+@Entity
 @Table(name = "BOOKING_SEAT")
 public class BookingSeatEntity extends AbstractAuditingEntity {
 
@@ -31,8 +31,8 @@ public class BookingSeatEntity extends AbstractAuditingEntity {
     @Column(name = "BOOKING_ID", nullable = false)
     private String bookingId;
 
-    @Column(name = "TRIP_ID", nullable = false)
-    private String tripId;
+    @Column(name = "BOOKING_LEG_ID", nullable = false)
+    private String bookingLegId;
 
     @Column(name = "SEAT_NO")
     private String seatNo;
@@ -47,7 +47,9 @@ public class BookingSeatEntity extends AbstractAuditingEntity {
     @Column(name = "TICKET_ID")
     private String ticketId;
 
+    @Column(name = "TICKET_CODE")
+    private String ticketCode;
+
     @Column(name = "CREATOR")
     private String creator;
-
 }

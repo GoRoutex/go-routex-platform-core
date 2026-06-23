@@ -1,7 +1,6 @@
 package platform.merchant.service.application.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.core.common.service.domain.ticket.port.TicketRepositoryPort;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
-import platform.merchant.service.application.command.email.TicketEmailCommand;
 import platform.merchant.service.application.command.ticket.CreateTicketCommand;
 import platform.merchant.service.application.command.ticket.CreateTicketResult;
 import platform.merchant.service.application.command.ticket.FetchCustomerTicketsQuery;
@@ -23,19 +21,19 @@ import platform.merchant.service.application.command.ticket.FetchTicketListResul
 import platform.merchant.service.application.command.ticket.SearchTicketListQuery;
 import platform.merchant.service.application.command.ticket.UpdateTicketCommand;
 import platform.merchant.service.application.command.ticket.UpdateTicketResult;
-import platform.merchant.service.application.event.ticket.TicketIssuedEvent;
 import platform.merchant.service.application.service.TicketService;
-import platform.merchant.service.domain.assignment.model.TripAssignmentRecord;
+import platform.merchant.service.application.service.cache.DashboardCacheService;
 import platform.merchant.service.domain.assignment.port.TripAssignmentRepositoryPort;
 import platform.merchant.service.domain.campaign.model.Campaign;
 import platform.merchant.service.domain.campaign.port.CampaignRepositoryPort;
 import platform.merchant.service.domain.driver.model.DriverProfile;
 import platform.merchant.service.domain.driver.port.DriverProfileRepositoryPort;
+import platform.merchant.service.domain.finance.model.MerchantDailyStats;
 import platform.merchant.service.domain.finance.model.RevenueTransaction;
+import platform.merchant.service.domain.finance.port.MerchantDailyStatsRepositoryPort;
 import platform.merchant.service.domain.finance.port.RevenueRepositoryPort;
 import platform.merchant.service.domain.merchant.model.Merchant;
 import platform.merchant.service.domain.merchant.port.MerchantRepositoryPort;
-import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
 import platform.merchant.service.domain.trip.model.TripAggregate;
 import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
@@ -46,6 +44,7 @@ import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPo
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -66,8 +65,8 @@ public class TicketServiceImpl implements TicketService {
     private final TicketRepositoryPort ticketRepositoryPort;
     private final MerchantRepositoryPort merchantRepositoryPort;
     private final RevenueRepositoryPort revenueRepositoryPort;
+    private final MerchantDailyStatsRepositoryPort merchantDailyStatsRepositoryPort;
     private final TripAggregateRepositoryPort tripRepositoryPort;
-    private final ApplicationEventPublisher eventPublisher;
     private final RouteAggregateRepositoryPort routeRepositoryPort;
     private final TripAssignmentRepositoryPort assignmentRepositoryPort;
     private final DriverProfileRepositoryPort driverProfileRepositoryPort;
@@ -75,6 +74,7 @@ public class TicketServiceImpl implements TicketService {
     private final VehicleTemplateRepositoryPort vehicleTemplateRepositoryPort;
     private final CampaignRepositoryPort campaignRepositoryPort;
     private final EntityPartitionService entityPartitionService;
+    private final DashboardCacheService dashboardCacheService;
 
     @Override
     @Transactional
@@ -107,9 +107,6 @@ public class TicketServiceImpl implements TicketService {
 
             // 2. Process Financial Records (Revenue & Stats)
             processFinancialRecords(command, savedTicket.getId(), merchant.getId(), commissionRate, promoResult);
-
-            // 3. Post-creation processes (Analytics, Email, Notifications)
-            handleTripAnalyticsAndNotification(command, merchant.getId(), savedTicket, tripCache);
 
             return CreateTicketResult.builder()
                     .ticketId(savedTicket.getId())
@@ -188,57 +185,46 @@ public class TicketServiceImpl implements TicketService {
                 .build();
 
         revenueRepositoryPort.save(revenueTransaction);
+        updateMerchantDailyStats(revenueTransaction);
+        dashboardCacheService.evictMerchantDashboardCache(merchantId);
     }
 
-    private void handleTripAnalyticsAndNotification(CreateTicketCommand command, String merchantId,
-                                                   Ticket savedTicket, Map<String, TripAggregate> tripCache) {
-        TripAggregate trip = tripCache.computeIfAbsent(command.tripId(),
-                id -> tripRepositoryPort.findById(id).orElse(null));
+    private void updateMerchantDailyStats(RevenueTransaction revenueTransaction) {
+        LocalDate statsDate = revenueTransaction.getTransactionDate().toLocalDate();
+        String statsId = revenueTransaction.getMerchantId() + "_" + statsDate;
 
-        if (trip != null) {
-            // Build Command for Email and Publish Event
-            TicketEmailCommand emailCommand = buildEmailCommand(savedTicket, trip);
-            if (emailCommand != null) {
-                eventPublisher.publishEvent(new TicketIssuedEvent(emailCommand));
-            }
-        }
+        MerchantDailyStats stats = merchantDailyStatsRepositoryPort.findById(statsId)
+                .orElseGet(() -> MerchantDailyStats.builder()
+                        .id(statsId)
+                        .merchantId(revenueTransaction.getMerchantId())
+                        .statsDate(statsDate)
+                        .totalTickets(0)
+                        .totalRevenue(BigDecimal.ZERO)
+                        .totalDiscount(BigDecimal.ZERO)
+                        .merchantShare(BigDecimal.ZERO)
+                        .systemCommission(BigDecimal.ZERO)
+                        .occupancyRate(0.0)
+                        .createdAt(OffsetDateTime.now())
+                        .createdBy(revenueTransaction.getCreatedBy())
+                        .build());
+
+        stats.setTotalTickets(defaultInt(stats.getTotalTickets()) + 1);
+        stats.setTotalRevenue(defaultAmount(stats.getTotalRevenue()).add(defaultAmount(revenueTransaction.getTotalAmount())));
+        stats.setTotalDiscount(defaultAmount(stats.getTotalDiscount()).add(defaultAmount(revenueTransaction.getDiscountAmount())));
+        stats.setMerchantShare(defaultAmount(stats.getMerchantShare()).add(defaultAmount(revenueTransaction.getMerchantAmount())));
+        stats.setSystemCommission(defaultAmount(stats.getSystemCommission()).add(defaultAmount(revenueTransaction.getSystemAmount())));
+        stats.setUpdatedAt(OffsetDateTime.now());
+        stats.setUpdatedBy(revenueTransaction.getCreatedBy());
+
+        merchantDailyStatsRepositoryPort.save(stats);
     }
 
-    private TicketEmailCommand buildEmailCommand(Ticket ticket, TripAggregate trip) {
-        if (ticket.getCustomerEmail() == null || ticket.getCustomerEmail().isBlank()) return null;
+    private int defaultInt(Integer value) {
+        return value == null ? 0 : value;
+    }
 
-        RouteAggregate route = routeRepositoryPort.findById(trip.getRouteId()).orElse(null);
-        TripAssignmentRecord assignment = assignmentRepositoryPort.findActiveByTripId(trip.getId()).orElse(null);
-
-        TicketEmailCommand.TicketEmailCommandBuilder emailBuilder = TicketEmailCommand.builder()
-                .toEmail(ticket.getCustomerEmail())
-                .customerName(ticket.getCustomerName())
-                .ticketCode(ticket.getTicketCode())
-                .seatNumber(ticket.getSeatNumber())
-                .price(ticket.getPrice())
-                .departureTime(trip.getDepartureTime())
-                .routeName(route != null ? route.getOriginName() + " - " + route.getDestinationName() : "N/A")
-                .startPoint(route != null ? route.getOriginDepartmentName() : "N/A")
-                .endPoint(route != null ? route.getDestinationDepartmentName() : "N/A");
-
-        if (assignment != null) {
-            DriverProfile driver = driverProfileRepositoryPort.findById(assignment.getDriverId()).orElse(null);
-            VehicleProfile vehicle = vehicleProfileRepositoryPort.findById(assignment.getVehicleId()).orElse(null);
-
-            if (driver != null) {
-                emailBuilder.driverName(driver.getFullName())
-                        .driverPhone(driver.getPhoneNumber());
-            }
-
-            if (vehicle != null) {
-                VehicleTemplate template = vehicleTemplateRepositoryPort.findById(vehicle.getTemplateId()).orElse(null);
-                emailBuilder.vehiclePlate(vehicle.getVehiclePlate());
-                if (template != null) {
-                    emailBuilder.vehicleType(template.getName());
-                }
-            }
-        }
-        return emailBuilder.build();
+    private BigDecimal defaultAmount(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     private record PromotionResult(BigDecimal discountAmount, String campaignId) {}

@@ -14,5 +14,7 @@ public interface PaymentEntityRepository extends JpaRepository<PaymentEntity, St
 
     Optional<PaymentEntity> findByTxnRef(String txnRef);
 
-    Optional<PaymentEntity> findByBookingCode(String bookingCode);
+    Optional<PaymentEntity> findFirstByBookingCodeOrderByCreatedAtDesc(String bookingCode);
+
+    Optional<PaymentEntity> findFirstByBookingCodeAndMethodOrderByCreatedAtDesc(String bookingCode, PaymentMethod method);
 }

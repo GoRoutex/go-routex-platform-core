@@ -16,6 +16,8 @@ public interface TripAssignmentEntityRepository extends JpaRepository<TripAssign
 
     boolean existsByTripIdAndMerchantId(String tripId, String merchantId);
 
+    boolean existsByTripIdAndMerchantIdAndStatusIn(String tripId, String merchantId, List<TripAssignmentStatus> statuses);
+
     Optional<TripAssignmentEntity> findFirstByTripIdAndStatusAndUnAssignedAtIsNullOrderByAssignedAtDesc(String tripId, TripAssignmentStatus status);
 
     Optional<TripAssignmentEntity> findFirstByTripIdAndMerchantIdAndStatusAndUnAssignedAtIsNullOrderByAssignedAtDesc(
@@ -55,6 +57,8 @@ public interface TripAssignmentEntityRepository extends JpaRepository<TripAssign
     Optional<TripAssignmentEntity> findByTripIdAndMerchantId(String TripId, String merchantId);
 
     List<TripAssignmentEntity> findByTripIdInAndMerchantId(List<String> TripIds, String merchantId);
+
+    Optional<TripAssignmentEntity> findFirstByTripIdOrderByAssignedAtDesc(String tripId);
 
     List<TripAssignmentEntity> findByDriverIdAndStatusAndUnAssignedAtIsNull(String driverId, TripAssignmentStatus status);
 

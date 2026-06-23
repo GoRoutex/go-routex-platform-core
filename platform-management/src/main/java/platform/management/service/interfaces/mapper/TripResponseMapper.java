@@ -6,8 +6,8 @@ import platform.management.service.application.command.trip.FetchTripResult;
 import platform.management.service.application.command.trip.RoutePointResult;
 import platform.management.service.application.command.trip.SearchRoundTripResult;
 import platform.management.service.application.command.trip.SearchTripItemResult;
-import platform.management.service.interfaces.models.trip.FetchTripResponse;
 import platform.management.service.interfaces.models.trip.FetchRoundTripDetailResponse;
+import platform.management.service.interfaces.models.trip.FetchTripResponse;
 import platform.management.service.interfaces.models.trip.SearchRoundTripResponse;
 import platform.management.service.interfaces.models.trip.SearchTripResponse;
 
@@ -81,6 +81,8 @@ public class TripResponseMapper {
                 .id(item.id())
                 .creator(item.creator())
                 .tripCode(item.tripCode())
+                .merchantId(item.merchantId())
+                .merchantName(item.merchantName())
                 .originCode(item.originCode())
                 .originName(item.originName())
                 .destinationCode(item.destinationCode())
@@ -100,6 +102,8 @@ public class TripResponseMapper {
                 .vehiclePlate(item.vehiclePlate())
                 .hasFloor(item.hasFloor())
                 .assignedAt(item.assignedAt())
+                .availableSeats(item.availableSeat())
+                .ticketPrice(item.ticketPrice())
                 .routePoints(item.routePoints() == null ? null : item.routePoints().stream()
                         .map(this::toSearchRoutePoint)
                         .toList())

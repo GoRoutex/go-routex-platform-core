@@ -53,3 +53,15 @@ Maven compiled the full reactor successfully, including protobuf generation and 
 6. Add endpoint contract tests for every preserved REST prefix.
 7. Run Spring Boot startup verification from `platform-core-app`.
 8. Move packages from legacy roots into `vn.com.routex.platform.*` only after endpoint and runtime compatibility are locked.
+
+## Required Database Changes
+
+Trip assignment now records explicit success/failure diagnostics for the async assign-to-sale flow:
+
+```sql
+alter table trip_assignment
+    add column if not exists success_code varchar(64),
+    add column if not exists success_description text,
+    add column if not exists fail_code varchar(64),
+    add column if not exists fail_description text;
+```

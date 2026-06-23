@@ -47,11 +47,6 @@ public class BookingRepositoryAdapter implements BookingRepositoryPort {
     }
 
     @Override
-    public Optional<Booking> findByRouteId(String routeId) {
-        return bookingEntityRepository.findByTripId(routeId).map(bookingPersistenceMapper::toDomain);
-    }
-
-    @Override
     public List<Booking> findExpiredPendingPaymentBookingsForUpdate(OffsetDateTime holdUntil, int limit) {
         return bookingEntityRepository.findExpiredPendingPaymentBookingsForUpdate(
                         holdUntil,

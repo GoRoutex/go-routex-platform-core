@@ -35,7 +35,9 @@ public class PaymentOrchestrationServiceImpl implements PaymentOrchestrationServ
     @Override
     public PollingPaymentStatusResult pollingStatus(PollingPaymentStatusCommand command) {
 
-        PaymentAggregate paymentAggregate = paymentRepositoryPort.findByBookingCode(command.bookingCode())
+        PaymentAggregate paymentAggregate = (command.method() == null
+                ? paymentRepositoryPort.findByBookingCode(command.bookingCode())
+                : paymentRepositoryPort.findByBookingCodeAndMethod(command.bookingCode(), command.method()))
                 .orElseThrow(() -> new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
                         ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(PAYMENT_NOT_FOUND, command.bookingCode()))));
 

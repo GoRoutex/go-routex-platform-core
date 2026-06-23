@@ -10,6 +10,7 @@ public class ApiConstant {
     public static final String PAY_TICKET_PATH = "/pay-ticket";
     public static final String CHECKOUT_PATH = "/checkout";
     public static final String GET_PAYMENT_URL = "/get-payment-url";
+    public static final String BATCH_PATH = "/batch";
     public static final String POLLING_STATUS = "/polling/status";
     public static final String PAY_SESSION_PATH = "/create-session";
 }

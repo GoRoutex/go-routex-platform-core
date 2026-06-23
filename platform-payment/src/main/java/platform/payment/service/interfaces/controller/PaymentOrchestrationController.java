@@ -26,6 +26,8 @@ import platform.payment.service.interfaces.model.payment.PollingPaymentStatus;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 import static platform.payment.service.infrastructure.persistence.constant.ApiConstant.API_PATH;
 import static platform.payment.service.infrastructure.persistence.constant.ApiConstant.API_VERSION;
@@ -51,11 +53,13 @@ public class PaymentOrchestrationController {
     @GetMapping(POLLING_STATUS)
     public ResponseEntity<PollingPaymentStatus> getPaymentDetail(
             @RequestParam String bookingCode,
+            @RequestParam(required = false) PaymentMethod method,
             HttpServletRequest servletRequest) {
 
         BaseRequest request = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
         PollingPaymentStatusResult result = paymentOrchestrationService.pollingStatus(PollingPaymentStatusCommand.builder()
                 .bookingCode(bookingCode)
+                .method(method)
                 .context(HttpUtils.toContext(request))
                 .build());
 
@@ -98,7 +102,6 @@ public class PaymentOrchestrationController {
 
         GetPaymentUrlResult result = paymentOrchestrationService.getPaymentUrl(command);
 
-
         GetPaymentUrlResponse response = GetPaymentUrlResponse.builder()
                 .requestId(request.getRequestId())
                 .requestDateTime(request.getRequestDateTime())
@@ -118,6 +121,8 @@ public class PaymentOrchestrationController {
 
         return HttpUtils.buildResponse(request, response);
     }
+
+
 
     private String resolveClientIp(HttpServletRequest request) {
         String forwardedFor = request.getHeader("X-FORWARDED-FOR");

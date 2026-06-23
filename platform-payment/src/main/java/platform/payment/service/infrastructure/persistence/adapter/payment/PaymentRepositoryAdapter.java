@@ -6,15 +6,21 @@ import platform.core.common.service.domain.booking.PaymentStatus;
 import platform.core.common.service.domain.payment.PaymentMethod;
 import platform.core.common.service.domain.payment.model.PaymentAggregate;
 import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
+import platform.payment.service.infrastructure.persistence.jpa.payment.entity.PaymentBookingEntity;
+import platform.payment.service.infrastructure.persistence.jpa.payment.repository.PaymentBookingEntityRepository;
 import platform.payment.service.infrastructure.persistence.jpa.payment.repository.PaymentEntityRepository;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class PaymentRepositoryAdapter implements PaymentRepositoryPort {
 
     private final PaymentEntityRepository paymentEntityRepository;
+    private final PaymentBookingEntityRepository paymentBookingEntityRepository;
     private final PaymentPersistenceMapper paymentPersistenceMapper;
 
     @Override
@@ -43,7 +49,51 @@ public class PaymentRepositoryAdapter implements PaymentRepositoryPort {
 
     @Override
     public Optional<PaymentAggregate> findByBookingCode(String bookingCode) {
-        return paymentEntityRepository.findByBookingCode(bookingCode)
+        Optional<PaymentAggregate> directPayment = paymentEntityRepository.findFirstByBookingCodeOrderByCreatedAtDesc(bookingCode)
+                .map(paymentPersistenceMapper::toDomain);
+        if (directPayment.isPresent()) {
+            return directPayment;
+        }
+        return findLatestLinkedPayment(bookingCode);
+    }
+
+    @Override
+    public Optional<PaymentAggregate> findByBookingCodeAndMethod(String bookingCode, PaymentMethod method) {
+        Optional<PaymentAggregate> directPayment = paymentEntityRepository.findFirstByBookingCodeAndMethodOrderByCreatedAtDesc(bookingCode, method)
+                .map(paymentPersistenceMapper::toDomain);
+        if (directPayment.isPresent()) {
+            return directPayment;
+        }
+        return findLatestLinkedPayment(bookingCode, method);
+    }
+
+    @Override
+    public List<String> findBookingCodesByPaymentId(String paymentId) {
+        return paymentBookingEntityRepository.findByPaymentId(paymentId).stream()
+                .map(PaymentBookingEntity::getBookingCode)
+                .toList();
+    }
+
+
+
+    private Optional<PaymentAggregate> findLatestLinkedPayment(String bookingCode) {
+        return paymentBookingEntityRepository.findByBookingCodeOrderByCreatedAtDesc(bookingCode).stream()
+                .map(PaymentBookingEntity::getPaymentId)
+                .map(paymentEntityRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst()
+                .map(paymentPersistenceMapper::toDomain);
+    }
+
+    private Optional<PaymentAggregate> findLatestLinkedPayment(String bookingCode, PaymentMethod method) {
+        return paymentBookingEntityRepository.findByBookingCodeOrderByCreatedAtDesc(bookingCode).stream()
+                .map(PaymentBookingEntity::getPaymentId)
+                .map(paymentEntityRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(payment -> method.equals(payment.getMethod()))
+                .findFirst()
                 .map(paymentPersistenceMapper::toDomain);
     }
 }

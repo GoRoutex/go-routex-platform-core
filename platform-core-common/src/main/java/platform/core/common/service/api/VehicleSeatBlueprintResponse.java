@@ -16,6 +16,7 @@ public record VehicleSeatBlueprintResponse(
 ) {
     @Builder
     public record SeatConfig(
+            String id,
             String seatNo,
             Integer floor,
             Integer x,

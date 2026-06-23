@@ -14,6 +14,7 @@ import platform.core.common.service.domain.vehicle.model.VehicleSeatBlueprint;
 import platform.core.common.service.persistence.constant.ErrorConstant;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.math.BigDecimal;
 
@@ -22,6 +23,7 @@ import java.math.BigDecimal;
 public class MerchantPlatformInternalContextAdapter implements TripBookingContextQueryPort, VehicleSeatBlueprintQueryPort {
 
     private final InternalBookingContextService internalBookingContextService;
+    private final SystemLog sLog = SystemLog.getLogger(this.getClass());
 
     @Override
     public TripBookingContext fetchByTripId(String tripId, RequestContext context) {
@@ -51,6 +53,9 @@ public class MerchantPlatformInternalContextAdapter implements TripBookingContex
     @Override
     public VehicleSeatBlueprint fetchByVehicleId(String vehicleId, RequestContext context) {
         VehicleSeatBlueprintResponse response = internalBookingContextService.getVehicleSeatBlueprint(vehicleId, context);
+
+        sLog.info("Seat Blueprint Response: {}", response);
+
         if (response == null) {
             throw new BusinessException(
                     context != null ? context.requestId() : null,
@@ -69,7 +74,7 @@ public class MerchantPlatformInternalContextAdapter implements TripBookingContex
                 .vehicleStatus(null) // Not available in DTO
                 .seats(response.seatConfigs().stream()
                         .map(seat -> VehicleSeatBlueprint.SeatBlueprintItem.builder()
-                                .id(seat.seatNo()) // using seatNo as ID fallback
+                                .id(seat.id() == null || seat.id().isBlank() ? seat.seatNo() : seat.id())
                                 .seatCode(seat.seatNo())
                                 .floor(seat.floor() == null ? null : (seat.floor() == 1 ? SeatFloor.DOWN : SeatFloor.UP))
                                 .rowNo(seat.y())

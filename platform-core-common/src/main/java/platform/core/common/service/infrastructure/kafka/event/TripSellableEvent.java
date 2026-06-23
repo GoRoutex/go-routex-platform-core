@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 public record TripSellableEvent(
         String tripId,
         String vehicleId,
+        String driverId,
         String assignedBy,
         OffsetDateTime assignedAt,
         TripStatus status,

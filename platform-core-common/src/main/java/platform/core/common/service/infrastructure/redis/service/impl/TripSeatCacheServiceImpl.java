@@ -43,7 +43,8 @@ public class TripSeatCacheServiceImpl implements TripSeatCacheService {
                             } catch (Exception e) {
                                 throw new RuntimeException("Error serializing seat", e);
                             }
-                        }
+                        },
+                        (existing, replacement) -> replacement
                 ));
 
         map.putAll(seatMap);
@@ -115,7 +116,8 @@ public class TripSeatCacheServiceImpl implements TripSeatCacheService {
                             } catch(Exception e) {
                                 throw new RuntimeException("Error deserializing seat: ", e);
                             }
-                        }
+                        },
+                        (existing, replacement) -> replacement
                 ));
         if(!updates.isEmpty()) {
             map.putAll(updates);

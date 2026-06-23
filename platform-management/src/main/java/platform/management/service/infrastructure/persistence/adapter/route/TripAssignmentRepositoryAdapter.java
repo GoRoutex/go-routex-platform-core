@@ -28,7 +28,7 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
 
     @Override
     public Optional<TripAssignmentRecord> findByTripIdAndStatus(String tripId, TripAssignmentStatus status) {
-        Optional<TripAssignmentEntity> entityOptional = tripAssignmentEntityRepository.findByTripIdAndStatus(tripId, TripAssignmentStatus.PENDING_ASSIGNMENT);
+        Optional<TripAssignmentEntity> entityOptional = tripAssignmentEntityRepository.findByTripIdAndStatus(tripId, status);
 
         if(entityOptional.isPresent()) {
             TripAssignmentEntity tripAssignmentEntity = entityOptional.get();
@@ -37,7 +37,7 @@ public class TripAssignmentRepositoryAdapter implements TripAssignmentRepository
             sLog.info("not found");
         }
 
-        return null;
+        return Optional.empty();
     }
 
     @Override

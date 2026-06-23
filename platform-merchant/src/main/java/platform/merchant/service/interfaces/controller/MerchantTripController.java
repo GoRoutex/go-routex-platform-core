@@ -209,8 +209,6 @@ public class MerchantTripController {
         return HttpUtils.buildResponse(request, response);
     }
 
-
-
     @PostMapping(TRIPS_PATH + CREATE_PATH)
     public ResponseEntity<CreateTripResponse> createTrip(@Valid @RequestBody CreateTripRequest request,
                                                          HttpServletRequest servletRequest) {

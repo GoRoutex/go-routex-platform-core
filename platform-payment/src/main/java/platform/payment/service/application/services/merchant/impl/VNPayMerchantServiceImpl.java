@@ -46,26 +46,19 @@ public class VNPayMerchantServiceImpl implements PaymentMerchantService {
     @Override
     public GetPaymentUrlResult getPaymentUrl(GetPaymentUrlCommand command) {
 
-        BookingPaymentContext bookingAggregate = bookingPaymentQueryPort.getBookingPaymentContext(command.bookingCode(), command.context());
-        if (!BookingStatus.PENDING_PAYMENT.equals(bookingAggregate.getBookingStatus())) {
-            throw new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
-                    ExceptionUtils.buildResultResponse(INVALID_DATA_ERROR, "Booking Status is not Pending Payment"));
-        }
-        if (!bookingAggregate.getHoldUntil().isAfter(OffsetDateTime.now())) {
-            throw new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
-                    ExceptionUtils.buildResultResponse(INVALID_DATA_ERROR, "Booking Session is expired"));
-        }
+        BookingPaymentContext paymentContext = bookingPaymentQueryPort.getBookingPaymentContext(command.bookingCode(), command.context());
+        validatePayableBooking(command, paymentContext);
 
-        if (command.amount().compareTo(bookingAggregate.getTotalAmount()) != 0) {
+        if (command.amount().compareTo(paymentContext.getTotalAmount()) != 0) {
             throw new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
                     ExceptionUtils.buildResultResponse(INVALID_DATA_ERROR, "Payment amount does not match booking total amount"));
         }
         OffsetDateTime now = OffsetDateTime.now();
-        PaymentAggregate payment = getOrCreatePendingPayment(command, bookingAggregate, now);
+        PaymentAggregate payment = getOrCreatePendingPayment(command, paymentContext, now);
 
         sLog.info("Payment aggregate: {}", payment);
         String checkoutUrl = buildCheckoutUrl(command, payment.getTxnRef());
-        MerchantSessionAggregate session = getOrCreateReusableMerchantSession(command, payment, bookingAggregate, checkoutUrl, now);
+        MerchantSessionAggregate session = getOrCreateReusableMerchantSession(command, payment, paymentContext, checkoutUrl, now);
         String qrCodeUrl = qrCodeGeneratorPort.generateBase64Png(
                 checkoutUrl,
                 300,
@@ -80,6 +73,17 @@ public class VNPayMerchantServiceImpl implements PaymentMerchantService {
                 .deeplink(session.getDeeplink())
                 .expiredTime(session.getExpiredAt())
                 .build();
+    }
+
+    private void validatePayableBooking(GetPaymentUrlCommand command, BookingPaymentContext booking) {
+        if (!BookingStatus.PENDING_PAYMENT.equals(booking.getBookingStatus())) {
+            throw new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_DATA_ERROR, "Booking Status is not Pending Payment"));
+        }
+        if (!booking.getHoldUntil().isAfter(OffsetDateTime.now())) {
+            throw new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_DATA_ERROR, "Booking Session is expired"));
+        }
     }
 
     private String buildCheckoutUrl(GetPaymentUrlCommand command, String txnRef) {

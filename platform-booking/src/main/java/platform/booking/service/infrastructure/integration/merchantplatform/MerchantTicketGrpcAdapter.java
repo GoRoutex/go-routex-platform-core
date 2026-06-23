@@ -8,10 +8,12 @@ import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.domain.ticket.TicketStatus;
 import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.core.common.service.infrastructure.kafka.record.BookingAggregate;
+import platform.core.common.service.domain.booking.model.BookingLeg;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,26 +33,32 @@ public class MerchantTicketGrpcAdapter {
                 .channel("INTERNAL")
                 .build();
 
+        Map<String, BookingLeg> legMap = aggregate.bookingLegs().stream()
+                .collect(Collectors.toMap(BookingLeg::getId, leg -> leg));
+
         List<Ticket> ticketsToCreate = aggregate.bookingSeats().stream()
-                .map(bookingSeat -> Ticket.builder()
-                        .bookingId(aggregate.booking().getId())
-                        .bookingSeatId(bookingSeat.getId())
-                        .vehicleId(aggregate.booking().getVehicleId())
-                        .tripId(aggregate.booking().getTripId())
-                        .seatNumber(bookingSeat.getSeatNo())
-                        .customerName(aggregate.booking().getCustomerName())
-                        .customerPhone(aggregate.booking().getCustomerPhone())
-                        .customerEmail(aggregate.booking().getCustomerEmail())
-                        .price(bookingSeat.getPrice())
-                        .status(TicketStatus.ISSUED)
-                        .issuedAt(issuedAt)
-                        .pickupType(aggregate.booking().getPickupType())
-                        .pickupStopId(aggregate.booking().getPickupStopId())
-                        .pickupAddress(aggregate.booking().getPickupAddress())
-                        .dropOffType(aggregate.booking().getDropOffType())
-                        .dropOffStopId(aggregate.booking().getDropOffStopId())
-                        .dropOffAddress(aggregate.booking().getDropOffAddress())
-                        .build())
+                .map(bookingSeat -> {
+                    BookingLeg leg = legMap.get(bookingSeat.getBookingLegId());
+                    return Ticket.builder()
+                            .bookingId(aggregate.booking().getId())
+                            .bookingSeatId(bookingSeat.getId())
+                            .vehicleId(leg.getVehicleId())
+                            .tripId(leg.getTripId())
+                            .seatNumber(bookingSeat.getSeatNo())
+                            .customerName(aggregate.booking().getCustomerName())
+                            .customerPhone(aggregate.booking().getCustomerPhone())
+                            .customerEmail(aggregate.booking().getCustomerEmail())
+                            .price(bookingSeat.getPrice())
+                            .status(TicketStatus.ISSUED)
+                            .issuedAt(issuedAt)
+                            .pickupType(leg.getPickupType())
+                            .pickupStopId(leg.getPickupStopId())
+                            .pickupAddress(leg.getPickupAddress())
+                            .dropOffType(leg.getDropOffType())
+                            .dropOffStopId(leg.getDropOffStopId())
+                            .dropOffAddress(leg.getDropOffAddress())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         sLog.info("[INTERNAL] Sending CreateTickets request");

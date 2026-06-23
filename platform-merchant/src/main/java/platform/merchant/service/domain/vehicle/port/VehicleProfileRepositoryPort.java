@@ -21,7 +21,11 @@ public interface VehicleProfileRepositoryPort {
 
     List<VehicleProfile> findByMerchantId(String merchantId);
 
+    List<VehicleProfile> findByTemplateId(String templateId, String merchantId);
+
     void save(VehicleProfile vehicleProfile);
+
+    void saveAll(List<VehicleProfile> vehicleProfiles);
 
     PagedResult<VehicleProfile> fetch(int pageNumber, int pageSize);
 

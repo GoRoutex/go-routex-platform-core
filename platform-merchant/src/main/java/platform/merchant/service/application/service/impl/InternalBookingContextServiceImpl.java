@@ -19,6 +19,7 @@ import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 import platform.merchant.service.interfaces.model.internal.booking.InternalBookingContextResponses;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.util.List;
 
@@ -38,6 +39,7 @@ public class InternalBookingContextServiceImpl implements InternalBookingContext
     private final VehicleProfileRepositoryPort vehicleProfileRepositoryPort;
     private final VehicleTemplateRepositoryPort vehicleTemplateRepositoryPort;
     private final SeatTemplateRepositoryPort seatTemplateRepositoryPort;
+    private final SystemLog sLog = SystemLog.getLogger(this.getClass());
 
     @Override
     public InternalBookingContextResponses.TripBookingContextData fetchTripBookingContext(String tripId, RequestContext context) {
@@ -72,6 +74,8 @@ public class InternalBookingContextServiceImpl implements InternalBookingContext
                 .orElseThrow(() -> notFound(context, String.format("Vehicle template with Id %s not found", vehicle.getTemplateId())));
 
         List<SeatTemplate> seatTemplates = seatTemplateRepositoryPort.findByVehicleTemplateId(template.getId());
+
+        sLog.info("Seat Templates: {}", seatTemplates);
 
         if (seatTemplates.isEmpty()) {
             throw notFound(context, String.format("Seat template for vehicle template %s not found", template.getId()));

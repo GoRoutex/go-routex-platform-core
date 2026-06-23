@@ -85,7 +85,7 @@ public class TripForSaleConsumer {
         try {
             validateEvent(event, context, tripEvent);
             sLog.info("VALIDATED");
-            tripEventHandler.generateRouteSeat(event, context, tripEvent);
+            tripEventHandler.generateTripSeat(event, context, tripEvent);
         } catch (Exception ex) {
             sLog.error("[ROUTE-EVENT] Failed eventName={} eventId={} aggregateId={} routeId={} vehicleId={}",
                     event.eventType(),

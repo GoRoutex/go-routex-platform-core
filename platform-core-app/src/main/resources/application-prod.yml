@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:kafka:9092}
@@ -23,7 +23,7 @@ spring:
       password: ${APP_REDIS_PASSWORD:}
 
   datasource:
-    url: ${DB_URL:${SPRING_DATASOURCE_URL:jdbc:postgresql://postgresql.postgresql.svc.cluster.local:5432/routex}}
+    url: ${DB_URL:${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/routex}}
     username: ${DB_USERNAME:${SPRING_DATASOURCE_USERNAME:routex}}
     password: ${DB_PASSWORD:${SPRING_DATASOURCE_PASSWORD}}
 
@@ -46,7 +46,7 @@ grpc:
     paymentService:
       address: ${PAYMENT_SERVICE_GRPC_ADDRESS:static://localhost:9090}
     userService:
-      address: ${USER_SERVICE_GRPC_ADDRESS:static://localhost:9091}
+      address: ${USER_SERVICE_GRPC_ADDRESS:static://go-routex-user-service:9091}
 
 logging:
   level:

@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 public class BookingSeat extends AbstractAuditingEntity {
     private String id;
     private String bookingId;
-    private String tripId;
+    private String bookingLegId;
     private String seatNo;
     private BigDecimal price;
     private BookingSeatStatus status;

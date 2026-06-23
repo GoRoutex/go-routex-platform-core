@@ -19,9 +19,7 @@ import java.time.OffsetDateTime;
 public class Booking extends AbstractAuditingEntity {
     private String id;
     private String bookingCode;
-    private String tripId;
     private String merchantId;
-    private String vehicleId;
     private String customerId;
     private String customerName;
     private String customerPhone;
@@ -36,10 +34,4 @@ public class Booking extends AbstractAuditingEntity {
     private OffsetDateTime cancelledAt;
     private String note;
     private String creator;
-    private String pickupType;
-    private String pickupStopId;
-    private String pickupAddress;
-    private String dropOffType;
-    private String dropOffStopId;
-    private String dropOffAddress;
 }

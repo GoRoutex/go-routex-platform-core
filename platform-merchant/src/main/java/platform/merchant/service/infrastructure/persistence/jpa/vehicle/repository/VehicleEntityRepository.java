@@ -28,6 +28,8 @@ public interface VehicleEntityRepository extends JpaRepository<VehicleEntity, St
 
     List<VehicleEntity> findByMerchantId(String merchantId);
 
+    List<VehicleEntity> findByTemplateIdAndMerchantId(String templateId, String merchantId);
+
     @Query(value = """
             SELECT v.*
             FROM vehicle v

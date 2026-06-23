@@ -12,6 +12,7 @@ import platform.core.common.service.application.service.EntityPartitionService;
 import platform.core.common.service.application.service.OutBoxService;
 import platform.core.common.service.domain.trip.TripStatus;
 import platform.core.common.service.domain.vehicle.VehicleStatus;
+import platform.core.common.service.domain.vehicle.VehicleTemplateStatus;
 import platform.core.common.service.infrastructure.kafka.activity.RecentActivityPublisher;
 import platform.core.common.service.infrastructure.kafka.event.AiOptimizationRequestedEvent;
 import platform.core.common.service.infrastructure.kafka.event.TripAssignedEvent;
@@ -337,9 +338,19 @@ public class MerchantTripServiceImpl implements MerchantTripService {
                 .orElseThrow(() -> new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
                         ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, String.format(ROUTE_NOT_FOUND, trip.getRouteId()))));
 
-        VehicleTemplate vehicleTemplate = vehicleTemplateRepositoryPort.findById(vehicle.getTemplateId(), command.merchantId())
+
+        sLog.info("Vehicle Template Id: {}", vehicle.getTemplateId());
+
+        VehicleTemplate vehicleTemplate = vehicleTemplateRepositoryPort.findByIdIncludingInactive(vehicle.getTemplateId(), command.merchantId())
                 .orElseThrow(() -> new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
                         ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, VEHICLE_TEMPLATE_NOT_FOUND)));
+
+        if (!VehicleTemplateStatus.ACTIVE.equals(vehicleTemplate.getStatus())) {
+            throw new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR,
+                            String.format("Vehicle template %s cannot be assigned while status is %s",
+                                    vehicleTemplate.getId(), vehicleTemplate.getStatus())));
+        }
 
         DriverProfile driver = driverProfileRepositoryPort.findById(command.driverId(), command.merchantId())
                 .orElseThrow(() -> new BusinessException(command.context().requestId(), command.context().requestDateTime(), command.context().channel(),
@@ -369,46 +380,24 @@ public class MerchantTripServiceImpl implements MerchantTripService {
                 finalPrice,
                 assignedAt
         );
-        trip.setStatus(TripStatus.ASSIGNED);
-        tripAssignment.setStatus(TripAssignmentStatus.ASSIGNED);
-        vehicle.setStatus(VehicleStatus.IN_SERVICE);
-        driver.setOperationStatus(OperationStatus.ON_TRIP);
-
-        tripAggregateRepositoryPort.save(trip);
         tripAssignmentRepositoryPort.save(tripAssignment);
-        vehicleProfileRepositoryPort.save(vehicle);
-        driverProfileRepositoryPort.save(driver);
 
-        sLog.info("[ASSIGN-ROUTE] Trip Assigned successfully with vehicleId: {} driverId: {}", vehicle.getId(), command.driverId());
+        sLog.info("[ASSIGN-ROUTE] Trip assignment queued with vehicleId: {} driverId: {}", vehicle.getId(), command.driverId());
 
         TripSellableEvent sellableEvent = TripSellableEvent
                 .builder()
                 .tripId(tripAssignment.getTripId())
                 .vehicleId(tripAssignment.getVehicleId())
+                .driverId(tripAssignment.getDriverId())
                 .assignedBy(command.creator())
                 .assignedAt(tripAssignment.getAssignedAt())
-                .status(TripStatus.ASSIGNED)
+                .status(trip.getStatus())
                 .seatCount(vehicleTemplate.getSeatCapacity())
                 .hasFloor(vehicle.isHasFloor())
                 .creator(command.creator())
                 .build();
 
         outBoxService.generateEvent(tripAssignment.getTripId(), tripTopic, tripReadyForSaleEvent, tripAssignment.getId(), sellableEvent, ApiRequestUtils.getHeader(command.context()));
-
-        TripAssignedEvent assignedEvent = TripAssignedEvent
-                .builder()
-                .tripId(tripAssignment.getTripId())
-                .driverId(tripAssignment.getDriverId())
-                .vehicleId(tripAssignment.getVehicleId())
-                .originName(route.getOriginName())
-                .destinationName(route.getDestinationName())
-                .departureTime(trip.getDepartureTime())
-                .status(TripStatus.ASSIGNED)
-                .assignedBy(command.creator())
-                .assignedAt(tripAssignment.getAssignedAt())
-                .build();
-
-        outBoxService.generateEvent(tripAssignment.getTripId(), tripTopic, tripAssignedEvent, tripAssignment.getId(), assignedEvent, ApiRequestUtils.getHeader(command.context()));
         publishTripAssignedActivity(command, tripAssignment, route, trip, vehicle);
 
         return AssignRouteResult.builder()

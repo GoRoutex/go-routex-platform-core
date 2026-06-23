@@ -7,12 +7,14 @@ import platform.core.common.service.api.TripBookingContextResponse;
 import platform.core.common.service.api.VehicleSeatBlueprintResponse;
 import platform.core.common.service.common.RequestContext;
 import platform.merchant.service.interfaces.model.internal.booking.InternalBookingContextResponses;
+import vn.com.go.routex.identity.security.log.SystemLog;
 
 @Service
 @RequiredArgsConstructor
 public class CommonInternalBookingContextServiceAdapter implements InternalBookingContextService {
 
     private final InternalBookingContextServiceImpl internalBookingContextService;
+    private final SystemLog sLog = SystemLog.getLogger(this.getClass());
 
     @Override
     public TripBookingContextResponse getTripBookingContext(String tripId, RequestContext context) {
@@ -32,6 +34,9 @@ public class CommonInternalBookingContextServiceAdapter implements InternalBooki
     public VehicleSeatBlueprintResponse getVehicleSeatBlueprint(String vehicleId, RequestContext context) {
         InternalBookingContextResponses.VehicleSeatBlueprintData data =
                 internalBookingContextService.fetchVehicleSeatBlueprint(vehicleId, context);
+
+        sLog.info("Blueprint data: {}", data);
+
         return VehicleSeatBlueprintResponse.builder()
                 .blueprintId(data.getTemplateId())
                 .merchantId(data.getMerchantId())
@@ -40,6 +45,7 @@ public class CommonInternalBookingContextServiceAdapter implements InternalBooki
                 .numberOfFloors(data.isHasFloor() ? 2 : 1)
                 .seatConfigs(data.getSeats().stream()
                         .map(seat -> VehicleSeatBlueprintResponse.SeatConfig.builder()
+                                .id(seat.getId())
                                 .seatNo(seat.getSeatCode())
                                 .floor(seat.getFloor() == null ? null : seat.getFloor().ordinal() + 1)
                                 .x(seat.getColumnNo())

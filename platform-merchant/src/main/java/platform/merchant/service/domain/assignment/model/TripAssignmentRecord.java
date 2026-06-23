@@ -27,6 +27,10 @@ public class TripAssignmentRecord extends AbstractAuditingEntity {
     private OffsetDateTime assignedAt;
     private OffsetDateTime unAssignedAt;
     private TripAssignmentStatus status;
+    private String successCode;
+    private String successDescription;
+    private String failCode;
+    private String failDescription;
 
     public static TripAssignmentRecord assign(
             String id,
@@ -60,6 +64,24 @@ public class TripAssignmentRecord extends AbstractAuditingEntity {
     public void cancel(String actor, OffsetDateTime at) {
         this.status = TripAssignmentStatus.CANCELED;
         this.unAssignedAt = at;
+        this.setUpdatedAt(at);
+        this.setUpdatedBy(actor);
+    }
+
+    public void markAssigned(String actor, OffsetDateTime at, String successCode, String successDescription) {
+        this.status = TripAssignmentStatus.ASSIGNED;
+        this.successCode = successCode;
+        this.successDescription = successDescription;
+        this.failCode = null;
+        this.failDescription = null;
+        this.setUpdatedAt(at);
+        this.setUpdatedBy(actor);
+    }
+
+    public void markFailed(String actor, OffsetDateTime at, String failCode, String failDescription) {
+        this.status = TripAssignmentStatus.ASSIGN_FAILED;
+        this.failCode = failCode;
+        this.failDescription = failDescription;
         this.setUpdatedAt(at);
         this.setUpdatedBy(actor);
     }

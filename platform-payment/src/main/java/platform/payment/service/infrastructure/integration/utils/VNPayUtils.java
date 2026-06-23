@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static platform.payment.service.infrastructure.integration.constant.VNPayConstant.SECRET_KEY;
-
-
 @Component
 public class VNPayUtils {
     public String md5(String message) {
@@ -53,34 +50,37 @@ public class VNPayUtils {
         return digest;
     }
 
-    public String hashAllFields(Map<String, String> fields) {
-        List<String> fieldNames = new ArrayList<>(fields.keySet());
-        Collections.sort(fieldNames);
+    public String hashAllFields(String hashSecret, Map<String, String> fields) {
+        return hmacSHA512(hashSecret, buildHashData(fields));
+    }
+
+    public String buildHashData(Map<String, String> fields) {
+        List<String> fieldNames = fields.keySet().stream()
+                .filter(fieldName -> fields.get(fieldName) != null && !fields.get(fieldName).isEmpty())
+                .sorted()
+                .toList();
         StringBuilder sb = new StringBuilder();
         Iterator<String> itr = fieldNames.iterator();
         while (itr.hasNext()) {
             String fieldName = itr.next();
             String fieldValue = fields.get(fieldName);
-            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
-                sb.append(fieldName)
-                        .append('=')
-                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-            }
+            sb.append(fieldName)
+                    .append('=')
+                    .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
             if (itr.hasNext()) {
                 sb.append("&");
             }
         }
-        return hmacSHA512(SECRET_KEY,sb.toString());
+        return sb.toString();
     }
 
     public String hmacSHA512(final String key, final String data) {
         try {
-
             if (key == null || data == null) {
                 throw new NullPointerException();
             }
             final Mac hmac512 = Mac.getInstance("HmacSHA512");
-            byte[] hmacKeyBytes = key.getBytes();
+            byte[] hmacKeyBytes = key.getBytes(StandardCharsets.UTF_8);
             final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
             hmac512.init(secretKey);
             byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
