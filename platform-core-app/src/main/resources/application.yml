@@ -16,7 +16,7 @@ spring:
       max-request-size: ${MAX_REQUEST_SIZE:${SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE:12MB}}
 
   datasource:
-    url: ${DB_URL:${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/routexhub}}
+    url: ${DB_URL:${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/routex}}
     username: ${DB_USERNAME:${SPRING_DATASOURCE_USERNAME:routex}}
     password: ${DB_PASSWORD:${SPRING_DATASOURCE_PASSWORD:routex@2026}}
     driver-class-name: org.postgresql.Driver
@@ -33,7 +33,7 @@ spring:
 
   data:
     redis:
-      host: ${APP_REDIS_HOST:${REDIS_HOST:localhost}}
+      host: ${APP_REDIS_HOST:${REDIS_HOST:redis}}
       port: ${APP_REDIS_PORT:${REDIS_PORT:6379}}
       password: ${APP_REDIS_PASSWORD:${REDIS_PASSWORD:}}
       lettuce:
@@ -50,7 +50,7 @@ spring:
       time-to-live: ${SPRING_CACHE_REDIS_TTL:600000}
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -158,7 +158,7 @@ grpc:
       keepAliveWithoutCalls: true
       negotiationType: plaintext
     userService:
-      address: ${USER_SERVICE_GRPC_ADDRESS:static://localhost:9091}
+      address: ${USER_SERVICE_GRPC_ADDRESS:static://go-routex-user-service:9091}
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext

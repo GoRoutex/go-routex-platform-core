@@ -31,7 +31,7 @@ public class PlatformKafkaConfig {
     private final KafkaProperties kafkaProperties;
     private final SystemLog sLog = SystemLog.getLogger(this.getClass());
 
-    @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
+    @Value("${spring.kafka.bootstrap-servers:kafka:9092}")
     private String bootstrapServers;
 
     @Bean
