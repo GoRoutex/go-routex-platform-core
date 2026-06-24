@@ -15,6 +15,8 @@ import platform.merchant.service.application.command.trip.FetchTripDetailQuery;
 import platform.merchant.service.application.command.trip.FetchTripDetailResult;
 import platform.merchant.service.application.command.trip.FetchTripListQuery;
 import platform.merchant.service.application.command.trip.FetchTripListResult;
+import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobQuery;
+import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobResult;
 import platform.merchant.service.application.command.trip.ScheduleAsyncCommand;
 import platform.merchant.service.application.command.trip.ScheduleAsyncResult;
 import platform.merchant.service.application.command.trip.UpdateTripCommand;
@@ -39,6 +41,7 @@ public interface MerchantTripService {
     AssignRouteBatchResult assignRouteBatch(AssignRouteBatchCommand command);
 
     ScheduleAsyncResult scheduleAsync(ScheduleAsyncCommand command);
-}
 
+    FetchScheduleOptimizationJobResult fetchScheduleOptimizationJob(FetchScheduleOptimizationJobQuery query);
+}
 

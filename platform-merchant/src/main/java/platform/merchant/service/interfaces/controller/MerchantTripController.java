@@ -31,6 +31,8 @@ import platform.merchant.service.application.command.trip.FetchTripDetailQuery;
 import platform.merchant.service.application.command.trip.FetchTripDetailResult;
 import platform.merchant.service.application.command.trip.FetchTripListQuery;
 import platform.merchant.service.application.command.trip.FetchTripListResult;
+import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobQuery;
+import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobResult;
 import platform.merchant.service.application.command.trip.ScheduleAsyncCommand;
 import platform.merchant.service.application.command.trip.ScheduleAsyncResult;
 import platform.merchant.service.application.command.trip.UpdateTripCommand;
@@ -50,6 +52,7 @@ import platform.merchant.service.interfaces.model.trip.DeleteTripRequest;
 import platform.merchant.service.interfaces.model.trip.DeleteTripResponse;
 import platform.merchant.service.interfaces.model.trip.FetchTripDetailResponse;
 import platform.merchant.service.interfaces.model.trip.FetchTripListResponse;
+import platform.merchant.service.interfaces.model.trip.FetchScheduleOptimizationJobResponse;
 import platform.merchant.service.interfaces.model.trip.ScheduleAsyncRequest;
 import platform.merchant.service.interfaces.model.trip.ScheduleAsyncResponse;
 import platform.merchant.service.interfaces.model.trip.UpdateTripRequest;
@@ -207,6 +210,38 @@ public class MerchantTripController {
 
         sLog.info("[SCHEDULE-ASYNC] Schedule Async Response: JobId={}, Status={}", result.jobId(), result.status());
         return HttpUtils.buildResponse(request, response);
+    }
+
+    @GetMapping(TRIPS_PATH + SCHEDULE_ASYNC_PATH + DETAIL_PATH)
+    public ResponseEntity<FetchScheduleOptimizationJobResponse> fetchScheduleOptimizationJob(
+            @RequestParam String jobId,
+            HttpServletRequest servletRequest
+    ) {
+        BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
+        String merchantId = ApiRequestUtils.requireMerchantId(servletRequest, baseRequest);
+
+        FetchScheduleOptimizationJobResult result = merchantTripService.fetchScheduleOptimizationJob(FetchScheduleOptimizationJobQuery.builder()
+                .context(HttpUtils.toContext(baseRequest, merchantId))
+                .merchantId(merchantId)
+                .jobId(jobId)
+                .build());
+
+        FetchScheduleOptimizationJobResponse response = FetchScheduleOptimizationJobResponse.builder()
+                .requestId(baseRequest.getRequestId())
+                .requestDateTime(baseRequest.getRequestDateTime())
+                .channel(baseRequest.getChannel())
+                .result(apiResultFactory.buildSuccess())
+                .data(FetchScheduleOptimizationJobResponse.FetchScheduleOptimizationJobResponseData.builder()
+                        .jobId(result.jobId())
+                        .merchantId(result.merchantId())
+                        .routeId(result.routeId())
+                        .status(result.status())
+                        .recommendationsPayload(result.recommendationsPayload())
+                        .creatorEmail(result.creatorEmail())
+                        .build())
+                .build();
+
+        return HttpUtils.buildResponse(baseRequest, response);
     }
 
     @PostMapping(TRIPS_PATH + CREATE_PATH)

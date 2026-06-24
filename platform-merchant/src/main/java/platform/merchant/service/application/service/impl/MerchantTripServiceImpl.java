@@ -33,6 +33,8 @@ import platform.merchant.service.application.command.trip.FetchTripDetailQuery;
 import platform.merchant.service.application.command.trip.FetchTripDetailResult;
 import platform.merchant.service.application.command.trip.FetchTripListQuery;
 import platform.merchant.service.application.command.trip.FetchTripListResult;
+import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobQuery;
+import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobResult;
 import platform.merchant.service.application.command.trip.ScheduleAsyncCommand;
 import platform.merchant.service.application.command.trip.ScheduleAsyncResult;
 import platform.merchant.service.application.command.trip.UpdateTripCommand;
@@ -712,6 +714,26 @@ public class MerchantTripServiceImpl implements MerchantTripService {
         return ScheduleAsyncResult.builder()
                 .jobId(jobId)
                 .status("PROCESSING")
+                .build();
+    }
+
+    @Override
+    public FetchScheduleOptimizationJobResult fetchScheduleOptimizationJob(FetchScheduleOptimizationJobQuery query) {
+        OptimizationJobEntity job = optimizationJobRepository.findByIdAndMerchantId(query.jobId(), query.merchantId())
+                .orElseThrow(() -> new BusinessException(
+                        query.context().requestId(),
+                        query.context().requestDateTime(),
+                        query.context().channel(),
+                        ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, "Optimization job not found: " + query.jobId())
+                ));
+
+        return FetchScheduleOptimizationJobResult.builder()
+                .jobId(job.getId())
+                .merchantId(job.getMerchantId())
+                .routeId(job.getRouteId())
+                .status(job.getStatus().name())
+                .recommendationsPayload(job.getRecommendationsPayload())
+                .creatorEmail(job.getCreatorEmail())
                 .build();
     }
 }
