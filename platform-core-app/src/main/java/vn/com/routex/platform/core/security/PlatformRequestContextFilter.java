@@ -21,7 +21,9 @@ import vn.com.go.routex.identity.security.log.SystemLog;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE - 20)
@@ -36,7 +38,7 @@ public class PlatformRequestContextFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-        if (shouldBypass(requestURI)) {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod()) || shouldBypass(requestURI)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -111,10 +113,23 @@ public class PlatformRequestContextFilter extends OncePerRequestFilter {
                 request.getParameter("channel")
         );
 
+        if (!hasEnvelope(requestId, requestDateTime, channel) && isReadRequest(request)) {
+            return new RequestEnvelope(
+                    UUID.randomUUID().toString(),
+                    OffsetDateTime.now().toString(),
+                    "ONL"
+            );
+        }
+
         if (!hasEnvelope(requestId, requestDateTime, channel)) {
             throw new IllegalArgumentException("Missing request envelope");
         }
         return new RequestEnvelope(requestId, requestDateTime, channel);
+    }
+
+    private boolean isReadRequest(HttpServletRequest request) {
+        String method = request.getMethod();
+        return "GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method);
     }
 
     private String text(JsonNode root, String... names) {
