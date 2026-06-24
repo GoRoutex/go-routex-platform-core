@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import platform.core.common.service.domain.booking.PaymentStatus;
 import platform.core.common.service.domain.payment.model.PaymentAggregate;
+import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.payment.service.application.command.payment.GetPaymentUrlCommand;
@@ -13,7 +14,6 @@ import platform.payment.service.application.command.payment.PollingPaymentStatus
 import platform.payment.service.application.services.merchant.PaymentMerchantService;
 import platform.payment.service.application.services.merchant.PaymentOrchestrationService;
 import platform.payment.service.application.services.merchant.factory.PaymentMerchantServiceFactory;
-import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
 
 import static platform.core.common.service.persistence.constant.ErrorConstant.PAYMENT_NOT_FOUND;
 import static platform.core.common.service.persistence.constant.ErrorConstant.RECORD_NOT_FOUND;

@@ -10,10 +10,8 @@ import platform.payment.service.infrastructure.persistence.jpa.payment.entity.Pa
 import platform.payment.service.infrastructure.persistence.jpa.payment.repository.PaymentBookingEntityRepository;
 import platform.payment.service.infrastructure.persistence.jpa.payment.repository.PaymentEntityRepository;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor

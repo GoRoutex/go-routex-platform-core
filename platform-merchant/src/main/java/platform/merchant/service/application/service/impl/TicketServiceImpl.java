@@ -26,7 +26,6 @@ import platform.merchant.service.application.service.cache.DashboardCacheService
 import platform.merchant.service.domain.assignment.port.TripAssignmentRepositoryPort;
 import platform.merchant.service.domain.campaign.model.Campaign;
 import platform.merchant.service.domain.campaign.port.CampaignRepositoryPort;
-import platform.merchant.service.domain.driver.model.DriverProfile;
 import platform.merchant.service.domain.driver.port.DriverProfileRepositoryPort;
 import platform.merchant.service.domain.finance.model.MerchantDailyStats;
 import platform.merchant.service.domain.finance.model.RevenueTransaction;
@@ -37,8 +36,6 @@ import platform.merchant.service.domain.merchant.port.MerchantRepositoryPort;
 import platform.merchant.service.domain.route.port.RouteAggregateRepositoryPort;
 import platform.merchant.service.domain.trip.model.TripAggregate;
 import platform.merchant.service.domain.trip.port.TripAggregateRepositoryPort;
-import platform.merchant.service.domain.vehicle.model.VehicleProfile;
-import platform.merchant.service.domain.vehicle.model.VehicleTemplate;
 import platform.merchant.service.domain.vehicle.port.VehicleProfileRepositoryPort;
 import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPort;
 

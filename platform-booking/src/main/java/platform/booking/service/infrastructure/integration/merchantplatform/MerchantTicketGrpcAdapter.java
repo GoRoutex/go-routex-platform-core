@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component;
 import platform.booking.service.infrastructure.persistence.utils.DateTimeUtils;
 import platform.core.common.service.api.InternalMerchantTicketService;
 import platform.core.common.service.common.RequestContext;
+import platform.core.common.service.domain.booking.model.BookingLeg;
 import platform.core.common.service.domain.ticket.TicketStatus;
 import platform.core.common.service.domain.ticket.model.Ticket;
 import platform.core.common.service.infrastructure.kafka.record.BookingAggregate;
-import platform.core.common.service.domain.booking.model.BookingLeg;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.OffsetDateTime;

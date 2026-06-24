@@ -26,8 +26,6 @@ import platform.payment.service.interfaces.model.payment.PollingPaymentStatus;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
 
 import static platform.payment.service.infrastructure.persistence.constant.ApiConstant.API_PATH;
 import static platform.payment.service.infrastructure.persistence.constant.ApiConstant.API_VERSION;

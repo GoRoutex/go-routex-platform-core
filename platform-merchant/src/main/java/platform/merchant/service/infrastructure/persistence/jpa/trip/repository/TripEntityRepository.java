@@ -1,5 +1,6 @@
 package platform.merchant.service.infrastructure.persistence.jpa.trip.repository;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import platform.core.common.service.domain.trip.TripStatus;
 import platform.merchant.service.infrastructure.persistence.jpa.trip.entity.TripEntity;
 
-import jakarta.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;

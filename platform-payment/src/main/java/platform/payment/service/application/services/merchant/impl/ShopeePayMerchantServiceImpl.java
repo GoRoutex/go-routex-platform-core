@@ -6,6 +6,7 @@ import platform.core.common.service.domain.booking.BookingStatus;
 import platform.core.common.service.domain.booking.PaymentStatus;
 import platform.core.common.service.domain.payment.PaymentMethod;
 import platform.core.common.service.domain.payment.model.PaymentAggregate;
+import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
 import platform.payment.service.application.command.payment.GetPaymentUrlCommand;
@@ -17,7 +18,6 @@ import platform.payment.service.domain.booking.port.BookingPaymentQueryPort;
 import platform.payment.service.domain.merchant.MerchantSessionStatus;
 import platform.payment.service.domain.merchant.model.MerchantSessionAggregate;
 import platform.payment.service.domain.merchant.port.MerchantSessionRepositoryPort;
-import platform.core.common.service.domain.payment.port.PaymentRepositoryPort;
 import platform.payment.service.domain.payment.port.QrCodeGeneratorPort;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
