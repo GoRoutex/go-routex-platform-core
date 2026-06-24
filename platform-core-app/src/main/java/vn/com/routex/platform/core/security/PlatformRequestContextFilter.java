@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingResponseWrapper;
+import platform.core.common.service.common.RequestAttributes;
 import vn.com.go.routex.identity.security.jwt.JwtService;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
@@ -98,15 +99,15 @@ public class PlatformRequestContextFilter extends OncePerRequestFilter {
         }
 
         String requestId = firstNonBlank(
-                request.getHeader("RT-REQUEST-ID"),
+                request.getHeader(RequestAttributes.REQUEST_ID),
                 request.getParameter("requestId")
         );
         String requestDateTime = firstNonBlank(
-                request.getHeader("RT-REQUEST_DATE_TIME"),
+                request.getHeader(RequestAttributes.REQUEST_DATE_TIME),
                 request.getParameter("requestDateTime")
         );
         String channel = firstNonBlank(
-                request.getHeader("RT-CHANNEL"),
+                request.getHeader(RequestAttributes.CHANNEL),
                 request.getParameter("channel")
         );
 
