@@ -3,12 +3,13 @@ package platform.merchant.service.infrastructure.kafka.consumer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import platform.core.common.service.api.BaseRequest;
-import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.application.service.OutBoxService;
+import platform.core.common.service.common.RequestContext;
 import platform.core.common.service.infrastructure.kafka.event.AiOptimizationCompletedEvent;
 import platform.core.common.service.infrastructure.kafka.event.UserNotificationEvent;
 import platform.merchant.service.application.command.route.AssignRouteBatchCommand;
@@ -24,6 +25,7 @@ import vn.com.go.routex.identity.security.log.SystemLog;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +39,9 @@ import static platform.core.common.service.persistence.constant.ApplicationConst
 @Lazy(false)
 @RequiredArgsConstructor
 public class AiOptimizationConsumer {
+
+    private static final DateTimeFormatter AI_DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final DateTimeFormatter RAW_DEPARTURE_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final SystemLog sLog = SystemLog.getLogger(this.getClass());
     private final MerchantTripService merchantTripService;
@@ -122,7 +127,7 @@ public class AiOptimizationConsumer {
             );
 
         } catch (Exception e) {
-            sLog.error("[AI-CONSUMER] Error processing trip creation for Job: {}", event.jobId(), e);
+            sLog.error("[AI-CONSUMER] Error processing trip creation for Job: {} {}", event.jobId(), ExceptionUtils.getStackTrace(e));
             job.setStatus(OptimizationJobStatus.FAILED);
             optimizationJobRepository.save(job);
             
@@ -161,7 +166,7 @@ public class AiOptimizationConsumer {
                 plans.add(new TripMaterializationPlan(schedule, trip, vehicleId, driverId));
                 tripsToCreate.add(CreateTripBatchCommand.TripBatchCommandData.builder()
                         .departureTime(departureTime)
-                        .rawDepartureDate(date)
+                        .rawDepartureDate(toRawDepartureDate(date))
                         .rawDepartureTime(rawDepartureTime)
                         .build());
             }
@@ -243,10 +248,14 @@ public class AiOptimizationConsumer {
     }
 
     private OffsetDateTime toDepartureTime(String date, String time) {
-        return LocalDate.parse(date)
+        return LocalDate.parse(date, AI_DATE_FORMATTER)
                 .atTime(LocalTime.parse(time))
                 .atZone(DEFAULT_ZONE)
                 .toOffsetDateTime();
+    }
+
+    private String toRawDepartureDate(String date) {
+        return LocalDate.parse(date, AI_DATE_FORMATTER).format(RAW_DEPARTURE_DATE_FORMATTER);
     }
 
     private String asString(Object value) {

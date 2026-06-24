@@ -39,6 +39,7 @@ public interface TicketRepositoryPort {
     );
 
     Page<Ticket> findByCustomer(
+            String customerId,
             String email,
             String phone,
             String ticketCode,

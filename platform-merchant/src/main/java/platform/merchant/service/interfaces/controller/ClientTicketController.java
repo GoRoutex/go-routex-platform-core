@@ -65,6 +65,7 @@ public class ClientTicketController {
         
         FetchCustomerTicketsQuery query = FetchCustomerTicketsQuery.builder()
                 .context(context)
+                .customerId(context.userId())
                 .customerEmail(context.userEmail())
                 .customerPhone(context.userPhone())
                 .ticketCode(ticketCode)
@@ -90,6 +91,7 @@ public class ClientTicketController {
                                         .status(t.getStatus())
                                         .issuedAt(t.getIssuedAt())
                                         .seatNumber(t.getSeatNumber())
+                                        .customerId(t.getCustomerId())
                                         .tripId(t.getTripId())
                                         .merchantId(t.getMerchantId())
                                         .build())
@@ -133,6 +135,7 @@ public class ClientTicketController {
                         .status(t.getStatus())
                         .issuedAt(t.getIssuedAt())
                         .seatNumber(t.getSeatNumber())
+                        .customerId(t.getCustomerId())
                         .tripId(t.getTripId())
                         .merchantId(t.getMerchantId())
                         .build())

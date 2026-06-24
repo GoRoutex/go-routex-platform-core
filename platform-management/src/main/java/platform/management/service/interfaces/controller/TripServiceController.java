@@ -43,9 +43,9 @@ import platform.management.service.interfaces.models.trip.SearchTripRequest;
 import platform.management.service.interfaces.models.trip.SearchTripResponse;
 import vn.com.go.routex.identity.security.log.SystemLog;
 
+import static platform.core.common.service.persistence.constant.ApiConstant.ADMIN_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;
-import static platform.core.common.service.persistence.constant.ApiConstant.ADMIN_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.DETAIL_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.FETCH_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.MANAGEMENT_PATH;

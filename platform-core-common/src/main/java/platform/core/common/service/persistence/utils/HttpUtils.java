@@ -26,6 +26,7 @@ public class HttpUtils {
                 .requestDateTime((String) request.getAttribute(RequestAttributes.REQUEST_DATE_TIME))
                 .channel((String) request.getAttribute(RequestAttributes.CHANNEL))
                 .merchantId((String) request.getAttribute(RequestAttributes.MERCHANT_ID))
+                .userId((String) request.getAttribute(RequestAttributes.USER_ID))
                 .userEmail((String) request.getAttribute(RequestAttributes.USER_EMAIL))
                 .userPhone((String) request.getAttribute(RequestAttributes.USER_PHONE))
                 .build();

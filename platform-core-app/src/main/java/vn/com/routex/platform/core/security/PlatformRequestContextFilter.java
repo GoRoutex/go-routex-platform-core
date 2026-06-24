@@ -188,10 +188,17 @@ public class PlatformRequestContextFilter extends OncePerRequestFilter {
             String token = authorization.substring(7);
             var claims = jwtService.extractAllClaims(token);
             String merchantId = firstNonBlank(claims.get("merchantId", String.class), String.valueOf(claims.get("merchant_id")));
+            String userId = firstNonBlank(
+                    claims.get("userId", String.class),
+                    claims.get("user_id", String.class),
+                    claims.get("id", String.class),
+                    claims.getSubject()
+            );
             String email = firstNonBlank(claims.get("email", String.class), claims.getSubject());
             String phone = firstNonBlank(claims.get("phone", String.class), claims.get("phone_number", String.class));
 
             setOptionalAttributes(request, "MERCHANT_ID", merchantId);
+            setOptionalAttributes(request, "USER_ID", userId);
             setOptionalAttributes(request, "USER_EMAIL", email);
             setOptionalAttributes(request, "USER_PHONE", phone);
         } catch (Exception ignored) {

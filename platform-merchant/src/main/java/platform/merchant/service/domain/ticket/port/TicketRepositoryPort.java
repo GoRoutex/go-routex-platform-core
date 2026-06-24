@@ -20,7 +20,7 @@ public interface TicketRepositoryPort {
     long countByMerchantId(String merchantId);
     Page<Ticket> findAllByMerchantId(String merchantId, Pageable pageable);
 
-    Page<Ticket> findByCustomer(String email, String phone, String ticketCode,
+    Page<Ticket> findByCustomer(String customerId, String email, String phone, String ticketCode,
                                OffsetDateTime fromDate, OffsetDateTime toDate,
                                Pageable pageable);
 

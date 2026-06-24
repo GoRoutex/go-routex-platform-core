@@ -47,19 +47,21 @@ public interface TicketRepository extends JpaRepository<TicketEntity, String> {
                                              @Param("issuedTo") OffsetDateTime issuedTo,
                                              Pageable pageable);
 
-    Page<TicketEntity> findAllByCreatedBy(String createdBy, Pageable pageable);
+    Page<TicketEntity> findAllByCustomerId(String customerId, Pageable pageable);
 
-    Optional<TicketEntity> findByIdAndCreatedBy(String id, String createdBy);
+    Optional<TicketEntity> findByIdAndCustomerId(String id, String customerId);
 
     List<TicketEntity> findAllByTripId(String tripId);
 
     @Query("SELECT t FROM TicketEntity t WHERE " +
-            "(:email IS NULL OR t.customerEmail = :email) AND " +
-            "(:phone IS NULL OR t.customerPhone = :phone) AND " +
+            "((:customerId IS NOT NULL AND t.customerId = :customerId) OR " +
+            "(:email IS NOT NULL AND LOWER(t.customerEmail) = LOWER(:email)) OR " +
+            "(:phone IS NOT NULL AND t.customerPhone = :phone)) AND " +
             "(:ticketCode IS NULL OR t.ticketCode = :ticketCode) AND " +
-            "(CAST(:fromDate AS timestamp) IS NULL OR t.createdAt >= :fromDate) AND " +
-            "(CAST(:toDate AS timestamp) IS NULL OR t.createdAt <= :toDate)")
-    Page<TicketEntity> findByCustomer(@Param("email") String email,
+            "(CAST(:fromDate AS timestamp) IS NULL OR t.issuedAt >= :fromDate) AND " +
+            "(CAST(:toDate AS timestamp) IS NULL OR t.issuedAt <= :toDate)")
+    Page<TicketEntity> findByCustomer(@Param("customerId") String customerId,
+                                     @Param("email") String email,
                                      @Param("phone") String phone,
                                      @Param("ticketCode") String ticketCode,
                                      @Param("fromDate") java.time.OffsetDateTime fromDate,

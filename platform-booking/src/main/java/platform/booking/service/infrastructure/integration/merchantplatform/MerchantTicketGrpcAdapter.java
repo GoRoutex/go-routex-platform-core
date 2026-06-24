@@ -45,6 +45,7 @@ public class MerchantTicketGrpcAdapter {
                             .vehicleId(leg.getVehicleId())
                             .tripId(leg.getTripId())
                             .seatNumber(bookingSeat.getSeatNo())
+                            .customerId(aggregate.booking().getCustomerId())
                             .customerName(aggregate.booking().getCustomerName())
                             .customerPhone(aggregate.booking().getCustomerPhone())
                             .customerEmail(aggregate.booking().getCustomerEmail())

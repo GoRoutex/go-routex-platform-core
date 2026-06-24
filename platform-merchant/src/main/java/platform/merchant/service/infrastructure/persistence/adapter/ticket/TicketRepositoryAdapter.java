@@ -90,15 +90,15 @@ public class TicketRepositoryAdapter implements TicketRepositoryPort {
     }
 
     @Override
-    public Page<Ticket> findByCustomer(String email, String phone, String ticketCode,
+    public Page<Ticket> findByCustomer(String customerId, String email, String phone, String ticketCode,
                                      OffsetDateTime fromDate, OffsetDateTime toDate,
                                      Pageable pageable) {
-        return ticketRepository.findByCustomer(email, phone, ticketCode, fromDate, toDate, pageable)
+        return ticketRepository.findByCustomer(customerId, email, phone, ticketCode, fromDate, toDate, pageable)
                 .map(ticketPersistenceMapper::toDomain);
     }
 
     public PagedResult<Ticket> fetchByCustomerId(String customerId, int pageNumber, int pageSize) {
-        Page<Ticket> page = ticketRepository.findAllByCreatedBy(customerId, PageRequest.of(pageNumber, pageSize))
+        Page<Ticket> page = ticketRepository.findAllByCustomerId(customerId, PageRequest.of(pageNumber, pageSize))
                 .map(ticketPersistenceMapper::toDomain);
         return PagedResult.<Ticket>builder()
                 .items(page.getContent())
@@ -110,7 +110,7 @@ public class TicketRepositoryAdapter implements TicketRepositoryPort {
     }
 
     public Optional<Ticket> findByIdAndCustomerId(String id, String customerId) {
-        return ticketRepository.findByIdAndCreatedBy(id, customerId)
+        return ticketRepository.findByIdAndCustomerId(id, customerId)
                 .map(ticketPersistenceMapper::toDomain);
     }
 

@@ -29,12 +29,12 @@ import platform.merchant.service.application.command.trip.CreateTripCommand;
 import platform.merchant.service.application.command.trip.CreateTripResult;
 import platform.merchant.service.application.command.trip.DeleteTripCommand;
 import platform.merchant.service.application.command.trip.DeleteTripResult;
+import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobQuery;
+import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobResult;
 import platform.merchant.service.application.command.trip.FetchTripDetailQuery;
 import platform.merchant.service.application.command.trip.FetchTripDetailResult;
 import platform.merchant.service.application.command.trip.FetchTripListQuery;
 import platform.merchant.service.application.command.trip.FetchTripListResult;
-import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobQuery;
-import platform.merchant.service.application.command.trip.FetchScheduleOptimizationJobResult;
 import platform.merchant.service.application.command.trip.ScheduleAsyncCommand;
 import platform.merchant.service.application.command.trip.ScheduleAsyncResult;
 import platform.merchant.service.application.command.trip.UpdateTripCommand;
@@ -185,7 +185,8 @@ public class MerchantTripServiceImpl implements MerchantTripService {
         tripsToSave.stream()
                 .map(TripAggregate::getDepartureTime)
                 .filter(Objects::nonNull)
-                .distinct()
+                .collect(Collectors.toMap(YearMonth::from, departureTime -> departureTime, (existing, ignored) -> existing))
+                .values()
                 .forEach(entityPartitionService::ensureTripPartition);
 
         sLog.info("Batch saving {} trips for route {}", tripsToSave.size(), command.routeId());
@@ -385,6 +386,7 @@ public class MerchantTripServiceImpl implements MerchantTripService {
         TripSellableEvent sellableEvent = TripSellableEvent
                 .builder()
                 .tripId(tripAssignment.getTripId())
+                .routeId(trip.getRouteId())
                 .vehicleId(tripAssignment.getVehicleId())
                 .driverId(tripAssignment.getDriverId())
                 .assignedBy(command.creator())

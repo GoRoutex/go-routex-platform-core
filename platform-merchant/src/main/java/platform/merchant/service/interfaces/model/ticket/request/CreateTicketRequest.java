@@ -42,6 +42,7 @@ public class CreateTicketRequest extends BaseRequest {
         private String vehicleId;
         @NotBlank
         private String seatNumber;
+        private String customerId;
         @NotBlank
         private String customerName;
         @NotBlank

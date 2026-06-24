@@ -50,6 +50,9 @@ public class TicketEntity extends AbstractAuditingEntity {
     @Column(name = "SEAT_NUMBER")
     private String seatNumber;
 
+    @Column(name = "CUSTOMER_ID")
+    private String customerId;
+
     @Column(name = "CUSTOMER_NAME")
     private String customerName;
 

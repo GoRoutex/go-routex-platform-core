@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 @Builder
 public record TripSellableEvent(
         String tripId,
+        String routeId,
         String vehicleId,
         String driverId,
         String assignedBy,

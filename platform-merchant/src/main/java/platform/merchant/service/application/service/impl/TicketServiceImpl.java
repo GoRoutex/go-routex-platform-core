@@ -124,6 +124,7 @@ public class TicketServiceImpl implements TicketService {
                 .tripId(command.tripId())
                 .vehicleId(command.vehicleId())
                 .seatNumber(command.seatNumber())
+                .customerId(command.customerId())
                 .customerName(command.customerName())
                 .customerPhone(command.customerPhone())
                 .customerEmail(command.customerEmail())
@@ -342,9 +343,14 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public FetchTicketListResult getCustomerTickets(FetchCustomerTicketsQuery query) {
+        if (!hasText(query.customerId()) && !hasText(query.customerEmail()) && !hasText(query.customerPhone())) {
+            throw new BusinessException(ExceptionUtils.buildResultResponse("ACCESS_DENIED", "Authenticated customer identity is required"));
+        }
+
         Page<Ticket> page = ticketRepositoryPort.findByCustomer(
-                query.customerEmail(),
-                query.customerPhone(),
+                normalizeQuery(query.customerId()),
+                normalizeQuery(query.customerEmail()),
+                normalizeQuery(query.customerPhone()),
                 query.ticketCode(),
                 query.fromDate(),
                 query.toDate(),
@@ -365,12 +371,13 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = ticketRepositoryPort.findById(query.ticketId())
                 .orElseThrow(() -> new BusinessException(ExceptionUtils.buildResultResponse(RECORD_NOT_FOUND, "Ticket not found")));
 
-        // Security Check: Verify ownership by email or phone
-        // In a real app, we get this from the JWT (RequestContext)
+        // Security check: verify ownership from JWT identity.
+        String identityCustomerId = query.context().userId();
         String identityEmail = query.context().userEmail();
         String identityPhone = query.context().userPhone();
 
-        boolean isOwner = (identityEmail != null && identityEmail.equalsIgnoreCase(ticket.getCustomerEmail())) ||
+        boolean isOwner = (identityCustomerId != null && identityCustomerId.equals(ticket.getCustomerId())) ||
+                          (identityEmail != null && identityEmail.equalsIgnoreCase(ticket.getCustomerEmail())) ||
                           (identityPhone != null && identityPhone.equals(ticket.getCustomerPhone()));
 
         if (!isOwner) {
@@ -380,5 +387,9 @@ public class TicketServiceImpl implements TicketService {
         return FetchTicketDetailResult.builder()
                 .ticket(ticket)
                 .build();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

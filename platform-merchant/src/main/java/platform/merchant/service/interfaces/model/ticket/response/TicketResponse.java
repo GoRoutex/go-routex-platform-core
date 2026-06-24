@@ -21,6 +21,7 @@ public class TicketResponse {
     private String tripId;
     private String vehicleId;
     private String seatNumber;
+    private String customerId;
     private String customerName;
     private String customerPhone;
     private String customerEmail;

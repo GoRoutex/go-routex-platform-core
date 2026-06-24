@@ -8,6 +8,7 @@ public record RequestContext(
         String requestDateTime,
         String channel,
         String merchantId,
+        String userId,
         String userEmail,
         String userPhone
 ) {

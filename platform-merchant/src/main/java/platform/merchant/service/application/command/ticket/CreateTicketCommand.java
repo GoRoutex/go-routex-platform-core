@@ -15,6 +15,7 @@ public record CreateTicketCommand(
         String tripId,
         String vehicleId,
         String seatNumber,
+        String customerId,
         String customerName,
         String customerPhone,
         String customerEmail,

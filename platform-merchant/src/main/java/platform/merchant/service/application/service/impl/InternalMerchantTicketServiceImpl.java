@@ -64,6 +64,7 @@ public class InternalMerchantTicketServiceImpl implements InternalMerchantTicket
                 .tripId(ticket.getTripId())
                 .vehicleId(ticket.getVehicleId())
                 .seatNumber(ticket.getSeatNumber())
+                .customerId(ticket.getCustomerId())
                 .customerName(ticket.getCustomerName())
                 .customerPhone(ticket.getCustomerPhone())
                 .customerEmail(ticket.getCustomerEmail())

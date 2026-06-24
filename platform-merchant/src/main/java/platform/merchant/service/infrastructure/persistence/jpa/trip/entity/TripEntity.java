@@ -28,7 +28,7 @@ public class TripEntity extends AbstractAuditingEntity {
     @Id
     private String id;
 
-    @Column(name = "ROUTE_ID", nullable = false, unique = true)
+    @Column(name = "ROUTE_ID", nullable = false)
     private String routeId;
 
     @Column(name = "MERCHANT_ID", nullable = false)

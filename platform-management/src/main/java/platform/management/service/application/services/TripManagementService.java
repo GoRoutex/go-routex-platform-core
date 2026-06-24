@@ -1,10 +1,10 @@
 package platform.management.service.application.services;
 
 
-import platform.management.service.application.command.trip.FetchRoundTripDetailQuery;
-import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.FetchAdminTripsQuery;
 import platform.management.service.application.command.trip.FetchAdminTripsResult;
+import platform.management.service.application.command.trip.FetchRoundTripDetailQuery;
+import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.FetchTripQuery;
 import platform.management.service.application.command.trip.FetchTripResult;
 import platform.management.service.application.command.trip.FetchTripsQuery;

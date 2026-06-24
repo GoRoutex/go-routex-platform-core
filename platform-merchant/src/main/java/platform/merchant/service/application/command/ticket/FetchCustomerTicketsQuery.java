@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 @Builder
 public record FetchCustomerTicketsQuery(
         RequestContext context,
+        String customerId,
         String customerEmail,
         String customerPhone,
         String ticketCode,

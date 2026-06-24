@@ -5,6 +5,7 @@ public interface RequestAttributes {
     String REQUEST_DATE_TIME = "RT-REQUEST-DATE-TIME";
     String CHANNEL = "RT-CHANNEL";
     String MERCHANT_ID = "merchantId";
+    String USER_ID = "userId";
     String USER_EMAIL = "userEmail";
     String USER_PHONE = "userPhone";
 }
