@@ -24,6 +24,9 @@ public class FetchTripResponse extends BaseResponse<FetchTripResponse.FetchTripR
     public static class FetchTripResponsePage {
         private List<FetchTripResponseData> items;
         private Pagination pagination;
+        private Long totalTrips;
+        private Long plannedTrips;
+        private Long cancelledTrips;
     }
 
     @Getter
@@ -36,6 +39,7 @@ public class FetchTripResponse extends BaseResponse<FetchTripResponse.FetchTripR
         private String tripCode;
         private String merchantId;
         private String merchantName;
+        private String merchantDisplayName;
         private String originCode;
         private String originName;
         private String destinationCode;
@@ -53,6 +57,8 @@ public class FetchTripResponse extends BaseResponse<FetchTripResponse.FetchTripR
         private TripStatus status;
         private String vehicleId;
         private String vehiclePlate;
+        private String driverId;
+        private String driverName;
         private Boolean hasFloor;
         private OffsetDateTime assignedAt;
         private Long availableSeats;

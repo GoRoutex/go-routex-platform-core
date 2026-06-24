@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import platform.core.common.service.api.BaseRequest;
 import platform.core.common.service.application.command.common.PageContext;
 import platform.core.common.service.common.RequestContext;
+import platform.management.service.application.command.trip.FetchAdminTripsQuery;
+import platform.management.service.application.command.trip.FetchAdminTripsResult;
 import platform.management.service.application.command.trip.FetchRoundTripDetailQuery;
 import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.FetchTripQuery;
@@ -43,6 +45,7 @@ import vn.com.go.routex.identity.security.log.SystemLog;
 
 import static platform.core.common.service.persistence.constant.ApiConstant.API_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.API_VERSION;
+import static platform.core.common.service.persistence.constant.ApiConstant.ADMIN_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.DETAIL_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.FETCH_PATH;
 import static platform.core.common.service.persistence.constant.ApiConstant.MANAGEMENT_PATH;
@@ -221,6 +224,44 @@ public class TripServiceController {
                                 .totalElements(result.totalElements())
                                 .totalPages(result.totalPages())
                                 .build())
+                        .build())
+                .build();
+
+        return HttpUtils.buildResponse(baseRequest, response);
+    }
+
+    @GetMapping(ADMIN_PATH + FETCH_PATH)
+    public ResponseEntity<FetchTripResponse> fetchAdminTrips(
+            HttpServletRequest servletRequest,
+            @RequestParam(required = false) String departureDate,
+            @RequestParam(defaultValue = "1") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
+        FetchAdminTripsResult result = tripManagementService.fetchAdminTrips(FetchAdminTripsQuery.builder()
+                .pageContext(PageContext.builder()
+                        .pageNumber(String.valueOf(pageNumber))
+                        .pageSize(String.valueOf(pageSize))
+                        .build())
+                .departureDate(departureDate)
+                .context(HttpUtils.toContext(baseRequest))
+                .build());
+
+        FetchTripResponse response = FetchTripResponse.builder()
+                .result(apiResultFactory.buildSuccess())
+                .data(FetchTripResponse.FetchTripResponsePage.builder()
+                        .items(result.items().stream()
+                                .map(tripResponseMapper::toPublicFetchTripResponseData)
+                                .toList())
+                        .pagination(FetchTripResponse.Pagination.builder()
+                                .pageNumber(result.pageNumber())
+                                .pageSize(result.pageSize())
+                                .totalElements(result.totalElements())
+                                .totalPages(result.totalPages())
+                                .build())
+                        .totalTrips(result.totalTrips())
+                        .plannedTrips(result.plannedTrips())
+                        .cancelledTrips(result.cancelledTrips())
                         .build())
                 .build();
 

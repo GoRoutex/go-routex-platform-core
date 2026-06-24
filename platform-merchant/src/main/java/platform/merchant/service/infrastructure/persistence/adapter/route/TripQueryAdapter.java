@@ -207,4 +207,79 @@ public class TripQueryAdapter implements TripQueryPort {
                 .totalPages(page.getTotalPages())
                 .build();
     }
+
+    @Override
+    public PagedResult<TripFetchView> fetchAdminTrips(OffsetDateTime from,
+                                                      OffsetDateTime to,
+                                                      int pageNumber,
+                                                      int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "departureTime"));
+        Specification<TripAggregate> specification = TripSpecification.departureTimeBetween(from, to);
+        Page<TripAggregate> page = tripAggregateRepositoryPort.findAll(specification, pageable);
+        return toTripFetchPage(page);
+    }
+
+    @Override
+    public long countAdminTrips(OffsetDateTime from, OffsetDateTime to, TripStatus status) {
+        Specification<TripAggregate> specification = TripSpecification.departureTimeBetween(from, to)
+                .and(TripSpecification.assignedStatus(status));
+        return tripAggregateRepositoryPort.findAll(specification, PageRequest.of(0, 1)).getTotalElements();
+    }
+
+    private PagedResult<TripFetchView> toTripFetchPage(Page<TripAggregate> page) {
+        List<TripAggregate> tripList = page.getContent();
+
+        List<String> routeIds = tripList.stream()
+                .map(TripAggregate::getRouteId)
+                .toList();
+
+        List<String> merchantIds = tripList.stream()
+                .map(TripAggregate::getMerchantId)
+                .toList();
+
+        Map<String, Merchant> merchantMap = merchantRepositoryPort.findNamesByIds(merchantIds);
+        Map<String, RouteAggregate> routeAggregateMap = routeAggregateRepositoryPort.findAllByIdIn(routeIds);
+
+        List<TripFetchView> items = tripList.stream()
+                .map(trip -> toTripFetchView(trip, merchantMap, routeAggregateMap))
+                .collect(Collectors.toList());
+
+        return PagedResult.<TripFetchView>builder()
+                .items(items)
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    private TripFetchView toTripFetchView(TripAggregate trip,
+                                          Map<String, Merchant> merchantMap,
+                                          Map<String, RouteAggregate> routeAggregateMap) {
+        RouteAggregate routeAggregate = routeAggregateMap.get(trip.getRouteId());
+        Merchant merchantAggregate = merchantMap.get(trip.getMerchantId());
+        return TripFetchView.builder()
+                .id(trip.getId())
+                .tripCode(trip.getTripCode())
+                .routeId(trip.getRouteId())
+                .merchantId(trip.getMerchantId())
+                .merchantName(merchantAggregate == null ? null : merchantAggregate.getDisplayName())
+                .creator(trip.getCreator())
+                .originCode(routeAggregate == null ? null : routeAggregate.getOriginCode())
+                .originName(routeAggregate == null ? null : routeAggregate.getOriginName())
+                .destinationCode(routeAggregate == null ? null : routeAggregate.getDestinationCode())
+                .destinationName(routeAggregate == null ? null : routeAggregate.getDestinationName())
+                .originProvinceId(routeAggregate == null ? null : routeAggregate.getOriginProvinceId())
+                .destinationProvinceId(routeAggregate == null ? null : routeAggregate.getDestinationProvinceId())
+                .originDepartmentId(routeAggregate == null ? null : routeAggregate.getOriginDepartmentId())
+                .originDepartmentName(routeAggregate == null ? null : routeAggregate.getOriginDepartmentName())
+                .destinationDepartmentName(routeAggregate == null ? null : routeAggregate.getDestinationDepartmentName())
+                .destinationDepartmentId(routeAggregate == null ? null : routeAggregate.getDestinationDepartmentId())
+                .departureTime(trip.getDepartureTime())
+                .rawDepartureDate(trip.getRawDepartureDate())
+                .rawDepartureTime(trip.getRawDepartureTime())
+                .durationMinutes(routeAggregate == null ? null : routeAggregate.getDuration())
+                .status(trip.getStatus())
+                .build();
+    }
 }

@@ -7,8 +7,11 @@ import platform.core.common.service.application.command.common.PageInfo;
 import platform.core.common.service.application.command.common.PagedResult;
 import platform.core.common.service.application.readmodel.TripSearchView;
 import platform.core.common.service.common.RequestContext;
+import platform.core.common.service.domain.trip.TripStatus;
 import platform.core.common.service.persistence.exception.BusinessException;
 import platform.core.common.service.persistence.utils.ExceptionUtils;
+import platform.management.service.application.command.trip.FetchAdminTripsQuery;
+import platform.management.service.application.command.trip.FetchAdminTripsResult;
 import platform.management.service.application.command.trip.FetchRoundTripDetailQuery;
 import platform.management.service.application.command.trip.FetchRoundTripDetailResult;
 import platform.management.service.application.command.trip.FetchTripQuery;
@@ -34,6 +37,8 @@ import platform.merchant.service.application.service.InternalMerchantAdminServic
 import platform.merchant.service.domain.assignment.model.TripAssignmentRecord;
 import platform.merchant.service.domain.department.model.Department;
 import platform.merchant.service.domain.department.port.DepartmentRepositoryPort;
+import platform.merchant.service.domain.driver.model.DriverProfile;
+import platform.merchant.service.domain.driver.port.DriverProfileRepositoryPort;
 import platform.merchant.service.domain.merchant.model.Merchant;
 import platform.merchant.service.domain.route.model.RouteAggregate;
 import platform.merchant.service.domain.route.model.RouteStopPlan;
@@ -48,12 +53,15 @@ import platform.merchant.service.domain.vehicle.port.VehicleTemplateRepositoryPo
 import vn.com.go.routex.identity.security.log.SystemLog;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,6 +91,7 @@ public class TripManagementServiceImpl implements TripManagementService {
     private final InternalMerchantAdminService internalMerchantAdminService;
     private final SystemLog sLog = SystemLog.getLogger(this.getClass());
     private final VehicleTemplateRepositoryPort vehicleTemplateRepositoryPort;
+    private final DriverProfileRepositoryPort driverProfileRepositoryPort;
 
 
     @Override
@@ -329,6 +338,52 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .build();
     }
 
+    @Override
+    public FetchAdminTripsResult fetchAdminTrips(FetchAdminTripsQuery query) {
+        PageInfo pageInfo = validatePageContext(query.context(), query.pageContext());
+        DateRange dateRange = resolveAdminDepartureDate(query.context(), query.departureDate());
+
+        PagedResult<TripFetchView> page = tripQueryPort.fetchAdminTrips(
+                dateRange.from(),
+                dateRange.to(),
+                pageInfo.pageNumber() - 1,
+                pageInfo.pageSize()
+        );
+
+        List<TripFetchView> trips = page.getItems();
+        TripEnrichment enrichment = enrichRoutes(
+                trips.stream().map(TripFetchView::getId).toList(),
+                trips.stream().map(TripFetchView::getRouteId).toList(),
+                trips.stream()
+                        .flatMap(trip -> Stream.of(
+                                trip.getOriginDepartmentId(),
+                                trip.getDestinationDepartmentId()
+                        ))
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .toList()
+        );
+
+        List<FetchTripResult> items = trips.stream()
+                .map(trip -> toFetchRouteItem(trip, enrichment))
+                .collect(Collectors.toList());
+
+        long totalTrips = tripQueryPort.countAdminTrips(dateRange.from(), dateRange.to(), null);
+        long plannedTrips = tripQueryPort.countAdminTrips(dateRange.from(), dateRange.to(), TripStatus.SCHEDULED);
+        long cancelledTrips = tripQueryPort.countAdminTrips(dateRange.from(), dateRange.to(), TripStatus.CANCELLED);
+
+        return FetchAdminTripsResult.builder()
+                .items(items)
+                .pageNumber(page.getPageNumber() + 1)
+                .pageSize(page.getPageSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .totalTrips(totalTrips)
+                .plannedTrips(plannedTrips)
+                .cancelledTrips(cancelledTrips)
+                .build();
+    }
+
     private RoutePointResult toRoutePoint(RouteStopPlan s) {
         return RoutePointResult.builder()
                 .id(s.getId())
@@ -368,21 +423,50 @@ public class TripManagementServiceImpl implements TripManagementService {
         return new DateRange(from, to);
     }
 
+    private DateRange resolveAdminDepartureDate(RequestContext context, String departureDate) {
+        if (departureDate == null || departureDate.isBlank()) {
+            return new DateRange(null, null);
+        }
+        try {
+            LocalDate targetDate = LocalDate.parse(departureDate.trim());
+            ZoneId zoneId = ZoneId.systemDefault();
+            OffsetDateTime from = targetDate.atTime(LocalTime.MIN).atZone(zoneId).toOffsetDateTime();
+            OffsetDateTime to = targetDate.plusDays(1).atTime(LocalTime.MIN).atZone(zoneId).toOffsetDateTime();
+            return new DateRange(from, to);
+        } catch (DateTimeParseException e) {
+            throw new BusinessException(
+                    context.requestId(),
+                    context.requestDateTime(),
+                    context.channel(),
+                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "departureDate must use yyyy-MM-dd format")
+            );
+        }
+    }
+
     private record DateRange(OffsetDateTime from, OffsetDateTime to) {
     }
 
     private TripEnrichment enrichRoutes(List<String> tripIds, List<String> routeIds, List<String> departmentIds) {
         if (tripIds.isEmpty()) {
-            return new TripEnrichment(Map.of(), Map.of(), Map.of(), Map.of(), Map.of());
+            return new TripEnrichment(Map.of(), Map.of(), Map.of(), Map.of(), Map.of(), Map.of());
         }
         Map<String, Long> seatAvailable = tripSeatAvailabilityPort.countAvailableSeats(tripIds);
         Map<String, TripAssignmentRecord> assignments = tripAssignmentRepositoryPort.findLatestActiveByTripIds(tripIds);
         List<String> vehicleIds = assignments.values().stream()
                 .map(TripAssignmentRecord::getVehicleId)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
+        Set<String> driverIds = assignments.values().stream()
+                .map(TripAssignmentRecord::getDriverId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         Map<String, VehicleProfile> vehicles = routeVehicleRepositoryPort.findByIds(vehicleIds);
+        Map<String, DriverProfile> drivers = driverIds.isEmpty()
+                ? Map.of()
+                : driverProfileRepositoryPort.findByIdIn(driverIds).stream()
+                .collect(Collectors.toMap(DriverProfile::getId, Function.identity()));
         Map<String, List<RouteStopPlan>> stopsByRouteId = routePointRepositoryPort.findByRouteIds(routeIds);
         List<Department> listDepartment = departmentRepositoryPort.findAllByIdIn(departmentIds);
 
@@ -393,7 +477,7 @@ public class TripManagementServiceImpl implements TripManagementService {
                         Function.identity()
                 ));
 
-        return new TripEnrichment(assignments, seatAvailable, vehicles, stopsByRouteId, departmentMap);
+        return new TripEnrichment(assignments, seatAvailable, vehicles, drivers, stopsByRouteId, departmentMap);
     }
 
     private SearchTripItemResult toSearchRouteItem(
@@ -482,6 +566,7 @@ public class TripManagementServiceImpl implements TripManagementService {
     private FetchTripResult toFetchRouteItem(TripFetchView trip, TripEnrichment enrichment) {
         TripAssignmentRecord assignment = enrichment.assignments().get(trip.getId());
         VehicleProfile vehicle = findVehicle(assignment, enrichment);
+        DriverProfile driver = findDriver(assignment, enrichment);
 
         return FetchTripResult.builder()
                 .id(trip.getId())
@@ -490,6 +575,7 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .originCode(trip.getOriginCode())
                 .merchantId(trip.getMerchantId())
                 .merchantName(trip.getMerchantName())
+                .merchantDisplayName(trip.getMerchantName())
                 .originName(trip.getOriginName())
                 .destinationCode(trip.getDestinationCode())
                 .destinationName(trip.getDestinationName())
@@ -506,10 +592,12 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .status(trip.getStatus())
                 .vehicleId(assignment == null ? null : assignment.getVehicleId())
                 .vehiclePlate(vehicle == null ? null : vehicle.getVehiclePlate())
+                .driverId(assignment == null ? null : assignment.getDriverId())
+                .driverName(driver == null ? null : driver.getFullName())
                 .hasFloor(vehicle != null && vehicle.isHasFloor())
                 .assignedAt(assignment == null ? null : assignment.getAssignedAt())
                 .routePoints(toRoutePoints(enrichment.stopsByRouteId().get(trip.getRouteId())))
-                .ticketPrice(assignment.getTicketPrice())
+                .ticketPrice(assignment == null ? null : assignment.getTicketPrice())
                 .availableSeat(enrichment.seatAvailable.get(trip.getId()))
                 .build();
     }
@@ -517,6 +605,7 @@ public class TripManagementServiceImpl implements TripManagementService {
     private FetchTripResult toFetchTripDetail(RouteAggregate route, TripAggregate trip, TripEnrichment enrichment, Merchant merchant) {
         TripAssignmentRecord assignment = enrichment.assignments().get(trip.getId());
         VehicleProfile vehicle = findVehicle(assignment, enrichment);
+        DriverProfile driver = findDriver(assignment, enrichment);
 
         String originDepartmentName = enrichment.departmentMap.get(route.getOriginDepartmentId()).getName();
         String destinationDepartmentName = enrichment.departmentMap.get(route.getDestinationDepartmentId()).getName();
@@ -527,6 +616,7 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .tripCode(trip.getTripCode())
                 .merchantId(merchant.getId())
                 .merchantName(merchant.getDisplayName())
+                .merchantDisplayName(merchant.getDisplayName())
                 .originName(route.getOriginName())
                 .originCode(route.getOriginCode())
                 .destinationName(route.getDestinationName())
@@ -544,16 +634,22 @@ public class TripManagementServiceImpl implements TripManagementService {
                 .status(trip.getStatus() == null ? null : trip.getStatus())
                 .vehicleId(assignment == null ? null : assignment.getVehicleId())
                 .vehiclePlate(vehicle == null ? null : vehicle.getVehiclePlate())
+                .driverId(assignment == null ? null : assignment.getDriverId())
+                .driverName(driver == null ? null : driver.getFullName())
                 .hasFloor(vehicle != null && vehicle.isHasFloor())
                 .assignedAt(assignment == null ? null : assignment.getAssignedAt())
                 .routePoints(toRoutePoints(enrichment.stopsByRouteId().get(route.getId())))
                 .availableSeat(enrichment.seatAvailable.get(trip.getId()))
-                .ticketPrice(assignment.getTicketPrice())
+                .ticketPrice(assignment == null ? null : assignment.getTicketPrice())
                 .build();
     }
 
     private VehicleProfile findVehicle(TripAssignmentRecord assignment, TripEnrichment enrichment) {
         return assignment == null ? null : enrichment.vehicles().get(assignment.getVehicleId());
+    }
+
+    private DriverProfile findDriver(TripAssignmentRecord assignment, TripEnrichment enrichment) {
+        return assignment == null ? null : enrichment.drivers().get(assignment.getDriverId());
     }
 
     private List<RoutePointResult> toRoutePoints(List<RouteStopPlan> stops) {
@@ -567,6 +663,7 @@ public class TripManagementServiceImpl implements TripManagementService {
             Map<String, TripAssignmentRecord> assignments,
             Map<String, Long> seatAvailable,
             Map<String, VehicleProfile> vehicles,
+            Map<String, DriverProfile> drivers,
             Map<String, List<RouteStopPlan>> stopsByRouteId,
             Map<String, Department> departmentMap
     ) {
