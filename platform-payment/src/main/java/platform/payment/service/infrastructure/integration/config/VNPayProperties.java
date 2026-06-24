@@ -10,7 +10,7 @@ public record VNPayProperties(
         String hashSecret
 ) {
     private static final String DEFAULT_PAY_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    private static final String DEFAULT_RETURN_URL = "https://4cdc-2402-800-63ba-d725-1df8-c792-6892-555e.ngrok-free.app/api/v1/payment-service/return-url";
+    private static final String DEFAULT_RETURN_URL = "https://api.routex-go.com/api/v1/payment-service/return-url";
     private static final String DEFAULT_TMN_CODE = "2Y0B395W";
     private static final String DEFAULT_HASH_SECRET = "KJEMY4DV3S2QBQVW6Y1MVGUQJJQVVEYP";
 
