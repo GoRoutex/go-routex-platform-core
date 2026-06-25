@@ -70,16 +70,12 @@ public class TripAggregateRepositoryAdapter implements TripAggregateRepositoryPo
     public PagedResult<TripAggregate> fetch(String merchantId,
                                             TripStatus status,
                                             String rawDepartureDate,
-                                            OffsetDateTime fromDepartureTime,
-                                            OffsetDateTime toDepartureTime,
                                             int pageNumber,
                                             int pageSize) {
         Page<TripEntity> page = tripEntityRepository.fetchAllTrips(
                 merchantId,
                 status,
                 rawDepartureDate,
-                fromDepartureTime,
-                toDepartureTime,
                 PageRequest.of(pageNumber, pageSize)
         );
         return toPagedResult(page);

@@ -9,10 +9,6 @@ public record FetchTripListQuery(
         RequestContext context,
         TripStatus status,
         String rawDepartureDate,
-        String period,
-        String year,
-        String month,
-        String quarter,
         String pageSize,
         String pageNumber
 ) {

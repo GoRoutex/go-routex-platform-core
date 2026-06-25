@@ -277,14 +277,10 @@ public class MerchantTripServiceImpl implements MerchantTripService {
 
         validatePaging(query, pageSize, pageNumber);
 
-        PeriodWindow periodWindow = resolvePeriodWindow(query);
-
         PagedResult<TripAggregate> page = tripAggregateRepositoryPort.fetch(
                 query.context().merchantId(),
                 query.status(),
                 normalizeBlank(query.rawDepartureDate()),
-                periodWindow.from(),
-                periodWindow.to(),
                 pageNumber - 1,
                 pageSize
         );
@@ -458,39 +454,6 @@ public class MerchantTripServiceImpl implements MerchantTripService {
             throw new BusinessException(query.context().requestId(), query.context().requestDateTime(), query.context().channel(),
                     ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, INVALID_PAGE_NUMBER));
         }
-    }
-    private PeriodWindow resolvePeriodWindow(FetchTripListQuery query) {
-        LocalDate rawDepartureDate = parseRawDepartureDate(query.rawDepartureDate());
-        if (rawDepartureDate != null) {
-            return new PeriodWindow(toStartOfDay(rawDepartureDate), toStartOfDay(rawDepartureDate.plusDays(1)));
-        }
-
-        LocalDate today = LocalDate.now(DEFAULT_ZONE);
-        String period = normalizeBlank(query.period());
-        period = period == null ? PERIOD_MONTH : period.toUpperCase();
-        int year = parseOptionalInt(query.year(), today.getYear(), "year", query);
-
-        return switch (period) {
-            case PERIOD_MONTH -> {
-                int month = parseOptionalInt(query.month(), today.getMonthValue(), "month", query);
-                validateRange(month, 1, 12, "month", query);
-                YearMonth yearMonth = YearMonth.of(year, month);
-                yield new PeriodWindow(toStartOfDay(yearMonth.atDay(1)), toStartOfDay(yearMonth.plusMonths(1).atDay(1)));
-            }
-            case PERIOD_QUARTER -> {
-                int quarter = parseOptionalInt(query.quarter(), ((today.getMonthValue() - 1) / 3) + 1, "quarter", query);
-                validateRange(quarter, 1, 4, "quarter", query);
-                int startMonth = ((quarter - 1) * 3) + 1;
-                LocalDate startDate = LocalDate.of(year, startMonth, 1);
-                yield new PeriodWindow(toStartOfDay(startDate), toStartOfDay(startDate.plusMonths(3)));
-            }
-            case PERIOD_YEAR -> {
-                LocalDate startDate = LocalDate.of(year, 1, 1);
-                yield new PeriodWindow(toStartOfDay(startDate), toStartOfDay(startDate.plusYears(1)));
-            }
-            default -> throw new BusinessException(query.context().requestId(), query.context().requestDateTime(), query.context().channel(),
-                    ExceptionUtils.buildResultResponse(INVALID_INPUT_ERROR, "period must be MONTH, QUARTER or YEAR"));
-        };
     }
 
     private LocalDate parseRawDepartureDate(String value) {

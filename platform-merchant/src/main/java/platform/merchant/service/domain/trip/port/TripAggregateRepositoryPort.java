@@ -32,8 +32,6 @@ public interface TripAggregateRepositoryPort {
             String merchantId,
             TripStatus status,
             String rawDepartureDate,
-            OffsetDateTime fromDepartureTime,
-            OffsetDateTime toDepartureTime,
             int pageNumber,
             int pageSize
     );

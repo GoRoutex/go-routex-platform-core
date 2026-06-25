@@ -411,10 +411,6 @@ public class MerchantTripController {
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(required = false) TripStatus status,
             @RequestParam(required = false) String rawDepartureDate,
-            @RequestParam(required = false) String period,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer quarter,
             HttpServletRequest servletRequest
     ) {
         BaseRequest baseRequest = ApiRequestUtils.getBaseRequestOrDefault(servletRequest);
@@ -424,10 +420,6 @@ public class MerchantTripController {
                 .context(HttpUtils.toContext(baseRequest, merchantId))
                 .status(status)
                 .rawDepartureDate(rawDepartureDate)
-                .period(period)
-                .year(year == null ? null : String.valueOf(year))
-                .month(month == null ? null : String.valueOf(month))
-                .quarter(quarter == null ? null : String.valueOf(quarter))
                 .pageNumber(String.valueOf(pageNumber))
                 .pageSize(String.valueOf(pageSize))
                 .build());

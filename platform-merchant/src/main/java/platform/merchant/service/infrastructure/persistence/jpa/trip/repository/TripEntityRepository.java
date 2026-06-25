@@ -50,16 +50,12 @@ public interface TripEntityRepository extends JpaRepository<TripEntity, String>,
                 WHERE t.merchantId = :merchantId
                 AND (:status IS NULL OR t.status = :status)
                 AND (:rawDepartureDate IS NULL OR t.rawDepartureDate = :rawDepartureDate)
-                AND t.departureTime >= :fromDepartureTime
-                AND t.departureTime < :toDepartureTime
                 ORDER BY t.departureTime ASC, t.id ASC
         """)
     Page<TripEntity> fetchAllTrips(
             @Param("merchantId") String merchantId,
             @Param("status") TripStatus status,
             @Param("rawDepartureDate") String rawDepartureDate,
-            @Param("fromDepartureTime") OffsetDateTime fromDepartureTime,
-            @Param("toDepartureTime") OffsetDateTime toDepartureTime,
             Pageable pageable);
 
     List<TripEntity> findAllByIdInAndMerchantId(List<String> ids, String merchantId);
