@@ -40,6 +40,8 @@ public interface TripAggregateRepositoryPort {
 
     List<TripAggregate> findByIds(List<String> tripIds, String merchantId);
 
+    List<TripAggregate> findByIds(List<String> tripIds);
+
     Page<TripAggregate> findAll(Specification<TripAggregate> specification, Pageable pageable);
 
     Page<TripAggregate> findAllByFilter(OffsetDateTime from, OffsetDateTime to, Pageable pageable);

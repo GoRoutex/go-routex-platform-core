@@ -94,6 +94,14 @@ public class TripAggregateRepositoryAdapter implements TripAggregateRepositoryPo
     }
 
     @Override
+    public List<TripAggregate> findByIds(List<String> tripIds) {
+        return tripEntityRepository.findAllByIdIn(tripIds)
+                .stream()
+                .map(tripAggregatePersistenceMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Page<TripAggregate> findAll(Specification<TripAggregate> specification, Pageable pageable) {
         Specification<TripEntity> entitySpec = (root, query, cb) -> specification.toPredicate((Root) root, query, cb);
         return tripEntityRepository.findAll(entitySpec, pageable).map(tripAggregatePersistenceMapper::toDomain);

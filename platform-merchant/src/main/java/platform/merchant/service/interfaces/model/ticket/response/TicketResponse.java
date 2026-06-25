@@ -19,6 +19,16 @@ public class TicketResponse {
     private String bookingId;
     private String merchantId;
     private String tripId;
+    private String routeId;
+    private String originCode;
+    private String originName;
+    private String destinationCode;
+    private String destinationName;
+    private String originDepartmentId;
+    private String originDepartmentName;
+    private String destinationDepartmentId;
+    private String destinationDepartmentName;
+    private Long duration;
     private String vehicleId;
     private String seatNumber;
     private String customerId;

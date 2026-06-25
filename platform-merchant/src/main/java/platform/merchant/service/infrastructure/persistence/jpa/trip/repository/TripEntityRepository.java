@@ -64,6 +64,8 @@ public interface TripEntityRepository extends JpaRepository<TripEntity, String>,
 
     List<TripEntity> findAllByIdInAndMerchantId(List<String> ids, String merchantId);
 
+    List<TripEntity> findAllByIdIn(List<String> ids);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             SELECT t FROM TripEntity t
