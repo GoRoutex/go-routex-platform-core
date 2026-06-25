@@ -255,7 +255,7 @@ app:
 payment:
   vnpay:
     pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
-    return-url: ${VNPAY_RETURN_URL:https://4cdc-2402-800-63ba-d725-1df8-c792-6892-555e.ngrok-free.app/api/v1/payment-service/return-url}
+    return-url: ${VNPAY_RETURN_URL:https://api.routex-go.com/api/v1/payment-service/return-url}
     tmn-code: ${VNPAY_TMN_CODE:2Y0B395W}
     hash-secret: ${VNPAY_HASH_SECRET:KJEMY4DV3S2QBQVW6Y1MVGUQJJQVVEYP}
 
