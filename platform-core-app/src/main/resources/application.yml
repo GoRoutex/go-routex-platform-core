@@ -207,9 +207,9 @@ identity:
 
 media:
   cloudinary:
-    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
-    api-key: ${CLOUDINARY_API_KEY:}
-    api-secret: ${CLOUDINARY_API_SECRET:}
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:difqcci0j}
+    api-key: ${CLOUDINARY_API_KEY:478878615354358}
+    api-secret: ${CLOUDINARY_API_SECRET:EpU_ybF0PBin-qKQ6gDgzPHPEMc}
     default-folder: ${CLOUDINARY_DEFAULT_FOLDER:goroutex/}
     secure: ${CLOUDINARY_SECURE:true}
 

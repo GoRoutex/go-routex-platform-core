@@ -57,6 +57,7 @@ public class PlatformSecurityConfig {
                                 "/api/v1/management/seat-diagram/search",
                                 "/api/v1/management/seat-diagram/search/round-trip",
                                 "/api/v1/management/trip-service/detail",
+                                "/api/v1/management/media/upload",
                                 "/api/v1/management/trip-service/search/round-trip",
                                 "/api/v1/payment-service/return-url",
                                 "/api/v1/management/trip-service/detail/round-trip",
