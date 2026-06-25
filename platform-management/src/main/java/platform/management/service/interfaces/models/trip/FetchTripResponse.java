@@ -53,6 +53,7 @@ public class FetchTripResponse extends BaseResponse<FetchTripResponse.FetchTripR
         private OffsetDateTime departureTime;
         private String rawDepartureDate;
         private String rawDepartureTime;
+        private Long duration;
         private String rawArrivalTime;
         private TripStatus status;
         private String vehicleId;
